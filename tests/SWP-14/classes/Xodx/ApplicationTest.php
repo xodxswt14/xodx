@@ -5,6 +5,9 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
 
+/**
+ * @author Stephan
+ */
 class Xodx_ApplicationTest extends PHPUnit_Framework_Textcase
 {
     public function testRun()

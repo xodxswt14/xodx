@@ -8,6 +8,7 @@
 require_once('password_compat/lib/password.php');
 
 /**
+ * @author Stephan
  */
 class Xodx_UserControllerTest extends PHPUnit_Framework_Textcase
 {

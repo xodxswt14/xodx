@@ -6,6 +6,7 @@
  */
 
 /**
+ * @author Stephan
  */
 class Xodx_NotificationControllerTest extends PHPUnit_Framework_Textcase
 {

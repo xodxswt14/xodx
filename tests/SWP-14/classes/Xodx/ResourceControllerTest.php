@@ -5,6 +5,10 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
 
+/**
+ * @author Stephan
+ */
+
 class Xodx_ResourceControllerTest extends PHPUnit_Framework_Textcase
 {
 

@@ -6,6 +6,7 @@
  */
 
 /**
+ * @author Stephan
  */
 class Xodx_ProfileControllerTest extends PHPUnit_Framework_Textcase
 {
