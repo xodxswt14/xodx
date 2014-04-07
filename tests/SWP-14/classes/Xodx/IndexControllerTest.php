@@ -8,7 +8,7 @@
 /**
  * @author Stephan
  */
-class Xodx_IndexControllerTest extends PHPUnit_Framework_Textcase
+class Xodx_IndexControllerTest extends PHPUnit_Framework_Testcase
 {
     public function testIndexAction ()
     {

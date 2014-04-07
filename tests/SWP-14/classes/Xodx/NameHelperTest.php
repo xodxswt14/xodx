@@ -8,7 +8,7 @@
 /**
  * @author Stephan
  */
-class Xodx_NameHelperTest extends PHPUnit_Framework_Textcase
+class Xodx_NameHelperTest extends PHPUnit_Framework_Testcase
 {
     
     public function testConstruct ()

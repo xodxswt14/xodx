@@ -455,7 +455,7 @@
      * @param type $feedUri Uri of the feed that ist to be unsubscribed
      * @param type $local $local Indicates whether the feed is stored locally
      */
-    private function _unsubscribeFromFeed($unsubscriberUri, $feedUri, $local = false) 
+    protected function _unsubscribeFromFeed($unsubscriberUri, $feedUri, $local = false) 
     {       
         
         // getResources & set namespaces

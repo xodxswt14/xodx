@@ -9,7 +9,7 @@
  * @author Stephan
  */
 
-class Xodx_ResourceControllerTest extends PHPUnit_Framework_Textcase
+class Xodx_ResourceControllerTest extends PHPUnit_Framework_Testcase
 {
 
     public function testIndexAction ()

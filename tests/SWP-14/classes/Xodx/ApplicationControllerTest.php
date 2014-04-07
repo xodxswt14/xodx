@@ -11,7 +11,7 @@ require_once('password_compat/lib/password.php');
 /**
  * @author Stephan
  */
-class Xodx_ApplicationControllerTest extends PHPUnit_Framework_Textcase
+class Xodx_ApplicationControllerTest extends PHPUnit_Framework_Testcase
 {
    
     public function testNewuserAction ()

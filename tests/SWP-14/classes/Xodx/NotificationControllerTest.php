@@ -8,7 +8,7 @@
 /**
  * @author Stephan
  */
-class Xodx_NotificationControllerTest extends PHPUnit_Framework_Textcase
+class Xodx_NotificationControllerTest extends PHPUnit_Framework_Testcase
 {
     function testShowAction ()
     {
