@@ -6,22 +6,30 @@
  */
 
 /**
+ * This class tests \classes\Xodx\NotificationController.php
  * @author Stephan
  */
 class Xodx_NotificationControllerTest extends PHPUnit_Framework_Testcase
 {
+    /**
+     * @covers NotificationController::showAction ()
+     */
     function testShowAction ()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * @covers NotificationController::getNewAction ()
+     */
     public function testGetNewAction ()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * @covers NotificationController::getAllAction ()
+     */
     public function testGetAllAction ()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
 }

@@ -6,12 +6,16 @@
  */
 
 /**
+ * This class tests \classes\Xodx\Application.php
  * @author Stephan
  */
 class Xodx_ApplicationTest extends PHPUnit_Framework_Testcase
 {
+    /**
+     * @covers Application::run ()
+     */
     public function testRun()
     {
-          
+          $this->markTestSkipped('TO BE DONE!');
     }
 }

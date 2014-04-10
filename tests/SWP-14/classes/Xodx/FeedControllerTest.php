@@ -6,26 +6,36 @@
  */
 
 /**
+ * This class tests \classes\Xodx\FeedController.php
  * @author Stephan
  */
 class Xodx_FeedControllerTest extends PHPUnit_Framework_Testcase
 {
-
+    /**
+     * @covers FeedController::getFeedAction ()
+     */
     public function testGetFeedAction()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * @covers FeedController::feedToActivity ()
+     */
     public function testFeedToActivity ()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * @covers FeedController::getFeedResource ()
+     */
     public function testGetFeedResource()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * @covers FeedController::feedAction ()
+     * @return template
+     */
     public  function testFeedAction ()
     {
      $feed = '<?xml version="1.0" encoding="utf-8"?>

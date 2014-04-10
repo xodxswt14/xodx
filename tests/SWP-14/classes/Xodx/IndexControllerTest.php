@@ -6,12 +6,16 @@
  */
 
 /**
+ * This class tests \classes\Xodx\IndexController.php
  * @author Stephan
  */
 class Xodx_IndexControllerTest extends PHPUnit_Framework_Testcase
 {
+    /**
+     * @covers IndexController::indexAction ()
+     */
     public function testIndexAction ()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
 }

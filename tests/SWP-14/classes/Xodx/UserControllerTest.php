@@ -4,226 +4,218 @@
  *
  * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
-
-
-/**
-$main_dir = rtrim(dirname(__FILE__), '/\\');
-
-# Set include paths
-$includePath  = get_include_path() . PATH_SEPARATOR;
-
-$includePath .= $main_dir . '/classes/' . PATH_SEPARATOR;
-$includePath .= $main_dir . '/classes/Xodx/' . PATH_SEPARATOR;
-$includePath .= $main_dir . '/libraries/' . PATH_SEPARATOR;
-$includePath .= $main_dir . '/libraries/Erfurt/library/' . PATH_SEPARATOR;
-$includePath .= $main_dir . '/libraries/lib-dssn-php/' . PATH_SEPARATOR;
-$includePath .= $main_dir . '/libraries/ARC2/' . PATH_SEPARATOR;
-
-set_include_path($includePath);
-*/
-
-
-//require_once('/password_compat/lib/password.php');
-//require_once(__DIR__ . '/../../../TestBootstrap.php');
 require_once(__DIR__ . '/../../../../libraries/Saft/Controller.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/ResourceController.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/UserController.php');
-//require_once('/../../../../libraries/password_compat/lib/password.php');
-//require_once('/password_compat/lib/password.php');
-
 require_once (__DIR__ . '/../../Fixtures/classes/Xodx/ApplicationDummy.php');
+
 /**
+ * This class tests \classes\Xodx\UserController.php
  * @author Stephan
  */
 class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
-{
-
-    /*
-     * activity feed of test2
-     * http://127.0.0.1:8080/?c=feed&a=getFeed&uri=http%3A%2F%2F127.0.0.1%3A8080%2F%3Fc%3Dperson%26id%3Dtest2http://127.0.0.1:8080/?c=feed&a=getFeed&uri=http%3A%2F%2F127.0.0.1%3A8080%2F%3Fc%3Dperson%26id%3Dtest2
-     * 
-     * 
-     * 
-     *  get feed of personid
-     * 
-     *  result:
-     * http://127.0.0.1:8080/?c=feed&a=getFeed&uri=http%3A%2F%2F127.0.0.1%3A8080%2F%3Fc%3Dperson%26id%3Dtest
-     * 
-        PREFIX atom: <http://www.w3.org/2005/Atom/>
-        PREFIX aair: <http://xmlns.notu.be/aair#>
-        SELECT ?feed 
-        WHERE { 
-            <http://127.0.0.1:8080/?c=person&id=test> <http://purl.org/net/dssn/activityFeed> ?feed . 
-        }
-     
-     *  subUri of a feed
-     *  result:
-     * http://127.0.0.1:8080/&c=ressource&id=60743c43fe6902335feb85548af6fe8f
-     * 
-
-        PREFIX dssn: <http://purl.org/net/dssn/>
-        Select ?subUri
-        WHERE {
-            ?subUri dssn:subscriptionTopic <http://127.0.0.1:8080/?c=feed&a=getFeed&uri=http%3A%2F%2F127.0.0.1%3A8080%2F%3Fc%3Dresource%26id%3D1b17f9a68b8433ceaec2167aa71e1219>
-        }
-      
-      
-     * 
-     * feed of a post:
-     * http://127.0.0.1:8080/?c=feed&a=getFeed&uri=http%3A%2F%2F127.0.0.1%3A8080%2F%3Fc%3Dresource%26id%3D1b17f9a68b8433ceaec2167aa71e1219
-     * 
-     * suburi of this post:
-     * http://127.0.0.1:8080/&c=ressource&id=60743c43fe6902335feb85548af6fe8f
-     */
-    
-    protected $feedUriPost = 'http://127.0.0.1:8080/?c=feed&a=getFeed&uri=http%3A%2F%2F127.0.0.1%3A8080%2F%3Fc%3Dresource%26id%3D1b17f9a68b8433ceaec2167aa71e1219';
-    protected $subUriPost = 'http://127.0.0.1:8080/&c=ressource&id=60743c43fe6902335feb85548af6fe8f';
-    
-    protected $feedUri = null;
-    protected $unsubscriberUri = 'http://127.0.0.1:8080/?c=person&id=test';
-    protected $rescourceUri = 'http://127.0.0.1:8080/?c=person&id=test2';
-
-    
+{   
+    /**
+     * This is a valid Uri of a feed.
+     * @var UriString
+     */ 
     protected $validFeedUri = 'validFeedUri';
+    /**
+     * This is a invalid Uri of a feed.
+     * @var UriString
+     */
     protected $invalidFeedUri = 'invalidFeedUri';
-
+    /**
+     * This is a valid Uri of a unsubscriber.
+     * @var UriString 
+     */
     protected $validUnsubscriberUri = 'validUnsubscriberUri';
+    /**
+     * This is a invalid Uri of a unsubscriber.
+     * @var UriString
+     */
     protected $invalidUnsubscriberUri = 'invalidUnsubscriberUri';
-
+    /**
+     * This is a valid Uri of a resource.
+     * @var UriString
+     */
     protected $validResourceUri = 'validResourceUri';
+    /**
+     * This is a invalid Uri of a resource.
+     * @var UriString
+     */
     protected $invalidResourceUri = 'invalidResourceUri';
-
-
-
-    //private $app = NULL;
-    //private $userController = NULL;
+    /**
+     * An application for testing purposes.
+     * @var \Fixtures\classes\Xodx\ApplicationDummy
+     */
     protected $app = NULL;
+    /**
+     * A proxyclass which contains some small classchanges for testing.
+     * @var \UserControllerProxy
+     */
     protected $userController = NULL;
     
-    
-    
-    
-     public function initFixture()
+    /**
+     * Creates an Application- and UsercontrollerDummy
+     * @param $proxy  
+     */
+    public function initFixture($proxy = false)
     {
         $this->app = new ApplicationDummy();
-        //$this->usercontroller = new \Xodx_UserController($this->app);
-        //die nehmen$this->userController = new Xodx_UserController($this->app);
-        $this->userController = new Xodx_UserControllerProxy($this->app);
-        
+        if ($proxy) {
+            $this->userController = new Xodx_UserControllerProxy($this->app);
+        } else { //proxy == false, standard
+            $this->userController = new Xodx_UserController($this->app);
+        }
         $this->setBaseUriFixture();
     }
-    
-    public function setBaseUriFixture()
+    /**
+     * Sets the BaseUri of $this->app
+     * @param type $valid true vor valid, false for invalid
+     */
+    public function setBaseUriFixture($valid = true)
     {
-        //$base_uri = 'http://127.0.0.1:8080/?';
-        $base_uri = 'validBaseUri';
+        if ($valid) {
+            $base_uri = 'validBaseUri';
+        } else {
+            $base_uri = 'invalidBaseUri';
+        }
         $this->app->setBaseUri($base_uri);
     }
     
-    
-    
-    
-
-
+    /**
+     * Test: Method returns all activities the user is subscribed to
+     * @covers UserController::getActivityStream ()
+     */
     public function testGetActivityStream()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
+    /**
+     * @covers UserController::getActivityStreamAction ()
+     */
     public function testGetActivityStreamAction()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-    
+    /**
+     * @covers UserController::getPersonUriAction ()
+     */
     public function testGetPersonUriAction()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-    
+    /**
+     * Test: Find all resources a user is subscribed to via Activity Feed
+     * @covers UserController::getSubscribedResources ()
+     */
     public function testGetSubscribedResources()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-    
+    /**
+     * Test: This method creates a new object of the class Xodx_User
+     * @covers UserController::getUser ()
+     */
     public function testGetUser()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * Test: Get the userAccount of a Person
+     * @covers UserController::getUserForPerson ()
+     */
     public function testGetUserForPerson()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-    
+    /**
+     * Test: Returns the user uri of a user which is accosiated to the given person
+     * @covers UserController::getUserUri ()
+     */
     public function testGetUserUri()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-    
+    /**
+     * @covers UserController::homeAction ()
+     */
     public function testHomeAction()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-    
+    /**
+     * Test: Check if a user is already subscribed to a feed
+     * @covers UserController::_isSubscribed ()
+     */
     public function testIsSubscribed()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * Test: This method subscribes a user to a feed
+     * @covers UserController::_subscribeToFeed ()
+     */
     public function testSubscribeToFeed()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * @covers UserController::subscribeToResource ()
+     */
     public function testSubscribeToResource()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * Test: Unsubscribes a user from a feed (he is subscribed to)
+     * @covers UserController::_unsubscribeFromFeed ()
+     */
     public function testUnsubscribeFromFeedTypeIsNsFoafPerson() 
     {       
         $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * Test: Unsubscribes a user from a feed (he is subscribed to)
+     * @covers UserController::_unsubscribeFromFeed ()
+     */
     public function testUnsubscribeFromFeedTypeIsNotNsFoafPerson() 
     {       
         $this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * Test: Unsubscriebes a user from a resource
+     * @covers UserController::unsubscribeFromResource ()
+     */
     public function testUnsubscribeFromResourceFeedUriIsNotNull() 
     {     
-        
         $this->initFixture();
-        
-        //$this->userController->unsubscribeFromResource($this->unsubscriberUri,
-        //        $this->rescourceUri, $this->feedUriPost);
         
         $this->userController->unsubscribeFromResource($this->validUnsubscriberUri,
                 $this->validResourceUri, $this->validFeedUri);
         
-        
-        //$this->assertAttributeEquals($this->feedUriPost, 'feedUri', $this->userController);
         $this->assertAttributeEquals($this->validFeedUri, 'feedUri', $this->userController);
-        //$this->markTestSkipped('TO BE DONE!');
     }
-
+    /**
+     * Test: Unsubscriebes a user from a resource
+     * @covers UserController::unsubscribeFromResource ()
+     */
     public function testUnsubscribeFromResourceFeedUriIsNull() 
     {   
-        //$this->markTestSkipped('TO BE DONE!');
         $this->initFixture();
         
         $this->userController->unsubscribeFromResource($this->validUnsubscriberUri, $this->validResourceUri);
         $this->assertAttributeEquals($this->validFeedUri, 'feedUri', $this->userController);
     }
-
-    
+    /**
+     * Test: This function verifies the given credentials for a user
+     * @covers UserController::verifyPasswordCredentials ()
+     */
     public function testVerifyPasswordCredentials()
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-    
-    
-    
-   
 }
 
 class Xodx_UserControllerProxy extends Xodx_UserController{
@@ -232,10 +224,15 @@ class Xodx_UserControllerProxy extends Xodx_UserController{
     */
     protected $feedUri = null;
    
-    
+    /**
+     * Added global feedUri for assertiontest.
+     * @param type $unsubscriberUri
+     * @param type $resourceUri
+     * @param type $feedUri
+     * @param type $local
+     */
     public function unsubscribeFromResource($unsubscriberUri, $resourceUri, $feedUri = null, $local = false) 
-    {           
-        
+    {
         // getResources & set namespaces
         $bootstrap = $this->_app->getBootstrap();      
         
@@ -248,33 +245,43 @@ class Xodx_UserControllerProxy extends Xodx_UserController{
         $this->feedUri = $feedUri;
         
         $this->_unsubscribeFromFeed($unsubscriberUri, $feedUri, $local);
-        
     }
-    
+    /**
+     * Overwritten for easy testing.
+     * @param type $resourceUri if valid changes feedUri to valid
+     * @return UriString valid dependance on resourceUri
+     */
     public function getActivityFeedUri($resourceUri)
     {
         $feedUri = NULL;   
         if ($resourceUri == 'validResourceUri') {
             $feedUri = 'validFeedUri';
         }
-
-        //$this->feedUri = $feedUri;
-        return $feedUri;
-           
+        return $feedUri;  
     }
-    
+    /**
+     * returns validUnsubscriberUri
+     * @param type $personUri
+     * @return UriString validUnsubscriberUri
+     */
     public function getUserUri($personUri)
     {
        return 'validUnsubscriberUri';
     }
-    
-    
-    
-     private function _isSubscribed($userUri, $feedUri) {
+    /**
+     * Overwritten for easy testing.
+     * @param type $userUri
+     * @param type $feedUri
+     * @return boolean true if user- and feedUri are valid 
+     */
+    private function _isSubscribed($userUri, $feedUri) {
         if (($userUri == 'validUnsubcriberUri')
                 && ($feedUri == 'validFeedUri')) {
             return TRUE;
+        } else {
+            return FALSE;
         }
+        
     }
      
    

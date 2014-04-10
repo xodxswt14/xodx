@@ -6,50 +6,56 @@
  */
 
 /**
+ * This class tests \classes\Bootstrap.php
  * @author Stephan
  */
 class BootstrapTest extends PHPUnit_Framework_Testcase
 {
 
     /**
-     *Test: Initializes the configuration by reading the config file
+     * Test: Initializes the configuration by reading the config file
+     * @covers Bootstrap::initConfig()
      */
     public function testInitConfig ()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
 
     /**
-     *Test: Initializes all namespace prefixes
+     * Test: Initializes all namespace prefixes
+     * @covers BootStrap::initNamespacesConfig()
      */
     public function testInitNamespacesConfig ()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
 
     /**
-     *Test: Initializes the Erfurt Store
+     * Test: Initializes the Erfurt Store
+     * @covers BootStrap::initStore()
      */
     public function testInitStore ()
     {
-       
+       $this->markTestSkipped('TO BE DONE!');
     }
 
     /**
-     *Test: Initializes the default Erfurt Model as specified in the config
+     * Test: Initializes the default Erfurt Model as specified in the config
+     * @covers BootStrap::initModel()
      */
     public function testInitModel ()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
 
     /**
-     *Test: Initializes the session
+     * Test: Initializes the session
      * Note: currently this is done by initializing Erfurt
+     * @covers BootStrap::initSession()
      */
     public function testInitSession ()
     {
-        
+        $this->markTestSkipped('TO BE DONE!');
     }
 
 }

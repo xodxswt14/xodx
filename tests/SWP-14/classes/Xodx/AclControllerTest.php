@@ -6,6 +6,7 @@
  */
 
 /**
+ * This class tests \classes\Xodx\AclController.php
  * @author Stephan
  */
 class Xodx_AclControllerTest extends PHPUnit_Framework_Testcase

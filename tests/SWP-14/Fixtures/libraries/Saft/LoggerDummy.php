@@ -1,14 +1,22 @@
 <?php
-
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * This file is part of the {@link http://aksw.org/Projects/Xodx Xodx} project.
+ *
+ * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
 
+/**
+ * This class is a Saft_Logger dummy.
+ * @author Stephan
+ */
 class LoggerDummy
 {
-    public function info($infoString) {
+    /**
+     * Method is used for debugging and not required for
+     * testing other methods.
+     */
+    public function info($infoString)
+    {
         
     }
 }
