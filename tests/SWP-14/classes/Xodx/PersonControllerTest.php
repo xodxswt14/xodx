@@ -4,13 +4,63 @@
  *
  * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
-
+require_once(__DIR__ . '/../../../../libraries/Saft/Controller.php');
+require_once(__DIR__ . '/../../../../classes/Xodx/ResourceController.php');
+require_once(__DIR__ . '/../../../../classes/Xodx/PersonController.php');
+require_once (__DIR__ . '/../../Fixtures/libraries/Saft/ApplicationDummy.php');
+require_once (__DIR__ . '/../../Fixtures/libraries/Saft/LayoutDummy.php');
+/**
+ * requirements for deleteFriendAction()
+ * the original classes are reqiured (dummy does not work)
+ */
+require_once (__DIR__ . '/../../../../libraries/Erfurt/library/Erfurt/Uri.php');
+require_once (__DIR__ . '/../../../../libraries/Saft/Url.php');
+require_once (__DIR__ . '/../../../../libraries/Saft/Request.php');
 /**
  * This class tests \classes\Xodx\PersonController.php
  * @author Stephan
  */
 class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
 {
+    /**
+     * This is a valid Uri of a person.
+     * @var UriString
+     */
+    protected $validPersonUri = 'validPersonUri';
+    /**
+     * A valid contactUri for deleteFriend()
+     * @var UriString
+     */
+    protected $validResourceUri = 'validResourceUri';
+    /**
+     * An application for testing purposes.
+     * @var \Fixtures\classes\Xodx\ApplicationDummy
+     */
+    protected $app = NULL;
+    /**
+     * The PersonController loaded in initFixture.
+     * (A proxyclass which contains some small classchanges for testing.)
+     * @var \PersonController(Proxy)
+     */
+    protected $personController = NULL;
+    /**
+     *
+     * @var \Fixtures\libraries\Saft\LayoutDummy
+     */
+    protected $template = NULL;
+    /**
+     * Creates an Application- and PersonControllerDummy
+     * @param $proxy  true for PersonControllerProxy false for normal PersonController
+     */
+    public function initFixture($proxy = FALSE)
+    {
+        $this->app = new ApplicationDummy(TRUE);
+        if ($proxy) {
+            $this->personController = new Xodx_PersonControllerProxy($this->app);
+        } else { //proxy == false, standard
+            $this->personController = new Xodx_PersonController($this->app);
+        }
+    }
     /**
      * Test: A view action to show a person
      * @covers PersonController::showAction ()
@@ -40,7 +90,10 @@ class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
      */
     public function testDeleteFriendAction()
     {
-        $this->markTestSkipped('TO BE DONE!');
+        $this->initFixture();
+        $this->template = new LayoutDummy($this->app);
+        $this->personController->deleteFriendAction($this->template);
+        //$this->markTestSkipped('TO BE DONE!');
     }
     /**
      * Test: Get a DSSN_Foaf_Person object representing the specified person
@@ -74,7 +127,9 @@ class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
      */
     public function testDeleteFriend ()
     {
-        $this->markTestSkipped('TO BE DONE!');
+        $this->initFixture(TRUE);
+        $this->personController->deleteFriend($this->validPersonUri, $this->validResourceUri);
+        //$this->markTestSkipped('TO BE DONE!');
     }
     /**
      * Test: Returns the feed of the specified $type of the person
@@ -93,4 +148,23 @@ class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
         $this->markTestSkipped('TO BE DONE!');
     }
 
+}
+
+class Xodx_PersonControllerProxy extends Xodx_PersonController
+{
+     /**
+     *
+     * methods looks up a contact to get the Uri of the activity feed
+     * and returns it if succesfull
+     * @param $resourceUri - the URI of the ressource to be looked up
+     */
+    public function getActivityFeedUri($resourceUri)
+    {
+        if ($resourceUri == 'validResourceUri') {
+            return 'validFeedUri';
+        } else {
+            return 'invalidFeedUri';
+        }
+        
+    }
 }
