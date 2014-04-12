@@ -20,8 +20,8 @@ class ModelDummy
     public function sparqlQuery($query, $options = array())
     {
         $result = array();
-        $result[0]['suburi'] = 'validSubUri';
-        return $result[0]['suburi'];
+        $result[0]['subUri'] = 'validSubUri';
+        return $result;
     }
     
     public function deleteMultipleStatements(array $statements, $useAc = true)
