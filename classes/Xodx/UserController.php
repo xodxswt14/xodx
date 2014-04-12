@@ -446,10 +446,10 @@ class Xodx_UserController extends Xodx_ResourceController
 /**
  * Unsubscribes a user from a resource
  * 
- * @param type $unsubscriberUri Uri of the person who wants to unsubscribe from a resource
- * @param type $resourceUri Uri of the resource that ist to be unsubscribed
- * @param type $feedUri Feed of the given resource
- * @param type $local Indicates whether the resource is stored locally
+ * @param URI $unsubscriberUri Uri of the person who wants to unsubscribe from a resource
+ * @param URI $resourceUri Uri of the resource that ist to be unsubscribed
+ * @param URI $feedUri Feed of the given resource
+ * @param boolean $local Indicates whether the resource is stored locally
  */
 public function unsubscribeFromResource ($unsubscriberUri, $resourceUri, $feedUri = null, $local = false) 
 {           
@@ -468,9 +468,9 @@ public function unsubscribeFromResource ($unsubscriberUri, $resourceUri, $feedUr
 /**
  * Unsubscribes a user from a feed (he is subscribed to)
  * 
- * @param type $unsubscriberUri Uri of the person who wants to unsubscribe from a feed
- * @param type $feedUri Uri of the feed that ist to be unsubscribed
- * @param type $local $local Indicates whether the feed is stored locally
+ * @param URI $unsubscriberUri Uri of the person who wants to unsubscribe from a feed
+ * @param URI $feedUri Uri of the feed that ist to be unsubscribed
+ * @param boolean $local $local Indicates whether the feed is stored locally
  */
 private function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = false) 
 {       

@@ -117,7 +117,7 @@ class Xodx_PersonController extends Xodx_ResourceController
             $template->profileshowLoggedIn = true;
         }
         
-        
+        // Test if user is not logged in, is on his own profile or knows the person he is visiting
         if($user->getName() == 'guest') {
             $template->isGuest = true;
             $template->profileshowLoggedIn = false;
@@ -226,7 +226,7 @@ class Xodx_PersonController extends Xodx_ResourceController
         return $template;
     }
     
-        /**
+    /**
      * View action for deleting a new friend. (This action should be called from a form)
      */
     public function deleteFriendAction($template)
@@ -343,12 +343,12 @@ class Xodx_PersonController extends Xodx_ResourceController
         }
     }
     
-     /**
+    /**
      * Delete an old contact out of the list of freinds of a person
      * This is a one-way connection, the contact doesn't has to approve it
      *
-     * @param $personUri the URI of the person from whome the contact should be removed
-     * @param $contactUri the URI of the person who sould be removed as friend
+     * @param URI $personUri the URI of the person from whome the contact should be removed
+     * @param URI $contactUri the URI of the person who sould be removed as friend
      */
     public function deleteFriend ($personUri, $contactUri)
     {
@@ -376,10 +376,6 @@ class Xodx_PersonController extends Xodx_ResourceController
             )
         );        
         $model->deleteMultipleStatements($statementArray);
-        
-//        // Send Ping to new friend
-//        $pingbackController = $this->_app->getController('Xodx_PingbackController');
-//        $pingbackController->sendPing($personUri, $contactUri, 'Do you want to be my friend?');
 
         // unsubscribe from friend        
         $userUri = $userController->getUserUri($personUri);

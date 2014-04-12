@@ -283,7 +283,7 @@ class Xodx_PushController extends Saft_Controller
      * notified on updates of a feed
      * This method implements section 6.1 of the pubsubhubbub spec:
      *  http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.3.html#anchor5     
-     * @param $feedUri Uri of the feed that is to be unsubscribed
+     * @param URI $feedUri Uri of the feed that is to be unsubscribed
      * @return boolean TRUE if unsubscription was successful, otherwise FALSE
      * @throws Exception
      */
