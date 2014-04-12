@@ -5,6 +5,10 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
 require_once (__DIR__ . '/../../classes/Xodx/ResourceControllerDummy.php');
+require_once (__DIR__ . '/../../classes/Xodx/PushControllerDummy.php');
+require_once (__DIR__ . '/../../classes/Xodx/UserControllerDummy.php');
+require_once (__DIR__ . '/../../classes/Xodx/PersonControllerDummy.php');
+require_once (__DIR__ . '/../../libraries/Saft/Helper/LinkeddataHelperDummy.php');
 require_once (__DIR__ . '/BootstrapDummy.php');
 
 /**
@@ -34,7 +38,7 @@ class ApplicationDummy
     /**
      * Returns ControllerDummy dependent on $controllerName.
      * @param type $controllerName
-     * @return \PushControllerDummy|\ResourceControllerDummy
+     * @return \PushControllerDummy|\ResourceControllerDummy|\UserControllerDummy|PersonControllerDummy
      */
     public function getController ($controllerName)
     {
@@ -44,10 +48,23 @@ class ApplicationDummy
         if ($controllerName == 'Xodx_PushController'){
             return new PushControllerDummy($this);
         }
+        if ($controllerName == 'Xodx_UserController'){
+            return new UserControllerDummy($this);
+        }
+        if ($controllerName == 'Xodx_PersonController'){
+            return new PersonControllerDummy($this);
+        }
     }
-
+    /**
+     * Returns HelperDummy dependent on $helperName.
+     * @param String $helperName
+     * @return \LinkeddataHelperDummy
+     */
     public function getHelper ($helperName)
     {
+        if ($helperName == 'Saft_Helper_LinkeddataHelper'){
+            return new LinkeddataHelperDummy($this);
+        }
     }
 
     public function run()
