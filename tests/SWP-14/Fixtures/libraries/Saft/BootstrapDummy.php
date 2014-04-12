@@ -5,6 +5,8 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
 require_once (__DIR__ . '/LoggerDummy.php');
+require_once (__DIR__ . '/LayoutDummy.php');
+require_once (__DIR__ . '/RequestDummy.php');
 require_once (__DIR__ . '/../Erfurt/library/Erfurt/Rdf/ModelDummy.php');
 
 /**
@@ -21,15 +23,18 @@ class BootstrapDummy
     /**
      * Returns dummy dependent on $resourceName.
      * @param type $resourceName
-     * @return \LoggerDummy|\ModelDummy
+     * @return \LoggerDummy|\ModelDummy|\RequestDummy
      */
     public function getResource ($resourceName)
     {
         if ($resourceName == 'logger'){
             return new LoggerDummy();
         }
-         if ($resourceName == 'model'){
+        if ($resourceName == 'model'){
             return new ModelDummy();
+        }
+        if ($resourceName == 'request'){
+            return new RequestDummy();
         }
     }
 }
