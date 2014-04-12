@@ -16,7 +16,13 @@ class LoggerDummy
      * testing other methods.
      */
     public function info($infoString)
+    { 
+    }
+    /**
+     * Method is used for debugging and not required for
+     * testing other methods.
+     */
+    public function debug ($message)
     {
-        
     }
 }
