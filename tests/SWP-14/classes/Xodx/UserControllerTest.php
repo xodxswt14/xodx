@@ -7,7 +7,7 @@
 require_once(__DIR__ . '/../../../../libraries/Saft/Controller.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/ResourceController.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/UserController.php');
-require_once (__DIR__ . '/../../Fixtures/classes/Xodx/ApplicationDummy.php');
+require_once (__DIR__ . '/../../Fixtures/libraries/Saft/ApplicationDummy.php');
 
 /**
  * This class tests \classes\Xodx\UserController.php
@@ -51,16 +51,17 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
      */
     protected $app = NULL;
     /**
-     * A proxyclass which contains some small classchanges for testing.
-     * @var \UserControllerProxy
+     * The UserController loaded in initFixture.
+     * (A proxyclass which contains some small classchanges for testing.)
+     * @var \UserController(Proxy)
      */
     protected $userController = NULL;
     
     /**
-     * Creates an Application- and UsercontrollerDummy
-     * @param $proxy  
+     * Creates an Application- and UserControllerDummy
+     * @param $proxy  true for UserControllerProxy false for normal UserController
      */
-    public function initFixture($proxy = false)
+    public function initFixture($proxy = FALSE)
     {
         $this->app = new ApplicationDummy();
         if ($proxy) {
@@ -172,17 +173,12 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
      * Test: Unsubscribes a user from a feed (he is subscribed to)
      * @covers UserController::_unsubscribeFromFeed ()
      */
-    public function testUnsubscribeFromFeedTypeIsNsFoafPerson() 
+    public function testUnsubscribeFromFeed() 
     {       
-        $this->markTestSkipped('TO BE DONE!');
-    }
-    /**
-     * Test: Unsubscribes a user from a feed (he is subscribed to)
-     * @covers UserController::_unsubscribeFromFeed ()
-     */
-    public function testUnsubscribeFromFeedTypeIsNotNsFoafPerson() 
-    {       
-        $this->markTestSkipped('TO BE DONE!');
+        $this->initFixture(TRUE);
+        $this->userController->_unsubscribeFromFeed($this->validUnsubscriberUri, 
+            $this->validFeedUri);
+        //$this->markTestSkipped('TO BE DONE!');
     }
     /**
      * Test: Unsubscriebes a user from a resource
@@ -190,7 +186,7 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
      */
     public function testUnsubscribeFromResourceFeedUriIsNotNull() 
     {     
-        $this->initFixture();
+        $this->initFixture(TRUE);
         
         $this->userController->unsubscribeFromResource($this->validUnsubscriberUri,
                 $this->validResourceUri, $this->validFeedUri);
@@ -203,7 +199,7 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
      */
     public function testUnsubscribeFromResourceFeedUriIsNull() 
     {   
-        $this->initFixture();
+        $this->initFixture(TRUE);
         
         $this->userController->unsubscribeFromResource($this->validUnsubscriberUri, $this->validResourceUri);
         $this->assertAttributeEquals($this->validFeedUri, 'feedUri', $this->userController);
@@ -218,7 +214,8 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
     }
 }
 
-class Xodx_UserControllerProxy extends Xodx_UserController{
+class Xodx_UserControllerProxy extends Xodx_UserController
+{
     /**
     * @var global feedUri for testing purposes
     */
@@ -283,7 +280,15 @@ class Xodx_UserControllerProxy extends Xodx_UserController{
         }
         
     }
-     
+    
+    public function _unsubscribeFromFeed($unsubscriberUri, $feedUri, $local = false){
+    {
+        return parent::_unsubscribeFromFeed($unsubscriberUri, $feedUri, $local);
+    }
+        
+    }
+    
+    
    
     
     
