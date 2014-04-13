@@ -13,6 +13,5 @@ class FactoryDummy
 {
     public static function newFromUrl($url = null)
     {
-        
     }
 }

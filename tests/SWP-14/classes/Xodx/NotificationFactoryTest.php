@@ -39,5 +39,4 @@ class Xodx_NotificationFactoryTest extends PHPUnit_Framework_Testcase
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-
 }

@@ -9,7 +9,6 @@
  * This class tests \classes\Xodx\ResourceController.php
  * @author Stephan
  */
-
 class Xodx_ResourceControllerTest extends PHPUnit_Framework_Testcase
 {
     /**
@@ -71,7 +70,5 @@ class Xodx_ResourceControllerTest extends PHPUnit_Framework_Testcase
         //$template->disableLayout();
         echo $this->importResource('http://dbpedia.org/resource/Hamburger_SV');
         return $template;
-
     }
-
 }

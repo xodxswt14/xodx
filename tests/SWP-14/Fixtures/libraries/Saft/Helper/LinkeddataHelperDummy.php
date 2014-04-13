@@ -16,12 +16,12 @@ class LinkeddataHelperDummy extends HelperDummy
      * @param string $resourceUri
      * @return boolean
      */
-    public function resourceDescriptionExists ($resourceUri) {
+    public function resourceDescriptionExists ($resourceUri)
+    {
         if ($resourceUri == 'validResourceUri') {
             return TRUE;
         } else {
             return FALSE;
         }
-
     }
 }

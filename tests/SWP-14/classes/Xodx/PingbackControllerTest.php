@@ -91,6 +91,5 @@ class Xodx_PingbackControllerTest extends PHPUnit_Framework_Testcase
             'http://xodx.local/?c=resource&id=805e60023b6f23384929d7869bd24185'
         );
         return $template;
-
      }
 }

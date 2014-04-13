@@ -6,7 +6,6 @@
  */
 // include password hash functions for 5.3.7 <= PHP < 5.5
 require_once('password_compat/lib/password.php');
-
 /**
  * This class tests \classes\Xodx\ApplicationController.php
  * @author Stephan

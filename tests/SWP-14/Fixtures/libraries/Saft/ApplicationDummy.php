@@ -10,7 +10,6 @@ require_once (__DIR__ . '/../../classes/Xodx/UserControllerDummy.php');
 require_once (__DIR__ . '/../../classes/Xodx/PersonControllerDummy.php');
 require_once (__DIR__ . '/../../libraries/Saft/Helper/LinkeddataHelperDummy.php');
 require_once (__DIR__ . '/BootstrapDummy.php');
-
 /**
  * This class is a Saft_Application dummy.
  * @author Stephan
@@ -70,8 +69,6 @@ class ApplicationDummy
     public function run()
     {
     }
-
-
     public function runJobs()
     {
     }
@@ -91,19 +88,15 @@ class ApplicationDummy
     {
         return $this->_baseUri;
     }
-
     public function setBaseDir ($baseDir)
     {
     }
-
     public function getBaseDir ()
     {
     }
-
     public function setAppNamespace ($namespace)
     {
     }
-
     public function ns ($prefix)
     {
     }

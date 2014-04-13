@@ -11,5 +11,4 @@
  */
 class Xodx_AclControllerTest extends PHPUnit_Framework_Testcase
 {
-    
 }

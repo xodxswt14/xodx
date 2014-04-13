@@ -28,6 +28,5 @@ class RequestDummy
         } else if ($key == 'friend') {
             return 'http://127.0.0.1:8080/?c=person&id=test2';
         }
-        
     }
 }

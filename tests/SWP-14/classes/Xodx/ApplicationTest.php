@@ -16,6 +16,6 @@ class Xodx_ApplicationTest extends PHPUnit_Framework_Testcase
      */
     public function testRun()
     {
-          $this->markTestSkipped('TO BE DONE!');
+        $this->markTestSkipped('TO BE DONE!');
     }
 }

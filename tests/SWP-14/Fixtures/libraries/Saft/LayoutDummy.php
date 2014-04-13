@@ -15,8 +15,9 @@ class LayoutDummy
     {
         $this->_app = $app;
     }
-    
-    public function addContent ($contentFile) {
+
+    public function addContent ($contentFile)
+    {
     }
     /**
      * With the method the browser can be redirected to a new location

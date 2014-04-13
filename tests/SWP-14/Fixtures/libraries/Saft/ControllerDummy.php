@@ -14,9 +14,10 @@ class ControllerDummy
     protected $_app = null;
     /**
      * inter alia required for Xodx_ResourceControllerDummy
-     * @param type $app 
+     * @param \Fixtures\libraries\Saft\Application $app 
      */
-    public function __construct($app) {
+    public function __construct($app)
+    {
         $this->_app = $app;
     }
 }

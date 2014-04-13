@@ -23,7 +23,11 @@ class ModelDummy
         $result[0]['subUri'] = 'validSubUri';
         return $result;
     }
-    
+    /**
+     * Implementation not needed.
+     * @param array $statements
+     * @param boolean $useAc
+     */
     public function deleteMultipleStatements(array $statements, $useAc = true)
     {
     }

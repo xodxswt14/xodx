@@ -11,7 +11,6 @@
  */
 class BootstrapTest extends PHPUnit_Framework_Testcase
 {
-
     /**
      * Test: Initializes the configuration by reading the config file
      * @covers Bootstrap::initConfig()
@@ -20,7 +19,6 @@ class BootstrapTest extends PHPUnit_Framework_Testcase
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-
     /**
      * Test: Initializes all namespace prefixes
      * @covers BootStrap::initNamespacesConfig()
@@ -29,7 +27,6 @@ class BootstrapTest extends PHPUnit_Framework_Testcase
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-
     /**
      * Test: Initializes the Erfurt Store
      * @covers BootStrap::initStore()
@@ -38,7 +35,6 @@ class BootstrapTest extends PHPUnit_Framework_Testcase
     {
        $this->markTestSkipped('TO BE DONE!');
     }
-
     /**
      * Test: Initializes the default Erfurt Model as specified in the config
      * @covers BootStrap::initModel()
@@ -47,7 +43,6 @@ class BootstrapTest extends PHPUnit_Framework_Testcase
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-
     /**
      * Test: Initializes the session
      * Note: currently this is done by initializing Erfurt
@@ -57,5 +52,4 @@ class BootstrapTest extends PHPUnit_Framework_Testcase
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-
 }

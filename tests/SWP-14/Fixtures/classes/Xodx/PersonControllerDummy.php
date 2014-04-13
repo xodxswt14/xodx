@@ -5,7 +5,6 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
 require_once (__DIR__ . '/ResourceControllerDummy.php');
-
 /**
  * This class is a Xodx_PersonController dummy.
  * @author Stephan

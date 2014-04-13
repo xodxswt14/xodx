@@ -8,7 +8,6 @@ require_once (__DIR__ . '/LoggerDummy.php');
 require_once (__DIR__ . '/LayoutDummy.php');
 require_once (__DIR__ . '/RequestDummy.php');
 require_once (__DIR__ . '/../Erfurt/library/Erfurt/Rdf/ModelDummy.php');
-
 /**
  * This class is a Saft_Bootstrap dummy.
  * @author Stephan
@@ -27,13 +26,13 @@ class BootstrapDummy
      */
     public function getResource ($resourceName)
     {
-        if ($resourceName == 'logger'){
+        if ($resourceName == 'logger') {
             return new LoggerDummy();
         }
-        if ($resourceName == 'model'){
+        if ($resourceName == 'model') {
             return new ModelDummy();
         }
-        if ($resourceName == 'request'){
+        if ($resourceName == 'request') {
             return new RequestDummy();
         }
     }

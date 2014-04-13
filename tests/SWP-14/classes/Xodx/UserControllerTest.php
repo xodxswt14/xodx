@@ -8,7 +8,6 @@ require_once(__DIR__ . '/../../../../libraries/Saft/Controller.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/ResourceController.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/UserController.php');
 require_once (__DIR__ . '/../../Fixtures/libraries/Saft/ApplicationDummy.php');
-
 /**
  * This class tests \classes\Xodx\UserController.php
  * @author Stephan
@@ -56,7 +55,6 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
      * @var \UserController(Proxy)
      */
     protected $userController = NULL;
-    
     /**
      * Creates an Application- and UserControllerDummy
      * @param $proxy  true for UserControllerProxy false for normal UserController
@@ -84,7 +82,6 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
         }
         $this->app->setBaseUri($base_uri);
     }
-    
     /**
      * Test: Method returns all activities the user is subscribed to
      * @covers UserController::getActivityStream ()
@@ -201,7 +198,8 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
     {   
         $this->initFixture(TRUE);
         
-        $this->userController->unsubscribeFromResource($this->validUnsubscriberUri, $this->validResourceUri);
+        $this->userController->unsubscribeFromResource($this->validUnsubscriberUri,
+                $this->validResourceUri);
         $this->assertAttributeEquals($this->validFeedUri, 'feedUri', $this->userController);
     }
     /**
@@ -213,14 +211,16 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
         $this->markTestSkipped('TO BE DONE!');
     }
 }
-
+/**
+ * A proxyclass for \classes\Xodx\UserController.
+ * @author Stephan
+ */
 class Xodx_UserControllerProxy extends Xodx_UserController
 {
     /**
     * @var global feedUri for testing purposes
     */
     protected $feedUri = null;
-   
     /**
      * Added global feedUri for assertiontest.
      * @param type $unsubscriberUri
@@ -232,12 +232,10 @@ class Xodx_UserControllerProxy extends Xodx_UserController
     {
         // getResources & set namespaces
         $bootstrap = $this->_app->getBootstrap();      
-        
         // Get Uri of friend's feed (if not given)
         if ($feedUri === null) {
             $feedUri = $this->getActivityFeedUri($resourceUri);
         }
-        
         //set global feedUri
         $this->feedUri = $feedUri;
         
@@ -278,18 +276,17 @@ class Xodx_UserControllerProxy extends Xodx_UserController
         } else {
             return FALSE;
         }
-        
     }
-    
-    public function _unsubscribeFromFeed($unsubscriberUri, $feedUri, $local = false){
+    /**
+     * Public function which overwrites and returns the protected one.
+     * 
+     * @param UriString $unsubscriberUri
+     * @param UriString $feedUri
+     * @param UriString $local
+     * @return \classes\Xodx\UserController::_unsubscribeFromFeed()
+     */
+    public function _unsubscribeFromFeed($unsubscriberUri, $feedUri, $local = false)
     {
         return parent::_unsubscribeFromFeed($unsubscriberUri, $feedUri, $local);
     }
-        
-    }
-    
-    
-   
-    
-    
 }

@@ -87,5 +87,4 @@ class Xodx_PushControllerTest extends PHPUnit_Framework_Testcase
     {
         $this->markTestSkipped('TO BE DONE!');
     }    
-    
 }

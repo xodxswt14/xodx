@@ -129,7 +129,6 @@ class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
     {
         $this->initFixture(TRUE);
         $this->personController->deleteFriend($this->validPersonUri, $this->validResourceUri);
-        //$this->markTestSkipped('TO BE DONE!');
     }
     /**
      * Test: Returns the feed of the specified $type of the person
@@ -147,9 +146,11 @@ class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
     {
         $this->markTestSkipped('TO BE DONE!');
     }
-
 }
-
+/**
+ * A proxyclass for \classes\Xodx\PersonController.
+ * @author Stephan
+ */
 class Xodx_PersonControllerProxy extends Xodx_PersonController
 {
      /**
@@ -165,6 +166,5 @@ class Xodx_PersonControllerProxy extends Xodx_PersonController
         } else {
             return 'invalidFeedUri';
         }
-        
     }
 }
