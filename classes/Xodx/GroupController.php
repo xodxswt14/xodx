@@ -16,8 +16,8 @@
         /**
          * This creates a new group with the given name.
          * This function is usually called internally
-         * @param String $groupname Name of the new group
-         * @param Uri $adminUri Uri of the creator of the group
+         * @param Uri $groupUri Uri of the new group
+         * @param String $name Name of the new group
          * @todo $groupUri might not be needed
          */
         public function createGroup ($groupUri = null, $name) {
@@ -34,7 +34,7 @@
             // fetch empty groupUri
             if ($groupUri === null) {
                 $groupUri = $this->_app->getBaseUri() . '?c=Group&id=' . urlencode($groupUri);
-            }            
+            }
             
             // verify that there is not already a group with that name            
             $testQuery  = 'ASK {' . PHP_EOL;
@@ -44,11 +44,12 @@
             if ($model->sparqlQuery($testQuery)) {                
                 die('Gruppe existiert bereits');
                 // @todo throw Exception & log event
-                
-            } else {                                                              
-                    
+            } else {                                                                                                  
                 // feed for the new group
                 $newGroupFeed = $this->_app->getBaseUri() . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
+                // Uri of the group's admin ( its foaf:maker)
+                $userController = $this->_app->getController('Xodx_UserController');                
+                $adminUri = $userController->getUser()->getPerson();
 
                 $newGroup = array(
                     $groupUri => array(
