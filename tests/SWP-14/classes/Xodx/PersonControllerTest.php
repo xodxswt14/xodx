@@ -86,6 +86,7 @@ class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
     }
     /**
      * Test: View action for deleting a new friend. (This action should be called from a form)
+     * @todo Test returned template.
      * @covers PersonController::deleteFriendAction ()
      */
     public function testDeleteFriendAction()
@@ -93,7 +94,6 @@ class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
         $this->initFixture();
         $this->template = new LayoutDummy($this->app);
         $this->personController->deleteFriendAction($this->template);
-        //$this->markTestSkipped('TO BE DONE!');
     }
     /**
      * Test: Get a DSSN_Foaf_Person object representing the specified person
