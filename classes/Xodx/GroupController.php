@@ -107,8 +107,8 @@ class Xodx_GroupController extends Xodx_ResourceController
             $logger->error('GroupController/deleteGroup: Group does not exist: ' . $name);
             throw Exception('Groupname does not exist.');
         } else {                               
-            //TODO name of the group via $name = $this->getGroup()->getName();
-            //now its hardcoded
+            //TODO name of the group via $name = $this->getGroup($groupUri)->getName();
+            //after Group.php is implemented, now its hardcoded
             $name = 'gtest';
             
             // feed of the group
@@ -157,5 +157,38 @@ class Xodx_GroupController extends Xodx_ResourceController
                 throw Exception('Person is not authorised.');
             }
         }
-    } 
+    }
+     /**
+     * This method creates a new object of the class Xodx_Group
+     * @param $groupUri a string which contains the URI of the required group
+     * @return Xodx_Group instance with the specified URI
+     */
+    public function getGroup ($groupUri)
+    {
+        if (!isset($this->_groups[$groupUri])) {
+           $bootstrap = $this->_app->getBootstrap();
+           $model = $bootstrap->getResource('model');
+
+           $query = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
+           $query.= 'SELECT ?name ?topic' . PHP_EOL;
+           $query.= 'WHERE {' . PHP_EOL;
+           $query.= '  <' . $groupUri . '> foaf:nick ?name ;' . PHP_EOL;
+           $query.= '      foaf:primaryTopic ?topic .' . PHP_EOL;
+           $query.= '}' . PHP_EOL;
+
+           $result = $model->sparqlQuery($query);
+           if (count($result) > 0) {
+               $groupId = $result[0]['name'];
+               $groupTopic = $result[0]['topic'];
+           } else {
+              //@todo throw Exception and log event
+           }
+           $group = new Xodx_Group($groupUri);
+           $group->setName($groupId);
+           $group->setDescription($groupUri);
+
+           $this->_groups[$groupUri] = $group;
+       }
+       return $this->_groups[$groupUri];
+    }
 }
