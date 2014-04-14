@@ -13,7 +13,11 @@
  * @author Stephan Kemper
  */
 class Xodx_GroupController extends Xodx_ResourceController
-{                
+{
+    /**
+     * @var Xodx_Group A registry of already loaded XodX_Group objects
+     */
+    private $_groups = array();
     /**
      * This creates a new group with the given name.
      * This function is usually called internally
@@ -33,17 +37,17 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         // fetch empty groupUri
         if ($groupUri === null) {
-            $groupUri = $this->_app->getBaseUri() . '?c=Group&id=' . urlencode($groupUri);
+            $groupUri = $this->_app->getBaseUri() . '?c=Group&id=' . urlencode($name);
         }
 
         // verify that there is not already a group with that name            
         $testQuery  = 'ASK {' . PHP_EOL;
         $testQuery .= '<' . $groupUri . '> ?p ?o' . PHP_EOL;
         $testQuery .= '}';            
-        $result = $model->sparqlQuery($testQuery);
-        if ($model->sparqlQuery($testQuery)) {                
-            die('Gruppe existiert bereits');
-            // @todo throw Exception & log event
+        if ($model->sparqlQuery($testQuery)) {         
+            
+            $logger->error('GroupController/createGroup: Groupname already taken: ' . $name);
+            throw Exception('Groupname already taken.');
         } else {                                                                                                  
             // feed for the new group
             $newGroupFeed = $this->_app->getBaseUri() . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
@@ -64,20 +68,22 @@ class Xodx_GroupController extends Xodx_ResourceController
                     ),
                     $nsFoaf . 'nick' => array(
                         array('type' => 'literal', 'value' => $name)
-                    )                     
+                    ),
+                    $nsFoaf . 'primaryTopic' => array(
+                        array('type' => 'literal', 'value' => 'Enter description here...')
+                    )
                 )
             );
             $model->addMultipleStatements($newGroup);
         }
     }              
      /**
-     * This deletes a group with the given name.
+     * This deletes a group with the given Uri.
      * This function is usually called internally
      * @param Uri $groupUri Uri of the group to be deleted
-     * @param String $name Name of the group to be deleted
      * @todo $groupUri might not be needed
      */
-    public function deleteGroup ($groupUri = null, $name)
+    public function deleteGroup ($groupUri)
     {
         // getResources & set namespaces
         $bootstrap = $this->_app->getBootstrap();     
@@ -89,7 +95,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         // fetch empty groupUri
         if ($groupUri === null) {
-            $groupUri = $this->_app->getBaseUri() . '?c=Group&id=' . urlencode($groupUri);
+            $groupUri = $this->_app->getBaseUri() . '?c=Group&id=' . urlencode($name);
         }
 
         // verify that there is a group with that name            
@@ -98,25 +104,33 @@ class Xodx_GroupController extends Xodx_ResourceController
         $testQuery .= '}';            
         $result = $model->sparqlQuery($testQuery);
         if (!$result) {
-            die('Gruppe existiert nicht');
-            // @todo throw Exception & log event
-        } else {                                                                                                  
+            $logger->error('GroupController/deleteGroup: Group does not exist: ' . $name);
+            throw Exception('Groupname does not exist.');
+        } else {                               
+            //TODO name of the group via $name = $this->getGroup()->getName();
+            //now its hardcoded
+            $name = 'gtest';
+            
             // feed of the group
             $groupFeed = $this->_app->getBaseUri() . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
             // Uri of the group's admin ( its foaf:maker)
             $userController = $this->_app->getController('Xodx_UserController');                
-            $userUri = $userController->getUser()->getPerson();
+            $personUri = $userController->getUser()->getPerson();
 
             //verify that User is admin of the group
             $makerQuery  = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-            $makerQuery .= 'SELECT ?maker' . PHP_EOL;
-            $makerQuery .= 'WHERE {' .PHP_EOL;
-            $makerQuery .= '   ?maker foaf:maker ' . '<' . $groupUri . '> .' .PHP_EOL;
+            $makerQuery .= 'ASK {' .PHP_EOL;
+            $makerQuery .= '   <' . $groupUri . '>' . ' foaf:maker <' . $personUri . '>.' .PHP_EOL;
             $makerQuery .= '}';
-            $makerResult = $model->sparqlQuery($testQuery);
-            $maker = $makerResult[0]['maker'];
-            
-            if ($maker == $userUri) {
+                       
+            if ($model->sparqlQuery($testQuery)) {
+                $deleteQuery  = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
+                $deleteQuery .= 'SELECT ?topic ' . PHP_EOL;
+                $deleteQuery .= 'WHERE {' . PHP_EOL;
+                $deleteQuery .= '<' . $groupUri . '> foaf:primaryTopic ?topic' . PHP_EOL;
+                $deleteQuery .= '}';            
+                $deleteResult = $model->sparqlQuery($deleteQuery);
+                
                 $deleteGroup = array(
                     $groupUri => array(
                         EF_RDF_TYPE => array(
@@ -126,18 +140,22 @@ class Xodx_GroupController extends Xodx_ResourceController
                             array('type' => 'uri', 'value' => $groupFeed)
                         ),
                         $nsFoaf . 'maker' => array(
-                            array('type' => 'uri', 'value' => $userUri)
+                            array('type' => 'uri', 'value' => $personUri)
                         ),
                         $nsFoaf . 'nick' => array(
                             array('type' => 'literal', 'value' => $name)
-                        )                     
+                        ),
+                        $nsFoaf . 'primaryTopic' => array(
+                            array('type' => 'literal', 'value' => $deleteResult[0]['topic'])
+                        )
                     )
                 );
                 $model->deleteMultipleStatements($deleteGroup);
             } else {
-                die('User ist nicht Gruppenersteller');
-                // @todo throw Exception & log event    
+                $logger->error('GroupController/deleteGroup: Person is not authorised'
+                        . ' to delete the group: ' . $name);
+                throw Exception('Person is not authorised.');
             }
         }
-    }  
+    } 
 }
