@@ -25,10 +25,15 @@ class ModelDummy
             $result = array();
             $result[0]['subUri'] = 'validSubUri';      
         }
-        //used for GroupControllerTest: testCreateGroup
+        //used for GroupControllerTest: testCreateGroup groupname exists
         if (strpos($query, '?c=Group&id=') !== false) {
             $result = FALSE;
         }
+        //used for GroupControllerTest: testDeleteGroup 
+        if (strpos($query, 'foaf:maker') !== false) {
+            $result = FALSE;
+        }
+        //used
         return $result;
     }
     /**
@@ -37,6 +42,14 @@ class ModelDummy
      * @param boolean $useAc
      */
     public function deleteMultipleStatements(array $statements, $useAc = true)
+    {
+    }
+    /**
+     * Implementation not needed.
+     * @param array $statements
+     * @param boolean $useAc
+     */
+    public function addMultipleStatements(array $statements, $useAc = true)
     {
     }
 }
