@@ -5,6 +5,7 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
 require_once (__DIR__ . '/ResourceControllerDummy.php');
+require_once (__DIR__ . '/../../../../../classes/Xodx/User.php');
 /**
  * This class is a Xodx_UserController dummy.
  * @author Stephan
@@ -21,6 +22,19 @@ class UserControllerDummy extends ResourceControllerDummy
         } else {
             return 'invalidUserUri';
         }
+    }
+    /**
+     * This method creates a new object of the class Xodx_User
+     * @param $userUri a string which contains the URI of the required user
+     * @return Xodx_User instance with the specified URI
+     */
+    public function getUser ($userUri = null)
+    {
+        $userUri = 'validUserUri';
+        $user = new Xodx_User($userUri);
+        $user->setName('validPersonName');
+        $user->setPerson('validPersonUri');
+        return $user;
     }
     /**
      * Method is called in PersonController but an implementation
