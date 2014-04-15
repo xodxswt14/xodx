@@ -8,6 +8,8 @@ require_once(__DIR__ . '/../../../../libraries/Saft/Controller.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/ResourceController.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/UserController.php');
 require_once (__DIR__ . '/../../Fixtures/libraries/Saft/ApplicationDummy.php');
+require_once(__DIR__ . '/../../../../libraries/lib-dssn-php/DSSN/Activity/Feed/Factory.php');
+require_once(__DIR__ . '/../../../../libraries/lib-dssn-php/DSSN/Exception.php');
 /**
  * This class tests \classes\Xodx\UserController.php
  * @author Stephan
@@ -174,7 +176,7 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
     {       
         $this->initFixture(TRUE);
         $this->userController->_unsubscribeFromFeed($this->validUnsubscriberUri, 
-            $this->validFeedUri);
+            $this->validFeedUri, TRUE);
         //$this->markTestSkipped('TO BE DONE!');
     }
     /**
@@ -186,7 +188,7 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
         $this->initFixture(TRUE);
         
         $this->userController->unsubscribeFromResource($this->validUnsubscriberUri,
-                $this->validResourceUri, $this->validFeedUri);
+                $this->validResourceUri, $this->validFeedUri, TRUE);
         
         $this->assertAttributeEquals($this->validFeedUri, 'feedUri', $this->userController);
     }
@@ -199,7 +201,7 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
         $this->initFixture(TRUE);
         
         $this->userController->unsubscribeFromResource($this->validUnsubscriberUri,
-                $this->validResourceUri);
+                $this->validResourceUri, TRUE);
         $this->assertAttributeEquals($this->validFeedUri, 'feedUri', $this->userController);
     }
     /**
