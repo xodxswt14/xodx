@@ -98,7 +98,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $groupUri = $this->_app->getBaseUri() . '?c=Group&id=' . urlencode($name);
         }
 
-        // verify that there is a group with that name            
+        // verify that there is a group with that uri
         $testQuery  = 'ASK {' . PHP_EOL;
         $testQuery .= '<' . $groupUri . '> ?p ?o' . PHP_EOL;
         $testQuery .= '}';            
@@ -123,7 +123,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $makerQuery .= '   <' . $groupUri . '>' . ' foaf:maker <' . $personUri . '>.' .PHP_EOL;
             $makerQuery .= '}';
                        
-            if ($model->sparqlQuery($testQuery)) {
+            if ($model->sparqlQuery($makerQuery)) {
                 $deleteQuery  = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
                 $deleteQuery .= 'SELECT ?topic ' . PHP_EOL;
                 $deleteQuery .= 'WHERE {' . PHP_EOL;
