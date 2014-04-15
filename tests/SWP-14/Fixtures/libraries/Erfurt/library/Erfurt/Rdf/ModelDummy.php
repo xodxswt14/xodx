@@ -19,8 +19,16 @@ class ModelDummy
      */
     public function sparqlQuery($query, $options = array())
     {
-        $result = array();
-        $result[0]['subUri'] = 'validSubUri';
+        $result = null;
+        //used for UserControllerTest: testUnsubscribeFromFeed
+        if (strpos($query, 'subUri') !== false) {
+            $result = array();
+            $result[0]['subUri'] = 'validSubUri';      
+        }
+        //used for GroupControllerTest: testCreateGroup
+        if (strpos($query, '?c=Group&id=') !== false) {
+            $result = FALSE;
+        }
         return $result;
     }
     /**
