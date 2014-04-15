@@ -201,7 +201,7 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
         $this->initFixture(TRUE);
         
         $this->userController->unsubscribeFromResource($this->validUnsubscriberUri,
-                $this->validResourceUri, TRUE);
+                $this->validResourceUri,null, TRUE);
         $this->assertAttributeEquals($this->validFeedUri, 'feedUri', $this->userController);
     }
     /**
