@@ -16,6 +16,12 @@ require_once (__DIR__ . '/BootstrapDummy.php');
  */
 class ApplicationDummy
 {
+    /**
+     *
+     * @var String this var contains information about the current tested method
+     */
+    public $testMethod = null;    
+    
     protected $_appNamespace = null;
     protected $_layout = null;
 
