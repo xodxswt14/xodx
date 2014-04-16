@@ -8,6 +8,7 @@ require_once(__DIR__ . '/../../../../libraries/Saft/Controller.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/ResourceController.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/GroupController.php');
 require_once (__DIR__ . '/../../Fixtures/libraries/Saft/ApplicationDummy.php');
+require_once (__DIR__ . '/../../../../classes/Xodx/User.php');
 define('EF_RDF_NS', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
 define('EF_RDF_TYPE', EF_RDF_NS.'type');
 /**
@@ -17,6 +18,11 @@ define('EF_RDF_TYPE', EF_RDF_NS.'type');
  */
 class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
 {
+    /**
+     * This is a valid Uri of a group.
+     * @var UriString
+     */
+    protected $validGroupUri = 'validGroupUri';
     /**
      * An application for testing purposes.
      * @var \Fixtures\classes\Xodx\ApplicationDummy
@@ -57,16 +63,28 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
         $this->app->setBaseUri($base_uri);
     }
     /**
+     * Tests if a new Group is created correctly
      * @covers GroupController:createGroup
      */
-    public function testCreateGroup() {
+    public function testCreateGroup()
+    {
         $this->initFixture(FALSE, 'testCreateGroup');
         $this->groupController->createGroup(null, 'gtest');
     }
-    public function testDeleteGroup() {
+    /**
+     * Tests if a Group is deleted correctly
+     * @covers GroupController::deleteGroup
+     */
+    public function testDeleteGroup()
+    {
         $this->initFixture(TRUE, 'testDeleteGroup');
         $this->groupController->deleteGroup('http://127.0.0.1:8080/?c=Group&id=gtest');
-        //$this->markTestSkipped('To Be Done!');
+    }
+    
+    public function testGetGroup()
+    {
+        $this->initFixture(TRUE, 'testGetGroup');
+        $this->groupController->getGroup($this->validGroupUri);
     }
 }
 
