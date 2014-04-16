@@ -52,9 +52,10 @@ class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
      * Creates an Application- and PersonControllerDummy
      * @param $proxy  true for PersonControllerProxy false for normal PersonController
      */
-    public function initFixture($proxy = FALSE)
+    public function initFixture($proxy = FALSE, $testMethod = null)
     {
         $this->app = new ApplicationDummy(TRUE);
+        $this->app->testMethod = $testMethod;
         if ($proxy) {
             $this->personController = new Xodx_PersonControllerProxy($this->app);
         } else { //proxy == false, standard
@@ -91,7 +92,7 @@ class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
      */
     public function testDeleteFriendAction()
     {
-        $this->initFixture();
+        $this->initFixture(FALSE, 'testDeleteFriendAction');
         $this->template = new LayoutDummy($this->app);
         $this->personController->deleteFriendAction($this->template);
     }
@@ -127,7 +128,7 @@ class Xodx_PersonControllerTest extends PHPUnit_Framework_Testcase
      */
     public function testDeleteFriend ()
     {
-        $this->initFixture(TRUE);
+        $this->initFixture(TRUE, 'testDeleteFriend');
         $this->personController->deleteFriend($this->validPersonUri, $this->validResourceUri);
     }
     /**
