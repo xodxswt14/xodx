@@ -33,17 +33,17 @@ class ModelDummy
     {
         $result = null;
         //used for UserControllerTest: testUnsubscribeFromFeed
-        if (strpos($query, 'subUri') !== false) {
+        if ($this->testMethod == 'testUnsubscribeFromFeed') {
             $result = array();
             $result[0]['subUri'] = 'validSubUri';      
         }
         //used for GroupControllerTest: testCreateGroup groupname exists
-        if (strpos($query, '?c=Group&id=') !== false) {
+        if ($this->testMethod == 'testCreateGroup') {
             $result = FALSE;
         }
         //used for GroupControllerTest: testDeleteGroup 
-        if (strpos($query, 'foaf:maker') !== false) {
-            $result = FALSE;
+        if ($this->testMethod == 'testDeleteGroup') {
+            $result = TRUE;
         }
         //used
         return $result;
