@@ -185,7 +185,7 @@ class Xodx_GroupController extends Xodx_ResourceController
            }
            $group = new Xodx_Group($groupUri);
            $group->setName($groupId);
-           $group->setDescription($groupUri);
+           $group->setDescription($groupTopic);
 
            $this->_groups[$groupUri] = $group;
        }
