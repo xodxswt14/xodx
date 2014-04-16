@@ -472,7 +472,7 @@ public function unsubscribeFromResource ($unsubscriberUri, $resourceUri, $feedUr
  * @param URI $feedUri Uri of the feed that ist to be unsubscribed
  * @param boolean $local $local Indicates whether the feed is stored locally
  */
-private function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = false) 
+protected function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = false) 
 {       
 
     // getResources & set namespaces
