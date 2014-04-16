@@ -45,7 +45,12 @@ class ModelDummy
         if ($this->testMethod == 'testDeleteGroup') {
             $result = TRUE;
         }
-        //used
+        //used for GroupControllerTest: testGetGroup
+        if ($this->testMethod == 'testgetGroup') {
+            $result = array();
+            $result[0]['name'] = 'validGroupName';
+            $result[0]['topic'] = 'validGroupTopic';
+        }
         return $result;
     }
     /**
