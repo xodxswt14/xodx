@@ -44,8 +44,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $testQuery  = 'ASK {' . PHP_EOL;
         $testQuery .= '<' . $groupUri . '> ?p ?o' . PHP_EOL;
         $testQuery .= '}';            
-        if ($model->sparqlQuery($testQuery)) {         
-            
+        if ($model->sparqlQuery($testQuery)) {          
             $logger->error('GroupController/createGroup: Groupname already taken: ' . $name);
             throw Exception('Groupname already taken.');
         } else {                                                                                                  
@@ -110,7 +109,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             //TODO name of the group via $name = $this->getGroup($groupUri)->getName();
             //after Group.php is implemented, now its hardcoded
             $name = 'gtest';
-            
+
             // feed of the group
             $groupFeed = $this->_app->getBaseUri() . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
             // Uri of the group's admin ( its foaf:maker)
@@ -122,7 +121,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $makerQuery .= 'ASK {' .PHP_EOL;
             $makerQuery .= '   <' . $groupUri . '>' . ' foaf:maker <' . $personUri . '>.' .PHP_EOL;
             $makerQuery .= '}';
-                       
+
             if ($model->sparqlQuery($makerQuery)) {
                 $deleteQuery  = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
                 $deleteQuery .= 'SELECT ?topic ' . PHP_EOL;
@@ -130,7 +129,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                 $deleteQuery .= '<' . $groupUri . '> foaf:primaryTopic ?topic' . PHP_EOL;
                 $deleteQuery .= '}';            
                 $deleteResult = $model->sparqlQuery($deleteQuery);
-                
+
                 $deleteGroup = array(
                     $groupUri => array(
                         EF_RDF_TYPE => array(
