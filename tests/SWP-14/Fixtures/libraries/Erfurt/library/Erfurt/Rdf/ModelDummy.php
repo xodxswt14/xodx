@@ -12,6 +12,18 @@
 class ModelDummy
 {
     /**
+     *
+     * @var String contains information about the current tested method
+     */
+    public $testMethod = null;
+    /**
+     * 
+     * @param String $testMethod this is needed to return different sparqlQuerys
+     */
+    public function __construct($testMethod) {
+        $this->testMethod = $testMethod;
+    }
+    /**
      * A positive query returns a valid subUri.
      * @param type $query
      * @param type $options
