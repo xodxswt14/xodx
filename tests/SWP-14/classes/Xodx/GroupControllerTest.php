@@ -32,9 +32,10 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
      * Creates an Application- and GroupControllerDummy
      * @param $proxy  true for GroupControllerProxy false for normal UserController
      */
-    public function initFixture($proxy = FALSE)
+    public function initFixture($proxy = FALSE, $testMethod = null)
     {
         $this->app = new ApplicationDummy();
+        $this->app->testMethod = $testMethod;
         if ($proxy) {
             $this->groupController = new Xodx_GroupControllerProxy($this->app);
         } else { //proxy == false, standard
@@ -59,12 +60,13 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
      * @covers GroupController:createGroup
      */
     public function testCreateGroup() {
-        $this->initFixture();
+        $this->initFixture(FALSE, 'testCreateGroup');
         $this->groupController->createGroup(null, 'gtest');
-        //$this->markTestSkipped('To Be Done!');
     }
-    public function testdeleteGroup() {
-        $this->markTestSkipped('To Be Done!');
+    public function testDeleteGroup() {
+        $this->initFixture(TRUE, 'testDeleteGroup');
+        $this->groupController->deleteGroup('http://127.0.0.1:8080/?c=Group&id=gtest');
+        //$this->markTestSkipped('To Be Done!');
     }
 }
 
