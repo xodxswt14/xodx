@@ -80,15 +80,19 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
         $this->initFixture(TRUE, 'testDeleteGroup');
         $this->groupController->deleteGroup('http://127.0.0.1:8080/?c=Group&id=gtest');
     }
-    
+    /**
+     * @covers GroupController::getGroup
+     */
     public function testGetGroup()
     {
         $this->initFixture(TRUE, 'testGetGroup');
         $this->groupController->getGroup($this->validGroupUri);
     }
 }
-
-
+/**
+ * A proxyclass for \classes\Xodx\GroupController.
+ * @author Stephan
+ */
 class Xodx_GroupControllerProxy extends Xodx_GroupController
 {
     public function getGroup($userUri = null) {
