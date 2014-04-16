@@ -1,0 +1,11 @@
+<h2>List of Groups</h2>
+<ul>
+<?php
+if (!empty($this->grouplistList)) :
+    foreach($this->grouplistList as $entry) :?>
+<li>Profile of <a href="<?= htmlentities($entry['group']) ?>"><?php echo $entry['name']; ?></a></li>
+<?php
+    endforeach;
+endif;
+?>
+</ul>
