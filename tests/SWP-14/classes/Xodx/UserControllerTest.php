@@ -61,9 +61,10 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
      * Creates an Application- and UserControllerDummy
      * @param $proxy  true for UserControllerProxy false for normal UserController
      */
-    public function initFixture($proxy = FALSE)
+    public function initFixture($proxy = FALSE, $testMethod = null)
     {
         $this->app = new ApplicationDummy();
+        $this->app->testMethod = $testMethod;
         if ($proxy) {
             $this->userController = new Xodx_UserControllerProxy($this->app);
         } else { //proxy == false, standard
@@ -174,7 +175,7 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
      */
     public function testUnsubscribeFromFeed() 
     {       
-        $this->initFixture(TRUE);
+        $this->initFixture(TRUE, 'testUnsubscribeFromFeed');
         $this->userController->_unsubscribeFromFeed($this->validUnsubscriberUri, 
             $this->validFeedUri, TRUE);
         //$this->markTestSkipped('TO BE DONE!');
@@ -185,7 +186,7 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
      */
     public function testUnsubscribeFromResourceFeedUriIsNotNull() 
     {     
-        $this->initFixture(TRUE);
+        $this->initFixture(TRUE, 'testUnsubscribeFromResourceFeedUriIsNotNull');
         
         $this->userController->unsubscribeFromResource($this->validUnsubscriberUri,
                 $this->validResourceUri, $this->validFeedUri, TRUE);
@@ -198,7 +199,7 @@ class Xodx_UserControllerTest extends PHPUnit_Framework_Testcase
      */
     public function testUnsubscribeFromResourceFeedUriIsNull() 
     {   
-        $this->initFixture(TRUE);
+        $this->initFixture(TRUE, 'testUnsubscribeFromResourceFeedUriIsNull');
         
         $this->userController->unsubscribeFromResource($this->validUnsubscriberUri,
                 $this->validResourceUri,null, TRUE);
