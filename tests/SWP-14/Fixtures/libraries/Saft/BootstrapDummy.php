@@ -30,7 +30,7 @@ class BootstrapDummy
             return new LoggerDummy();
         }
         if ($resourceName == 'model') {
-            return new ModelDummy();
+            return new ModelDummy($this->_app->testMethod);
         }
         if ($resourceName == 'request') {
             return new RequestDummy();
