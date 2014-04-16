@@ -12,6 +12,18 @@
 class ModelDummy
 {
     /**
+     *
+     * @var String contains information about the current tested method
+     */
+    public $testMethod = null;
+    /**
+     * 
+     * @param String $testMethod this is needed to return different sparqlQuerys
+     */
+    public function __construct($testMethod) {
+        $this->testMethod = $testMethod;
+    }
+    /**
      * A positive query returns a valid subUri.
      * @param type $query
      * @param type $options
@@ -21,17 +33,17 @@ class ModelDummy
     {
         $result = null;
         //used for UserControllerTest: testUnsubscribeFromFeed
-        if (strpos($query, 'subUri') !== false) {
+        if ($this->testMethod == 'testUnsubscribeFromFeed') {
             $result = array();
             $result[0]['subUri'] = 'validSubUri';      
         }
         //used for GroupControllerTest: testCreateGroup groupname exists
-        if (strpos($query, '?c=Group&id=') !== false) {
+        if ($this->testMethod == 'testCreateGroup') {
             $result = FALSE;
         }
         //used for GroupControllerTest: testDeleteGroup 
-        if (strpos($query, 'foaf:maker') !== false) {
-            $result = FALSE;
+        if ($this->testMethod == 'testDeleteGroup') {
+            $result = TRUE;
         }
         //used
         return $result;
