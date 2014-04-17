@@ -1,0 +1,37 @@
+<?php
+    function errorClass ($name, $formError)
+    {
+        if (isset($formError[$name])) {
+            return 'error';
+        } else {
+            return '';
+        }
+    }
+?>
+<h2>Create Group</h2>
+<form action="?c=application&amp;a=newgroup" method="post" class="form-horizontal">
+<fieldset>
+<legend>Create a new Group on this Xodx instance.</legend>
+<div class="control-group <?= errorClass('groupname', $this->formError) ?>">
+    <label class="control-label" for="groupname">Group name</label>
+    <div class="controls">
+        <input type="text" class="input-xlarge" name="groupname" id="groupname" />
+        <?php if (isset($this->formError['groupname'])): ?>
+        <p class="help-inline">The given group name is empty</p>
+        <?php endif; ?>
+    </div>
+</div>
+<div class="control-group" <?= errorClass('description', $this->formError) ?>">
+    <label class="control-label" for="description">Description</label>
+    <div class="controls">
+        <input type="text" class="input-xlarge" name="description" id="description" />
+        <?php if (isset($this->formError['description'])): ?>
+        <p class="help-inline">The given description is empty</p>
+        <?php endif; ?>
+    </div>
+</div>
+<div class="form-actions">
+    <button class="btn btn-primary" type="submit">Create</button>
+</div>
+</fieldset>
+</form>
