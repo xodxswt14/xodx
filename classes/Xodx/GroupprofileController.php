@@ -14,12 +14,11 @@ class Xodx_GroupprofileController extends Xodx_ResourceController
     public function listAction($template)
     {
         $model = $this->_app->getBootstrap()->getResource('Model');
-
         $groupprofiles = $model->sparqlQuery(
             'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' .
-            'SELECT DISTINCT ?person ' .
+            'SELECT DISTINCT ?group ' .
             'WHERE { ' .
-            '   ?person a foaf:Person . ' .
+            '   ?group a foaf:Group . ' .
             '}'
         );
 
@@ -29,8 +28,8 @@ class Xodx_GroupprofileController extends Xodx_ResourceController
 
         foreach ($groupprofiles as $groupprofile) {
             $groups[] = array(
-                'group' => $groupprofile['person'],
-                'name' => $nameHelper->getName($groupprofile['person'])
+                'group' => $groupprofile['group'],
+                'name' => $nameHelper->getName($groupprofile['group'])
             );
         }
 

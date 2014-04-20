@@ -43,7 +43,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $this->createGroup(null, $groupname);
 
             $location = new Saft_Url($this->_app->getBaseUri());
-            $location->setParameter('c', 'groupProfile');
+            $location->setParameter('c', 'groupprofile');
             $location->setParameter('a', 'list');
 
             $template->redirect($location);
