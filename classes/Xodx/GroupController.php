@@ -11,6 +11,7 @@
  * 
  * @author Jan Buchholz
  * @author Stephan Kemper
+ * @author Lukas Werner
  */
 class Xodx_GroupController extends Xodx_ResourceController
 {
@@ -18,6 +19,75 @@ class Xodx_GroupController extends Xodx_ResourceController
      * @var Xodx_Group A registry of already loaded XodX_Group objects
      */
     private $_groups = array();
+
+    /**
+     * A view action for creating a new group.
+     * 
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
+    public function creategroupAction($template)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $request = $bootstrap->getResource('request');
+
+        $groupname = $request->getValue('groupname', 'post');
+
+        $formError = array();
+
+        if (empty($groupname)) {
+            $formError['groupname'] = true;
+        }
+
+        if (count($formError) <= 0) {
+            $this->createGroup(null, $groupname);
+
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'groupProfile');
+            $location->setParameter('a', 'list');
+
+            $template->redirect($location);
+        } else {
+            $template->formError = $formError;
+        }
+
+        return $template;
+    }
+
+    /**
+     * A view action for deleting an existing group.
+     * 
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
+    public function deletegroupAction($template)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $request = $bootstrap->getResource('request');
+
+        $groupUri = $request->getValue('groupUri', 'post');
+
+        $formError = array();
+
+        if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
+            $formError['groupUri'] = true;
+        }
+
+        if (count($formError) <= 0) {
+            $this->deleteGroup($groupUri);
+
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'groupProfile');
+            $location->setParameter('a', 'list');
+
+            $template->redirect($location);
+        } else {
+            $template->formError = $formError;
+        }
+
+        return $template;
+    }
+
     /**
      * This creates a new group with the given name.
      * This function is usually called internally
