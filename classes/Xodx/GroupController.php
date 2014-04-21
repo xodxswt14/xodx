@@ -116,7 +116,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $testQuery .= '}';            
         if ($model->sparqlQuery($testQuery)) {          
             $logger->error('GroupController/createGroup: Groupname already taken: ' . $name);
-            throw Exception('Groupname already taken.');
+            throw new Exception('Groupname already taken.');
         } else {                                                                                                  
             // feed for the new group
             $newGroupFeed = $this->_app->getBaseUri() . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
@@ -174,12 +174,9 @@ class Xodx_GroupController extends Xodx_ResourceController
         $result = $model->sparqlQuery($testQuery);
         if (!$result) {
             $logger->error('GroupController/deleteGroup: Group does not exist: ' . $name);
-            throw Exception('Groupname does not exist.');
+            throw new Exception('Groupname does not exist.');
         } else {                               
-            //TODO name of the group via $name = $this->getGroup($groupUri)->getName();
-            //after Group.php is implemented, now its hardcoded
-            $name = 'gtest';
-
+            $name = $this->getGroup($groupUri)->getName();
             // feed of the group
             $groupFeed = $this->_app->getBaseUri() . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
             // Uri of the group's admin ( its foaf:maker)
@@ -223,7 +220,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             } else {
                 $logger->error('GroupController/deleteGroup: Person is not authorised'
                         . ' to delete the group: ' . $name);
-                throw Exception('Person is not authorised.');
+                throw new Exception('Person is not authorised.');
             }
         }
     }
