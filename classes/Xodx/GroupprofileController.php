@@ -6,8 +6,9 @@
  */
 
 /**
+ * This class manages the profiles of groups:
+ *
  * @author Toni
- * Temporary controller for template testing.
  */
 class Xodx_GroupprofileController extends Xodx_ResourceController
 {
