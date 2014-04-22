@@ -25,4 +25,11 @@ class LoggerDummy
     public function debug ($message)
     {
     }
+    /**
+     * Method is used for debugging and not required for
+     * testing other methods.
+     */
+    public function error ($message)
+    {
+    }
 }
