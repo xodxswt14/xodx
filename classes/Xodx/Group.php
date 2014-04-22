@@ -7,26 +7,30 @@
 
 /**
  * This class represents a group it is very similar to a user
- * sioc: http://rdfs.org/sioc/ns#
+ *
  * foaf: http://xmlns.com/foaf/spec/
+ * 
+ * @author Thomas Guett
  */
 class Xodx_Group
 {
-	/**
-	* a group has a unique URI, a name and may also have a Description
-	*
-	*/
+    /**
+    * a group has a unique URI, a name and may also have a Description
+    *
+    */
     private $_uri;
     private $_name;
     private $_description = null;
+    private $_app;
 
     /**
     * constructs a new group instance with set URI
     *
     */
-    public function __construct ($uri)
+    public function __construct ($uri, $app)
     {
         $this->_uri = $uri;
+        $this->_app = $app;
     }
 
     /**
@@ -62,14 +66,14 @@ class Xodx_Group
     */
     public function getDescription ()
     {
-	    $bootstrap = $this->_app->getBootstrap();
-	    $model = $bootstrap->getResource('model');
+        $bootstrap = $this->_app->getBootstrap();
+        $model = $bootstrap->getResource('model');
 
         // SPARQL-Query
         $query = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
         $query.= 'SELECT  ?description ' . PHP_EOL;
         $query.= 'WHERE {' . PHP_EOL;
-        $query.= '   <' . $_uri . '> foaf:topic ?description' . PHP_EOL;
+        $query.= '   <' . $this->_uri . '> foaf:topic ?description' . PHP_EOL;
         $query.= '}' . PHP_EOL;
 
         $groupDescription = $model->sparqlQuery($query);
@@ -84,12 +88,6 @@ class Xodx_Group
     */
     public function setDescription ($description)
     {
-	    //Falls Set Description direkt in die db soll
-	    //$predicate = 'http://xmlns.com/foaf/0.1/topic';
-	    //$bootstrap = $this->_app->getBootstrap();
-	    //$model = $bootstrap->getResource('model');
-	    //$model->addStatement($_uri, $predicate, $description);
-	
         $this->_description = $description;
     }
 }
