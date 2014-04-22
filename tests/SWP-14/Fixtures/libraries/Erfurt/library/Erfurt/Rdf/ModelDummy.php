@@ -46,7 +46,7 @@ class ModelDummy
             $result = TRUE;
         }
         //used for GroupControllerTest: testGetGroup
-        if ($this->testMethod == 'testgetGroup') {
+        if ($this->testMethod == 'testGetGroup') {
             $result = array();
             $result[0]['name'] = 'validGroupName';
             $result[0]['topic'] = 'validGroupTopic';
