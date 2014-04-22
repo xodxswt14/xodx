@@ -9,6 +9,7 @@ require_once(__DIR__ . '/../../../../classes/Xodx/ResourceController.php');
 require_once(__DIR__ . '/../../../../classes/Xodx/GroupController.php');
 require_once (__DIR__ . '/../../Fixtures/libraries/Saft/ApplicationDummy.php');
 require_once (__DIR__ . '/../../../../classes/Xodx/User.php');
+require_once (__DIR__ . '/../../../../classes/Xodx/Group.php');
 define('EF_RDF_NS', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
 define('EF_RDF_TYPE', EF_RDF_NS.'type');
 /**
@@ -38,7 +39,7 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
      * Creates an Application- and GroupControllerDummy
      * @param $proxy  true for GroupControllerProxy false for normal UserController
      */
-    public function initFixture($proxy = FALSE, $testMethod = null)
+    public function initFixture ($proxy = FALSE, $testMethod = null)
     {
         $this->app = new ApplicationDummy();
         $this->app->testMethod = $testMethod;
@@ -53,7 +54,7 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
      * Sets the BaseUri of $this->app
      * @param type $valid true vor valid, false for invalid
      */
-    public function setBaseUriFixture($valid = true)
+    public function setBaseUriFixture ($valid = true)
     {
         if ($valid) {
             $base_uri = 'validBaseUri';
@@ -66,7 +67,7 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
      * Tests if a new Group is created correctly
      * @covers GroupController:createGroup
      */
-    public function testCreateGroup()
+    public function testCreateGroup ()
     {
         $this->initFixture(FALSE, 'testCreateGroup');
         $this->groupController->createGroup(null, 'gtest');
@@ -75,17 +76,17 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
      * Tests if a Group is deleted correctly
      * @covers GroupController::deleteGroup
      */
-    public function testDeleteGroup()
+    public function testDeleteGroup ()
     {
-        $this->initFixture(TRUE, 'testDeleteGroup');
-        $this->groupController->deleteGroup('http://127.0.0.1:8080/?c=Group&id=gtest');
+        $this->initFixture(FALSE, 'testDeleteGroup');
+        $this->groupController->deleteGroup($this->validGroupUri);
     }
     /**
      * @covers GroupController::getGroup
      */
-    public function testGetGroup()
+    public function testGetGroup ()
     {
-        $this->initFixture(TRUE, 'testGetGroup');
+        $this->initFixture(FALSE, 'testGetGroup');
         $this->groupController->getGroup($this->validGroupUri);
     }
 }
@@ -95,7 +96,7 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
  */
 class Xodx_GroupControllerProxy extends Xodx_GroupController
 {
-    public function getGroup($userUri = null) {
-        return 'groupName';
+    public function getGroup($userUri = null)
+    {
     }
 }
