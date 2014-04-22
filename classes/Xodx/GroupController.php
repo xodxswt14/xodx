@@ -150,7 +150,6 @@ class Xodx_GroupController extends Xodx_ResourceController
      * This deletes a group with the given Uri.
      * This function is usually called internally
      * @param Uri $groupUri Uri of the group to be deleted
-     * @todo $groupUri might not be needed
      */
     public function deleteGroup ($groupUri)
     {
@@ -162,19 +161,14 @@ class Xodx_GroupController extends Xodx_ResourceController
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
         $nsDssn = 'http://purl.org/net/dssn/';
 
-        // fetch empty groupUri
-        if ($groupUri === null) {
-            $groupUri = $this->_app->getBaseUri() . '?c=Group&id=' . urlencode($name);
-        }
-
         // verify that there is a group with that uri
         $testQuery  = 'ASK {' . PHP_EOL;
         $testQuery .= '<' . $groupUri . '> ?p ?o' . PHP_EOL;
         $testQuery .= '}';            
         $result = $model->sparqlQuery($testQuery);
         if (!$result) {
-            $logger->error('GroupController/deleteGroup: Group does not exist: ' . $name);
-            throw new Exception('Groupname does not exist.');
+            $logger->error('GroupController/deleteGroup: Group does not exist: ' . $groupUri);
+            throw new Exception('Group does not exist.');
         } else {                               
             $name = $this->getGroup($groupUri)->getName();
             // feed of the group
@@ -232,28 +226,30 @@ class Xodx_GroupController extends Xodx_ResourceController
     public function getGroup ($groupUri)
     {
         if (!isset($this->_groups[$groupUri])) {
-           $bootstrap = $this->_app->getBootstrap();
-           $model = $bootstrap->getResource('model');
+            $bootstrap = $this->_app->getBootstrap();
+            $model = $bootstrap->getResource('model');
+            $logger = $bootstrap->getResource('logger');
 
-           $query = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
-           $query.= 'SELECT ?name ?topic' . PHP_EOL;
-           $query.= 'WHERE {' . PHP_EOL;
-           $query.= '  <' . $groupUri . '> foaf:nick ?name ;' . PHP_EOL;
-           $query.= '      foaf:primaryTopic ?topic .' . PHP_EOL;
-           $query.= '}' . PHP_EOL;
+            $query = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
+            $query.= 'SELECT ?name ?topic' . PHP_EOL;
+            $query.= 'WHERE {' . PHP_EOL;
+            $query.= '  <' . $groupUri . '> foaf:nick ?name ;' . PHP_EOL;
+            $query.= '      foaf:primaryTopic ?topic .' . PHP_EOL;
+            $query.= '}' . PHP_EOL;
 
-           $result = $model->sparqlQuery($query);
-           if (count($result) > 0) {
-               $groupId = $result[0]['name'];
-               $groupTopic = $result[0]['topic'];
-           } else {
-              //@todo throw Exception and log event
-           }
-           $group = new Xodx_Group($groupUri);
-           $group->setName($groupId);
-           $group->setDescription($groupTopic);
+            $result = $model->sparqlQuery($query);
+            if (count($result) > 0) {
+                $groupId = $result[0]['name'];
+                $groupTopic = $result[0]['topic'];
+            } else {
+                $logger->error('GroupController/getGroup: Group does not exist.' . $groupUri);
+                 throw new Exception('Group does not exist.');
+            }
+            $group = new Xodx_Group($groupUri);
+            $group->setName($groupId);
+            $group->setDescription($groupTopic);
 
-           $this->_groups[$groupUri] = $group;
+            $this->_groups[$groupUri] = $group;
        }
        return $this->_groups[$groupUri];
     }
