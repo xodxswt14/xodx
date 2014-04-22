@@ -252,7 +252,7 @@ class Xodx_GroupController extends Xodx_ResourceController
            } else {
               //@todo throw Exception and log event
            }
-           $group = new Xodx_Group($groupUri);
+           $group = new Xodx_Group($groupUri, $this->_app);
            $group->setName($groupId);
            $group->setDescription($groupTopic);
 
