@@ -3,9 +3,10 @@
 <?php
 if (!empty($this->grouplistList)) :
     foreach($this->grouplistList as $entry) :?>
-<li>Site of <a href="<?= htmlentities($entry['group']) ?>"><?php echo $entry['name']; ?></a></li>
+<li>Profile of <a href="<?= htmlentities($entry['group']) ?>"><?php echo $entry['name']; ?></a></li>
 <?php
     endforeach;
 endif;
 ?>
 </ul>
+<p>No matching group? <a href="?c=group&a=creategroup">Create one</a></p>

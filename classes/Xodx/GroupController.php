@@ -21,6 +21,78 @@ class Xodx_GroupController extends Xodx_ResourceController
      */
     private $_groups = array();
 
+    public function showAction($template)
+    {
+        $bootstrap  = $this->_app->getBootstrap();
+        $model      = $bootstrap->getResource('model');
+        $request    = $bootstrap->getResource('request');
+        $logger     = $bootstrap->getResource('logger');
+        $groupUri  = $request->getValue('uri', 'get');
+        $id         = $request->getValue('id', 'get');
+        $controller = $request->getValue('c', 'get');
+        
+        if ($id !== null) {
+            $groupUri = $this->_app->getBaseUri() . '?c=' . $controller . '&id=' . $id;
+        }
+        
+        $nsFoaf = 'http://xmlns.com/foaf/0.1/';
+        
+        $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $groupQuery.= 'SELECT ?nick ' .  PHP_EOL;
+        $groupQuery.= 'WHERE { ' .  PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> a foaf:Group . ' . PHP_EOL;
+        $groupQuery.= 'OPTIONAL {<' . $groupUri . '> foaf:nick ?nick .} ' . PHP_EOL;
+        $groupQuery.= '}'; PHP_EOL;
+        
+        $group = $model->sparqlQuery($groupQuery);
+        
+        $template->groupshowNick = $group[0]['nick'];
+        
+        return $template;
+    }
+    
+    public function homeAction($template)
+    {
+        $bootstrap  = $this->_app->getBootstrap();
+        $model      = $bootstrap->getResource('model');
+        $request    = $bootstrap->getResource('request');
+        $logger     = $bootstrap->getResource('logger');
+        $groupUri  = $request->getValue('uri', 'get');
+        $id         = $request->getValue('id', 'get');
+        $controller = $request->getValue('c', 'get');
+        
+        if ($id !== null) {
+            $groupUri = $this->_app->getBaseUri() . '?c=' . $controller . '&id=' . $id;
+        }
+        
+        $nsFoaf = 'http://xmlns.com/foaf/0.1/';
+        
+        $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $groupQuery.= 'SELECT ?nick ?maker ' .  PHP_EOL;
+        $groupQuery.= 'WHERE { ' .  PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:nick ?nick . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
+        $groupQuery.= '}'; PHP_EOL;
+        
+        $group = $model->sparqlQuery($groupQuery);
+        
+        /* get loged in user */
+        $userController = $this->_app->getController('Xodx_UserController');
+        $user = $userController->getUser();
+        
+        $logger->debug('user' . $user->getUri() . '   group:' . $group[0]['maker']);
+        
+        if($user->getPerson() == $group[0]['maker']) {
+            $template->isMaker = true;
+        } else {
+            $template->isMaker = false;
+        }
+        
+        $template->groupshowNick = $group[0]['nick'];
+        
+        return $template;
+    }
     /**
      * A view action for creating a new group.
      * 
@@ -108,7 +180,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         // fetch empty groupUri
         if ($groupUri === null) {
-            $groupUri = $this->_app->getBaseUri() . '?c=Group&id=' . urlencode($name);
+            $groupUri = $this->_app->getBaseUri() . '?c=group&id=' . urlencode($name);
         }
 
         // verify that there is not already a group with that name
