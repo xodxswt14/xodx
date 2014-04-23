@@ -114,19 +114,19 @@ class Xodx_GroupController extends Xodx_ResourceController
         // verify that there is not already a group with that name
         $testQuery  = 'ASK {' . PHP_EOL;
         $testQuery .= '<' . $groupUri . '> ?p ?o' . PHP_EOL;
-        $testQuery .= '}';            
-        if ($model->sparqlQuery($testQuery)) {          
+        $testQuery .= '}';
+        if ($model->sparqlQuery($testQuery)) {
             $logger->error('GroupController/createGroup: Groupname already taken: ' . $name);
             throw new Exception('Groupname already taken.');
-        } else {                                                                                                  
+        } else {
             // feed for the new group
             $newGroupFeed = $this->_app->getBaseUri() . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
             // Uri of the group's admin ( its foaf:maker)
-            $userController = $this->_app->getController('Xodx_UserController');            
+            $userController = $this->_app->getController('Xodx_UserController');
 
             // Verify that a user of that instance (disparate 'guest') is logged in
             $adminName = $userController->getUser()->getName();
-            if ($adminName == 'unkown' || $adminName == 'guest') {                
+            if ($adminName == 'unkown' || $adminName == 'guest') {
                 $logger->error('GroupController/createGroup: Unknown user tried to create group');
                 throw new Exception('Please log in to create a group');
             } else {
@@ -154,8 +154,8 @@ class Xodx_GroupController extends Xodx_ResourceController
             );
             $model->addMultipleStatements($newGroup);
         }
-    }              
-    
+    }
+
      /**
      * This deletes a group with the given Uri.
      * This function is usually called internally
