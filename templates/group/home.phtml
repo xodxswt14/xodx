@@ -1,7 +1,6 @@
 <div class="profile row-fluid">
     <div class="span9">
         <h2>Site of <?= $this->groupshowNick ?></h2>
-        <?php if(isset($this->profileshowDepiction)) : ?> <img class="avatar size128 img-polaroid" src="<?= $this->profileshowDepiction ?>" /> <?php endif; ?>
         <h3>Activities</h3>
         <ul class="nav nav-pills">
             <li class="active"><a href="#status" data-toggle="tab">Status</a></li>
@@ -45,7 +44,10 @@
             );
         ?>
     </div>
+    <div class="span3">
+        <form method="post" action="?c=group&amp;a=leavegroup">  
+            <input type="hidden" name="group" value="<?= htmlentities($this->groupUri) ?>" />
+            <button class="btn btn-block" type="submit">Leave Group</button>
+        </form>
+    </div>
 </div>
-<?php
-    var_dump($this);
-?>

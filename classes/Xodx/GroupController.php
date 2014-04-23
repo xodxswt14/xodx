@@ -47,6 +47,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $group = $model->sparqlQuery($groupQuery);
         
         $template->groupshowNick = $group[0]['nick'];
+        $template->groupUri = $groupUri;
         
         return $template;
     }
@@ -80,8 +81,6 @@ class Xodx_GroupController extends Xodx_ResourceController
         /* get loged in user */
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
-        
-        $logger->debug('user' . $user->getUri() . '   group:' . $group[0]['maker']);
         
         if($user->getPerson() == $group[0]['maker']) {
             $template->isMaker = true;

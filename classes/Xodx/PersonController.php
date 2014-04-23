@@ -229,7 +229,7 @@ class Xodx_PersonController extends Xodx_ResourceController
     /**
      * View action for deleting a new friend. (This action should be called from a form)
      */
-    public function deleteFriendAction($template)
+    public function deletefriendAction($template)
     {
         $bootstrap = $this->_app->getBootstrap();
         $request = $bootstrap->getResource('request');
