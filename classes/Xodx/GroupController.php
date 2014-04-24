@@ -264,4 +264,44 @@ class Xodx_GroupController extends Xodx_ResourceController
        }
        return $this->_groups[$groupUri];
     }
+
+    public function leaveGroup ($personUri, $groupUri)
+    {
+        // getResources
+        $bootstrap = $this->_app->getBootstrap();
+        $logger = $bootstrap->getResource('logger');
+        $model  = $bootstrap->getResource('model');
+        $userController = $this->_app->getController('Xodx_UserController');
+
+        // check group's Uri
+        $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
+        if (!$ldHelper->resourceDescriptionExists($groupUri)) {
+            throw new Exception('The WebID of this group does not exist.');
+        }
+        // delete Statement added by joinGroup ($personUri, member, $groupUri)
+        $statementArray = array (
+            $personUri => array (                               
+                'http://xmlns.com/foaf/0.1/member' => array(     
+                    array (                                     
+                        'type'  => 'uri',
+                        'value' => $groupUri
+                    )
+                )
+            )
+        );        
+        $model->deleteMultipleStatements($statementArray);
+
+        // unsubscribe from group        
+        $userUri = $userController->getUserUri($personUri);
+        $feedUri = $this->getActivityFeedUri($groupUri);
+        if ($feedUri !== null) {
+            // Logging
+            $logger->debug('GroupController/leavegroup: Found feed for group ("' . $groupUri . '"): "' . $feedUri . '"');
+            // unsubscription of friend's feed            
+            $userController->unsubscribeFromResource ($userUri, $groupUri, $feedUri);
+        } else {
+            // Logging
+            $logger->error('GroupController/leavegroup: Couldn\'t find feed for group ("' . $groupUri . '").');
+        }
+    }
 }
