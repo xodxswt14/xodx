@@ -9,6 +9,7 @@
  * This class manages Groups. This includes so far:
  * - Creating a group
  * - Deleting a group
+ * - Getting a group from its uri
  * 
  * @author Jan Buchholz
  * @author Stephan Kemper
