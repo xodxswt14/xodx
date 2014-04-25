@@ -13,6 +13,7 @@
                     <textarea placeholder="Write a status note" class="input-block-level" name="content"></textarea>
                     <input type="hidden" name="type" value="Note" />
                     <input type="hidden" name="reply" value=false />
+                    <input type="hidden" name="groupUri" value="<?= htmlentities($this->groupUri) ?>" />
                     <button class="btn btn-primary" type="submit">Post</button>
                 </form>
             </div>

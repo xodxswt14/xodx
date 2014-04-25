@@ -88,6 +88,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->isMaker = false;
         }
         
+        $template->groupUri = $groupUri;
         $template->groupshowNick = $group[0]['nick'];
         
         return $template;
