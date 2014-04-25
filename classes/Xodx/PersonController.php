@@ -53,8 +53,17 @@ class Xodx_PersonController extends Xodx_ResourceController
         $contactsQuery.= '   OPTIONAL {?contactUri foaf:name ?name .} ' . PHP_EOL;
         $contactsQuery.= '   OPTIONAL {?contactUri foaf:nick ?nick .} ' . PHP_EOL;
         $contactsQuery.= '}';
+        
+        $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $groupQuery.= 'SELECT ?groupUri ' .  PHP_EOL;
+        $groupQuery.= 'WHERE { ' .  PHP_EOL;
+        $groupQuery.= '   ?groupUri foaf:maker <' . $personUri . '> ' . PHP_EOL;
+        $groupQuery.= '}'; PHP_EOL;
 
         $profile = $model->sparqlQuery($profileQuery);
+        $groups = $model->sparqlQuery($groupQuery);
+
+        $logger->debug('group:' . var_dump($groups[0]['groupUri']));
 
         if (count($profile) < 1) {
             $linkeddataHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
@@ -142,6 +151,7 @@ class Xodx_PersonController extends Xodx_ResourceController
         $template->profileshowActivities = $activities;
         $template->profileshowKnows = $knows;
         $template->profileshowNews = $news;
+        $template->profileshowGroups = $groups[0]['groupUri'];
         $template->addContent('templates/profileshow.phtml');
 
         return $template;
