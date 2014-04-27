@@ -14,6 +14,7 @@
  * @author Jan Buchholz
  * @author Stephan Kemper
  * @author Lukas Werner
+ * @author Gunnar Warnecke
  */
 class Xodx_GroupController extends Xodx_ResourceController
 {
@@ -229,6 +230,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             }
         }
     }
+
      /**
      * This method creates a new object of the class Xodx_Group
      * @param $groupUri a string which contains the URI of the required group
@@ -265,6 +267,68 @@ class Xodx_GroupController extends Xodx_ResourceController
        return $this->_groups[$groupUri];
     }
 
+    /**
+     * Declare a person a member of a group
+     *
+     * @param string $personUri  the URI of the group's new member
+     * @param $groupUri   the URI of the group that the member shall be added to
+     */
+    public function joinGroup ($personUri, $groupUri)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $logger = $bootstrap->getResource('logger');
+        $model  = $bootstrap->getResource('model');
+        $userController = $this->_app->getController('Xodx_UserController');
+
+        $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
+        if (!$ldHelper->resourceDescriptionExists($groupUri)) {
+            throw new Exception('The WebID of this group does not exist.');
+        }
+
+        // Update WebID
+        $model->addStatement(
+            $personUri,
+            'http://xmlns.com/foaf/0.1/member',
+            array('type' => 'uri', 'value' => $groupUri)
+        );
+
+        $nsAair = 'http://xmlns.notu.be/aair#';
+        $activityController = $this->_app->getController('Xodx_ActivityController');
+
+        // Add Activity to activity Stream
+        $object = array(
+            'type' => 'uri',
+            'content' => $groupUri,
+            'replyObject' => 'false'
+        );
+        $activityController->addActivity($personUri, $nsAair . 'Join', $object);
+        // Send Ping to group
+        $pingbackController = $this->_app->getController('Xodx_PingbackController');
+        $pingbackController->sendPing($personUri, $groupUri, 'I hereby declare myself a member of this group.');
+
+        // Subscribe to group
+        $userUri = $userController->getUserUri($personUri);
+        $feedUri = $this->getActivityFeedUri($groupUri);
+        if ($feedUri !== null) {
+            $logger->debug(
+                'GroupController/joinGroup: Found feed for newly joined Group ("'
+                . $groupUri . '"): "' . $feedUri . '"'
+            );
+            $userController->subscribeToResource ($userUri, $groupUri, $feedUri);
+        } else {
+            $logger->error(
+                'GroupController/joinGroup: Couldn\'t find feed for newly joined group ("'
+                . $groupUri . '").'
+            );
+        }
+    }
+
+    /**
+     * This makes it possible for persons to leave a group
+     * @param string $personUri URI of the person who is leaving
+     * @param string $groupUri URI of the group to be left
+     * @throws Exception if the WebID of this group does not exist
+     */
     public function leaveGroup ($personUri, $groupUri)
     {
         // getResources
@@ -303,5 +367,44 @@ class Xodx_GroupController extends Xodx_ResourceController
             // Logging
             $logger->error('GroupController/leavegroup: Couldn\'t find feed for group ("' . $groupUri . '").');
         }
+    }
+
+    /**
+     * A view action for leaving a specified group.
+     * 
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
+    public function leavegroupAction($template)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $request = $bootstrap->getResource('request');
+
+        // get URI
+        $groupUri = $request->getValue('group', 'post');
+        $personUri = $request->getValue('person', 'post');
+
+        if ($personUri == null) {
+            $userController = $this->_app->getController('Xodx_UserController');
+            $personUri = $userController->getUser()->getUri();
+        }
+
+        if (Erfurt_Uri::check($personUri)) {
+            $memberController = $this->_app->getController('Xodx_MemberController');
+            $memberController->addMember($personUri, $groupUri);
+
+            $this->joinGroup($personUri, $groupUri);
+            //Redirect
+            $location = new Saft_Url($this->_app->getBaseUri());
+
+            $location->setParameter('c', 'user');
+            $location->setParameter('a', 'home');
+            $template->redirect($location);
+        } else {
+            $template->addContent('templates/error.phtml');
+            $template->exception = 'The given URI is not valid: personUri="' . $personUri;
+        }
+
+        return $template;
     }
 }
