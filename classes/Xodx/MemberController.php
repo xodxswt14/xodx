@@ -152,7 +152,7 @@ class Xodx_MemberController extends Xodx_ResourceController
             $logger->debug('MemberController/deletemember: Found feed of member ("' . $personUri . '"): "' . $feedUri . '"');
             $this->unsubscribeFromResource ($groupUri, $personUri, $feedUri);
         } else {
-            $logger->error('MemberController/addMember: Couldn\'t find feed of member ("' . $personUri . '").');
+            $logger->error('MemberController/deleteMember: Couldn\'t find feed of member ("' . $personUri . '").');
         }
     }
 
@@ -219,11 +219,14 @@ class Xodx_MemberController extends Xodx_ResourceController
 
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
         $type = $resourceController->getType($subscriberUri);
-
+        
+        $logger->debug('GroupUri: ' . $subscriberUri);
+        
         if ($type === $nsFoaf . 'Group') {
             $subscriberUri = $groupController->getGroup($subscriberUri)->getUri();
         }
-
+        $logger->debug('GroupUri2: ' . $subscriberUri);
+        
         $logger->info('subscribeToFeed: group: ' . $subscriberUri . ', feed: ' . $feedUri);
 
         if (!$this->_isSubscribed($subscriberUri, $feedUri)) {
