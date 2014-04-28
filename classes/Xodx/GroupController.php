@@ -486,6 +486,9 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * View action for joining a new group.
+     * 
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
      */
     public function joingroupAction($template)
     {
