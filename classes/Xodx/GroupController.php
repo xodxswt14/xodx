@@ -322,7 +322,7 @@ class Xodx_GroupController extends Xodx_ResourceController
            $query = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
            $query.= 'SELECT ?name ?topic' . PHP_EOL;
            $query.= 'WHERE {' . PHP_EOL;
-           $query.= '  <' . $groupUri . '> foaf:nick ?name ;' . PHP_EOL;
+           $query.= '  <' . $groupUri . '> foaf:name ?name ;' . PHP_EOL;
            $query.= '      foaf:primaryTopic ?topic .' . PHP_EOL;
            $query.= '}' . PHP_EOL;
 
@@ -355,12 +355,12 @@ class Xodx_GroupController extends Xodx_ResourceController
         $logger = $bootstrap->getResource('logger');
         $model  = $bootstrap->getResource('model');
         $userController = $this->_app->getController('Xodx_UserController');
-
+/*
         $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
         if (!$ldHelper->resourceDescriptionExists($groupUri)) {
             throw new Exception('The WebID of this group does not exist. groupUri: ' . $groupUri);
         }
-
+*/
         // Update WebID
         $model->addStatement(
             $personUri,
@@ -413,12 +413,12 @@ class Xodx_GroupController extends Xodx_ResourceController
         $model  = $bootstrap->getResource('model');
         $userController = $this->_app->getController('Xodx_UserController');
 
-        // check group's Uri
+    /*    // check group's Uri
         $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
         if (!$ldHelper->resourceDescriptionExists($groupUri)) {
             throw new Exception('The WebID of this group does not exist.');
         }
-        // delete Statement added by joinGroup ($personUri, member, $groupUri)
+    */    // delete Statement added by joinGroup ($personUri, member, $groupUri)
         $statementArray = array (
             $personUri => array (                               
                 'http://xmlns.com/foaf/0.1/member' => array(     
@@ -462,7 +462,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         if ($personUri == null) {
             $userController = $this->_app->getController('Xodx_UserController');
-            $personUri = $userController->getUser()->getUri();
+            $personUri = $userController->getUser()->getPerson();
         }
 
         if (Erfurt_Uri::check($personUri)) {
@@ -494,6 +494,7 @@ class Xodx_GroupController extends Xodx_ResourceController
     {
         $bootstrap = $this->_app->getBootstrap();
         $request = $bootstrap->getResource('request');
+        $logger = $bootstrap->getResource('logger');
 
         // get URI
         $groupUri = $request->getValue('group', 'post');
@@ -501,7 +502,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         if ($personUri == null) {
             $userController = $this->_app->getController('Xodx_UserController');
-            $personUri = $userController->getUser()->getUri();
+            $personUri = $userController->getUser()->getPerson();
         }
 
         if (Erfurt_Uri::check($personUri)) {
@@ -519,7 +520,6 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->addContent('templates/error.phtml');
             $template->exception = 'The given URI is not valid: personUri="' . $personUri;
         }
-
         return $template;
     }
 }
