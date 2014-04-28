@@ -12,6 +12,12 @@
  */
 class Xodx_GroupprofileController extends Xodx_ResourceController
 {
+
+    /**
+     * A view action to show the profiles of the groups
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
     public function listAction($template)
     {
         $model = $this->_app->getBootstrap()->getResource('Model');

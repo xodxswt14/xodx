@@ -24,6 +24,11 @@ class Xodx_GroupController extends Xodx_ResourceController
      */
     private $_groups = array();
 
+    /**
+     * A view action to show a group
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
     public function showAction($template)
     {
         $bootstrap  = $this->_app->getBootstrap();
@@ -63,7 +68,12 @@ class Xodx_GroupController extends Xodx_ResourceController
         
         return $template;
     }
-    
+
+    /**
+     * A view action to show the home of a group
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
     public function homeAction($template)
     {
         $bootstrap  = $this->_app->getBootstrap();
