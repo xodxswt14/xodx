@@ -14,9 +14,10 @@ class Xodx_MemberController extends Xodx_ResourceController
 {
 
     /**
+     * A view action for adding a new member.
      * 
-     * @param type $template
-     * @return type
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
      */
     public function addmemberAction($template)
     {
@@ -40,9 +41,10 @@ class Xodx_MemberController extends Xodx_ResourceController
     }
 
     /**
+     * A view action for deleting an existing member.
      * 
-     * @param type $template
-     * @return type
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
      */
     public function deletememberAction($template)
     {
@@ -66,10 +68,11 @@ class Xodx_MemberController extends Xodx_ResourceController
     }
 
     /**
+     * This adds a new member to a specified group.
      * 
-     * @param type $personUri
-     * @param type $groupUri
-     * @throws Exception
+     * @param URI $personUri Uri of the new member
+     * @param URI $groupUri Uri of the group
+     * @throws Exception if personUri not found
      */
     public function addMember($personUri, $groupUri)
     {
@@ -115,10 +118,11 @@ class Xodx_MemberController extends Xodx_ResourceController
    }
 
     /**
+     * This removes a member of a specified group.
      * 
-     * @param type $personUri
-     * @param type $groupUri
-     * @throws Exception
+     * @param URI $personUri Uri of the existing member
+     * @param URI $groupUri Uri of the group
+     * @throws Exception if personUri not found
      */
     public function deleteMember($personUri, $groupUri)
     {
@@ -152,15 +156,14 @@ class Xodx_MemberController extends Xodx_ResourceController
         }
     }
 
-     /**
-     *
-     * Enter description here ...
-     * @param URI $subscriberUri
-     * @param URI $resourceUri
-     * @param URI $feedUri
-     * @param boolean $local specifies if the feed should not be subscribed at the hub
-     *                       (this is meant for local resources)
-     */
+   /**
+    * Subscribes a user to a resource
+    * 
+    * @param URI $unsubscriberUri Uri of the group which wants to subscribe from a resource
+    * @param URI $resourceUri Uri of the resource that ist to be subscribed
+    * @param URI $feedUri Feed of the given resource
+    * @param boolean $local Indicates whether the resource is stored locally
+    */
     public function subscribeToResource ($subscriberUri, $resourceUri, $feedUri = null, $local = false)
     {
         $bootstrap = $this->_app->getBootstrap();
@@ -203,9 +206,9 @@ class Xodx_MemberController extends Xodx_ResourceController
     }
 
      /**
-     * This method subscribes a user to a feed
-     * @param $ubscriberUri the uri of the group which wants to be subscribed
-     * @param $feedUri the uri of the feed where she wants to subscribe
+     * This method subscribes a group to a feed
+     * @param URI $unscriberUri the uri of the group which wants to be subscribed
+     * @param URI $feedUri the uri of the feed where the group wants to subscribe
      */
     private function _subscribeToFeed ($subscriberUri, $feedUri, $local = false)
     {
@@ -274,7 +277,7 @@ class Xodx_MemberController extends Xodx_ResourceController
      /**
      * This method unsubscribes a group from a feed
      * @param URI $subsciberUri the uri of the subscriber who wants to unsubscribe
-     * @param URI $feedUri the uri of the feed where she wants to subscribe
+     * @param URI $feedUri the uri of the feed where the group wants to unsubscribe
      * @param boolean $local Indicates whether the feed is stored locally
      */
     private function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = false)
