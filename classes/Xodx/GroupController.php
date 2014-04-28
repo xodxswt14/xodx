@@ -358,7 +358,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
         if (!$ldHelper->resourceDescriptionExists($groupUri)) {
-            throw new Exception('The WebID of this group does not exist.');
+            throw new Exception('The WebID of this group does not exist. groupUri: ' . $groupUri);
         }
 
         // Update WebID
