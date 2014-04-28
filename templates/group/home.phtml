@@ -1,6 +1,6 @@
 <div class="profile row-fluid">
     <div class="span9">
-        <h2>Site of <?= $this->groupshowNick ?></h2>
+        <h2>Site of <?= $this->groupshowName ?></h2>
         <h3>Activities</h3>
         <ul class="nav nav-pills">
             <li class="active"><a href="#status" data-toggle="tab">Status</a></li>
@@ -38,7 +38,7 @@
             $this->partial(
                 'activitystream.phtml',
                 array(
-                    'activities' => $this->profileshowActivities,
+                    'activities' => $this->groupshowActivities,
                     'personUri' => $this->profileshowPersonUri,
                     'personName' => $this->profileshowName
                 )

@@ -69,10 +69,10 @@ class Xodx_GroupController extends Xodx_ResourceController
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
         
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $groupQuery.= 'SELECT ?nick ?maker ' .  PHP_EOL;
+        $groupQuery.= 'SELECT ?name ?maker ' .  PHP_EOL;
         $groupQuery.= 'WHERE { ' .  PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> foaf:nick ?nick . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:name ?name . ' . PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
         
@@ -82,6 +82,9 @@ class Xodx_GroupController extends Xodx_ResourceController
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
         
+        $activityController = $this->_app->getController('Xodx_ActivityController');
+        $activities = $activityController->getActivities($groupUri);
+        
         if($user->getPerson() == $group[0]['maker']) {
             $template->isMaker = true;
         } else {
@@ -89,7 +92,8 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
         
         $template->groupUri = $groupUri;
-        $template->groupshowNick = $group[0]['nick'];
+        $template->groupshowName = $group[0]['name'];
+        $template->groupshowActivities = $activities;
         
         return $template;
     }
@@ -216,7 +220,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                     $nsFoaf . 'maker' => array(
                         array('type' => 'uri', 'value' => $adminUri)
                     ),
-                    $nsFoaf . 'nick' => array(
+                    $nsFoaf . 'name' => array(
                         array('type' => 'literal', 'value' => $name)
                     ),
                     $nsFoaf . 'primaryTopic' => array(
