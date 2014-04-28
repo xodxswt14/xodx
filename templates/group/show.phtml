@@ -16,7 +16,11 @@
     <div class="span3">
         <form method="post" action="?c=group&amp;a=joingroup">  
             <input type="hidden" name="group" value="<?= htmlentities($this->groupUri) ?>" />
+            <?php if($this->isGuest): ?>
+            <button class="btn btn-block disabled" disabled="" type="submit">Join Group</button>
+            <?php else: ?>
             <button class="btn btn-block" type="submit">Join Group</button>
+            <?php endif ?>
         </form>
     </div>
 </div>

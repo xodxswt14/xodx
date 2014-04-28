@@ -15,6 +15,7 @@
  * @author Stephan Kemper
  * @author Lukas Werner
  * @author Gunnar Warnecke
+ * @author Toni Pohl
  */
 class Xodx_GroupController extends Xodx_ResourceController
 {
@@ -32,22 +33,31 @@ class Xodx_GroupController extends Xodx_ResourceController
         $groupUri  = $request->getValue('uri', 'get');
         $id         = $request->getValue('id', 'get');
         $controller = $request->getValue('c', 'get');
-        
+
         if ($id !== null) {
             $groupUri = $this->_app->getBaseUri() . '?c=' . $controller . '&id=' . $id;
         }
-        
+
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
-        
+
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
         $groupQuery.= 'SELECT ?nick ' .  PHP_EOL;
         $groupQuery.= 'WHERE { ' .  PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> a foaf:Group . ' . PHP_EOL;
         $groupQuery.= 'OPTIONAL {<' . $groupUri . '> foaf:nick ?nick .} ' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
-        
+
         $group = $model->sparqlQuery($groupQuery);
-        
+
+        $userController = $this->_app->getController('Xodx_UserController');
+        $user = $userController->getUser();
+
+        if($user->getName() == 'guest') {
+            $template->isGuest = true;
+        } else {
+            $template->isGuest = false;
+        }
+
         $template->groupshowNick = $group[0]['nick'];
         $template->groupUri = $groupUri;
         
@@ -69,7 +79,8 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
         
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
-        
+
+        //GroupQuery fetching group information
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
         $groupQuery.= 'SELECT ?name ?maker ' .  PHP_EOL;
         $groupQuery.= 'WHERE { ' .  PHP_EOL;
@@ -77,22 +88,56 @@ class Xodx_GroupController extends Xodx_ResourceController
         $groupQuery.= '   <' . $groupUri . '> foaf:name ?name . ' . PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
-        
+
         $group = $model->sparqlQuery($groupQuery);
-        
-        /* get loged in user */
+
+        //MemberQuery fetching all members of group
+        $memberQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $memberQuery.= 'SELECT ?member ' .  PHP_EOL;
+        $memberQuery.= 'WHERE { ' .  PHP_EOL;
+        $memberQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
+        $memberQuery.= '   <' . $groupUri . '> foaf:member ?member .' . PHP_EOL;
+        $memberQuery.= '}'; PHP_EOL;
+
+        $members = $model->sparqlQuery($memberQuery);
+
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
-        
+
         $activityController = $this->_app->getController('Xodx_ActivityController');
         $activities = $activityController->getActivities($groupUri);
-        
+
+        //Checks if user is member of group
+        $isMember = false;
+        foreach($members as $member) {
+            if($member['member'] === $user->getPerson()) {
+                $isMember = true;
+            }
+        }
+
+        //Checks if user is maker and marks him as member
         if($user->getPerson() == $group[0]['maker']) {
             $template->isMaker = true;
+            $isMember = true;
         } else {
             $template->isMaker = false;
         }
-        
+
+        // Redirect from home to login if user is guest
+        if($user->getName() == 'guest') {
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'application');
+            $location->setParameter('a', 'login');
+            $template->redirect($location);
+        } elseif(!$isMember) { // Redirect user from home to show if he is not a member
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'group');
+            $location->setParameter('id', $group[0]['name']);
+            $location->setParameter('a', 'show');
+            $logger->debug(var_dump($location));
+            $template->redirect($location);
+        }
+
         $template->groupUri = $groupUri;
         $template->groupshowName = $group[0]['name'];
         $template->groupshowActivities = $activities;
@@ -498,6 +543,16 @@ class Xodx_GroupController extends Xodx_ResourceController
         if ($personUri == null) {
             $userController = $this->_app->getController('Xodx_UserController');
             $personUri = $userController->getUser()->getPerson();
+            $user = $userController->getUser();
+        }
+        
+        // Redirect to login if user is guest
+        if($user->getName() == 'guest') {
+            $location = new Saft_Url($this->_app->getBaseUri());
+
+            $location->setParameter('c', 'application');
+            $location->setParameter('a', 'login');
+            $template->redirect($location);
         }
 
         if (Erfurt_Uri::check($personUri)) {
