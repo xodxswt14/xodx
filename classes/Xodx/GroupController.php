@@ -355,12 +355,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $logger = $bootstrap->getResource('logger');
         $model  = $bootstrap->getResource('model');
         $userController = $this->_app->getController('Xodx_UserController');
-/*
-        $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
-        if (!$ldHelper->resourceDescriptionExists($groupUri)) {
-            throw new Exception('The WebID of this group does not exist. groupUri: ' . $groupUri);
-        }
-*/
+
         // Update WebID
         $model->addStatement(
             $personUri,
@@ -384,7 +379,11 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         // Subscribe to group
         $userUri = $userController->getUserUri($personUri);
-        $feedUri = $this->getActivityFeedUri($groupUri);
+        // get feedUri from given groupUri
+        $pos = strpos($groupUri, '?c=');        
+        $baseUri = substr($groupUri, 0, $pos);
+        $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
+
         if ($feedUri !== null) {
             $logger->debug(
                 'GroupController/joinGroup: Found feed for newly joined Group ("'
@@ -413,12 +412,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $model  = $bootstrap->getResource('model');
         $userController = $this->_app->getController('Xodx_UserController');
 
-    /*    // check group's Uri
-        $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
-        if (!$ldHelper->resourceDescriptionExists($groupUri)) {
-            throw new Exception('The WebID of this group does not exist.');
-        }
-    */    // delete Statement added by joinGroup ($personUri, member, $groupUri)
+        // delete Statement added by joinGroup ($personUri, member, $groupUri)
         $statementArray = array (
             $personUri => array (                               
                 'http://xmlns.com/foaf/0.1/member' => array(     
@@ -433,7 +427,11 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         // unsubscribe from group        
         $userUri = $userController->getUserUri($personUri);
-        $feedUri = $this->getActivityFeedUri($groupUri);
+        // get feedUri from given groupUri
+        $pos = strpos($groupUri, '?c=');        
+        $baseUri = substr($groupUri, 0, $pos);
+        $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
+
         if ($feedUri !== null) {
             // Logging
             $logger->debug('GroupController/leavegroup: Found feed for group ("' . $groupUri . '"): "' . $feedUri . '"');
