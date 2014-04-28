@@ -467,9 +467,9 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         if (Erfurt_Uri::check($personUri)) {
             $memberController = $this->_app->getController('Xodx_MemberController');
-            $memberController->addMember($personUri, $groupUri);
+            $memberController->deleteMember($personUri, $groupUri);
 
-            $this->joinGroup($personUri, $groupUri);
+            $this->leaveGroup($personUri, $groupUri);
             //Redirect
             $location = new Saft_Url($this->_app->getBaseUri());
 
