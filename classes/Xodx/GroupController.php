@@ -483,4 +483,40 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         return $template;
     }
+
+    /**
+     * View action for joining a new group.
+     */
+    public function joingroupAction($template)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $request = $bootstrap->getResource('request');
+
+        // get URI
+        $groupUri = $request->getValue('group', 'post');
+        $personUri = $request->getValue('person', 'post');
+
+        if ($personUri == null) {
+            $userController = $this->_app->getController('Xodx_UserController');
+            $personUri = $userController->getUser()->getUri();
+        }
+
+        if (Erfurt_Uri::check($personUri)) {
+            $memberController = $this->_app->getController('Xodx_MemberController');
+            $memberController->addMember($personUri, $groupUri);
+
+            $this->joinGroup($personUri, $groupUri);
+            //Redirect
+            $location = new Saft_Url($this->_app->getBaseUri());
+
+            $location->setParameter('c', 'user');
+            $location->setParameter('a', 'home');
+            $template->redirect($location);
+        } else {
+            $template->addContent('templates/error.phtml');
+            $template->exception = 'The given URI is not valid: personUri="' . $personUri;
+        }
+
+        return $template;
+    }
 }
