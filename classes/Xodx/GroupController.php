@@ -156,6 +156,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $request = $bootstrap->getResource('request');
 
         $groupname = $request->getValue('groupname', 'post');
+        $description = $request->getValue('description', 'post');
 
         $formError = array();
 
@@ -164,7 +165,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
 
         if (count($formError) <= 0) {
-            $this->createGroup(null, $groupname);
+            $this->createGroup($groupname, $description);
 
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'groupprofile');
@@ -219,7 +220,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      * @param String $name Name of the new group
      * @todo $groupUri might not be needed
      */
-    public function createGroup ($groupUri = null, $name)
+    public function createGroup ($name, $description = '')
     {
         // getResources & set namespaces
         $bootstrap = $this->_app->getBootstrap();
@@ -229,10 +230,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
         $nsDssn = 'http://purl.org/net/dssn/';
 
-        // fetch empty groupUri
-        if ($groupUri === null) {
-            $groupUri = $this->_app->getBaseUri() . '?c=group&id=' . urlencode($name);
-        }
+        $groupUri = $this->_app->getBaseUri() . '?c=group&id=' . urlencode($name);
 
         // verify that there is not already a group with that name
         $testQuery  = 'ASK {' . PHP_EOL;
@@ -271,7 +269,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                         array('type' => 'literal', 'value' => $name)
                     ),
                     $nsFoaf . 'primaryTopic' => array(
-                        array('type' => 'literal', 'value' => 'Enter description here...')
+                        array('type' => 'literal', 'value' => $description)
                     )
                 )
             );
