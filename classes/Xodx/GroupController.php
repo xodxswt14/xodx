@@ -41,10 +41,10 @@ class Xodx_GroupController extends Xodx_ResourceController
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
 
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $groupQuery.= 'SELECT ?nick ' .  PHP_EOL;
+        $groupQuery.= 'SELECT ?name ' .  PHP_EOL;
         $groupQuery.= 'WHERE { ' .  PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> a foaf:Group . ' . PHP_EOL;
-        $groupQuery.= 'OPTIONAL {<' . $groupUri . '> foaf:nick ?nick .} ' . PHP_EOL;
+        $groupQuery.= 'OPTIONAL {<' . $groupUri . '> foaf:name ?name .} ' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
 
         $group = $model->sparqlQuery($groupQuery);
@@ -58,7 +58,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->isGuest = false;
         }
 
-        $template->groupshowNick = $group[0]['nick'];
+        $template->groupshowNick = $group[0]['name'];
         $template->groupUri = $groupUri;
         
         return $template;
