@@ -107,8 +107,6 @@ class Xodx_MemberController extends Xodx_ResourceController
         //$userUri = $userController->getUserUri($personUri);
         $feedUri = $this->getActivityFeedUri($personUri);
 
-        $logger->debug('FeedUri  ' . $feedUri . 'end');
-
         if ($feedUri !== null) {
             $logger->debug('MemberController/addMember: Found feed for newly added member ("' . $personUri . '"): "' . $feedUri . '"');
             $this->subscribeToResource ($groupUri, $personUri, $feedUri);
@@ -219,14 +217,11 @@ class Xodx_MemberController extends Xodx_ResourceController
 
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
         $type = $resourceController->getType($subscriberUri);
-        
-        $logger->debug('GroupUri: ' . $subscriberUri);
-        
+
         if ($type === $nsFoaf . 'Group') {
             $subscriberUri = $groupController->getGroup($subscriberUri)->getUri();
         }
-        $logger->debug('GroupUri2: ' . $subscriberUri);
-        
+
         $logger->info('subscribeToFeed: group: ' . $subscriberUri . ', feed: ' . $feedUri);
 
         if (!$this->_isSubscribed($subscriberUri, $feedUri)) {
