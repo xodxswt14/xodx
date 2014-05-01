@@ -144,7 +144,6 @@ class Xodx_GroupController extends Xodx_ResourceController
             $location->setParameter('c', 'group');
             $location->setParameter('id', $group[0]['name']);
             $location->setParameter('a', 'show');
-            $logger->debug(var_dump($location));
             $template->redirect($location);
         }
 
