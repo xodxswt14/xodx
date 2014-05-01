@@ -1,12 +1,12 @@
 <div class="profile row-fluid">
     <div class="span9">
-        <h2>Site of <?= $this->groupshowNick ?></h2>
+        <!--<h2>Site of <?= $this->groupshowName ?></h2>-->
         <h3>Activities</h3>
         <?php
             $this->partial(
                 'activitystream.phtml',
                 array(
-                    'activities' => $this->profileshowActivities,
+                    'activities' => $this->groupshowActivities,
                     'personUri' => $this->profileshowPersonUri,
                     'personName' => $this->profileshowName
                 )

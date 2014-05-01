@@ -1,0 +1,44 @@
+<?php if (isset($this->activities) && count($this->activities) > 0) : ?>
+<?php foreach ($this->activities as $activity) : ?>
+<div class="activity well well-small">
+    <div class="row-fluid">
+        <form method="post" action="?c=activity&amp;a=reply">
+            <div class="span10">
+                <a href="<?= htmlentities($activity['authorUri']) ?>"><?= htmlentities($activity['author']) ?></a>
+                <?php if (isset($activity['objectType'])) : ?>
+                <a  href="<?= htmlentities($activity['verb']) ?>"><span class="label label-important"><?= Saft_Tools::getSpokenWord($activity['verb']) ?></span></a>
+                <?php if(isset($activity['objectContent'])) : ?>
+                <a href="<?= htmlentities($activity['object']) ?>"><?= Saft_Tools::getSpokenWord($activity['objectContent']) ?></a><br />
+                at <?= $activity['pubDate'] ?>
+                <?php else : ?>
+                <a href="<?= htmlentities($activity['object']) ?>"><?= htmlentities($activity['object']) ?></a><br>at <?= $activity['pubDate'] ?>
+                <?php endif; ?>
+                <?php else : ?>
+                <a  href="<?= htmlentities($activity['verb']) ?>"><span class="label label-info"><?= Saft_Tools::getSpokenWord($activity['verb']) ?></span></a>
+                <a  href="<?= htmlentities($activity['object']) ?>"> <?= Saft_Tools::getSpokenWord($activity['object']) ?></a><br>at <?= $activity['pubDate'] ?>
+                <?php endif; ?>
+            </div>
+            <div class="span2">
+                <input type="hidden" name="object" value="<?= htmlentities($activity['uri'])?>" />
+                <input type="hidden" name="actor" value="<?= htmlentities($activity['authorUri']) ?>" />
+                <a class="btn btn-mini btn-block" href="?c=feed&amp;a=getFeed&amp;uri=<?= urlencode($activity['object']) ?>">Show Feed of Object</a>
+                <button class="btn btn-mini btn-block" type="submit">Reply</button>
+            </div>
+            <?php if(isset($activity['objectImage'])) : ?>
+                <div class="span10">
+                    <a href="<?= htmlentities($activity['object']) ?>"><img class="avatar size128 img-polaroid" src="<?= htmlentities($activity['objectImage']) ?>" /></a>
+                </div>
+            <?php endif; ?>
+        </form>
+    </div>
+</div>
+<?php endforeach; ?>
+<?php else: ?>
+<div class="alert alert-info">
+    <?php if ($this->home === true) : ?>
+    You have no activities so far
+    <?php else : ?>
+    <?= $this->personName ?> has no activities so far
+    <?php endif; ?>
+</div>
+<?php endif; ?>

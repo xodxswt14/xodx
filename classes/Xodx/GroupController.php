@@ -46,16 +46,28 @@ class Xodx_GroupController extends Xodx_ResourceController
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
 
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $groupQuery.= 'SELECT ?nick ' .  PHP_EOL;
+        $groupQuery.= 'SELECT ?name ' .  PHP_EOL;
         $groupQuery.= 'WHERE { ' .  PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> a foaf:Group . ' . PHP_EOL;
-        $groupQuery.= 'OPTIONAL {<' . $groupUri . '> foaf:nick ?nick .} ' . PHP_EOL;
+        $groupQuery.= 'OPTIONAL {<' . $groupUri . '> foaf:name ?name .} ' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
 
+        //MemberQuery fetching all members of group
+        $memberQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $memberQuery.= 'SELECT ?member ' .  PHP_EOL;
+        $memberQuery.= 'WHERE { ' .  PHP_EOL;
+        $memberQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
+        $memberQuery.= '   <' . $groupUri . '> foaf:member ?member .' . PHP_EOL;
+        $memberQuery.= '}'; PHP_EOL;
+
         $group = $model->sparqlQuery($groupQuery);
+        $members = $model->sparqlQuery($memberQuery);
 
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
+
+        $activityController = $this->_app->getController('Xodx_ActivityController');
+        $activities = $activityController->getActivities($groupUri);
 
         if($user->getName() == 'guest') {
             $template->isGuest = true;
@@ -63,9 +75,35 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->isGuest = false;
         }
 
-        $template->groupshowNick = $group[0]['nick'];
+        //Checks if user is member of group
+        $isMember = false;
+        foreach($members as $member) {
+            if($member['member'] === $user->getPerson()) {
+                $isMember = true;
+            }
+        }
+
+        //Checks if user is maker and marks him as member
+        if($user->getPerson() == $group[0]['maker']) {
+            $template->isMaker = true;
+            $isMember = true;
+        } else {
+            $template->isMaker = false;
+        }
+
+        // Redirect from show to home if user is member
+        if($isMember) { // Redirect user from home to show if he is not a member
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'group');
+            $location->setParameter('id', $group[0]['name']);
+            $location->setParameter('a', 'home');
+            $template->redirect($location);
+        }
+
+        $template->groupshowName = $group[0]['name'];
         $template->groupUri = $groupUri;
-        
+        $template->groupshowActivities = $activities;
+
         return $template;
     }
 
@@ -150,7 +188,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $template->groupUri = $groupUri;
         $template->groupshowName = $group[0]['name'];
         $template->groupshowActivities = $activities;
-        
+
         return $template;
     }
     /**
