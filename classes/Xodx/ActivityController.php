@@ -175,7 +175,12 @@ class Xodx_ActivityController extends Xodx_ResourceController
         if ($groupUri === null) {
             $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($actorUri);
         } else {
-            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($actorUri) . urlencode($groupUri);
+            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . 
+                                urlencode($actorUri) .'&groupUri=' . urlencode($groupUri);
+            /* When posting in a group the user is not the actor itself. 
+             * In that case the actor is made up of both the user and the group.
+             */
+            $actorUri .= $groupUri;
         }
 
         $publishFeeds = array(
