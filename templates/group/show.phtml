@@ -1,6 +1,13 @@
 <div class="profile row-fluid">
     <div class="span9">
-        <!--<h2>Site of <?= $this->groupshowName ?></h2>-->
+        <h2>Site of <?= $this->groupshowName ?></h2>
+        <?php
+        if (!empty($this->groupDescription)) :
+        ?>
+        <blockquote>Description: <?= $this->groupDescription ?></blockquote>
+        <?php
+        endif;
+        ?>
         <h3>Activities</h3>
         <?php
             $this->partial(
@@ -16,11 +23,11 @@
     <div class="span3">
         <form method="post" action="?c=group&amp;a=joingroup">  
             <input type="hidden" name="group" value="<?= htmlentities($this->groupUri) ?>" />
-            <?php if($this->isGuest): ?>
+            <?php if ($this->isGuest): ?>
             <button class="btn btn-block disabled" disabled="" type="submit">Join Group</button>
-            <?php else: ?>
+            <?php else : ?>
             <button class="btn btn-block" type="submit">Join Group</button>
-            <?php endif ?>
+            <?php endif; ?>
         </form>
     </div>
 </div>

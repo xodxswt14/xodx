@@ -47,10 +47,11 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         //GroupQuery fetching group information
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $groupQuery.= 'SELECT ?name ?maker ' .  PHP_EOL;
+        $groupQuery.= 'SELECT ?name ?maker ?description ' .  PHP_EOL;
         $groupQuery.= 'WHERE { ' .  PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> foaf:name ?name . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:primaryTopic ?description . ' . PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
 
@@ -103,6 +104,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
 
         $template->groupshowName = $group[0]['name'];
+        $template->groupDescription = $group[0]['description'];
         $template->groupUri = $groupUri;
         $template->groupshowActivities = $activities;
 
@@ -132,10 +134,11 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         //GroupQuery fetching group information
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $groupQuery.= 'SELECT ?name ?maker ' .  PHP_EOL;
+        $groupQuery.= 'SELECT ?name ?maker ?description ' .  PHP_EOL;
         $groupQuery.= 'WHERE { ' .  PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> foaf:name ?name . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:primaryTopic ?description . ' . PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
 
@@ -189,6 +192,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         $template->groupUri = $groupUri;
         $template->groupshowName = $group[0]['name'];
+        $template->groupDescription = $group[0]['description'];
         $template->groupshowActivities = $activities;
 
         return $template;
@@ -205,15 +209,20 @@ class Xodx_GroupController extends Xodx_ResourceController
         $request = $bootstrap->getResource('request');
 
         $groupname = $request->getValue('groupname', 'post');
+        $description = $request->getValue('description', 'post');
 
         $formError = array();
 
         if (empty($groupname)) {
             $formError['groupname'] = true;
         }
+        
+        if (empty($description)) {
+            $description = "";
+        }
 
         if (count($formError) <= 0) {
-            $this->createGroup(null, $groupname);
+            $this->createGroup($groupname, $description);
 
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'groupprofile');
@@ -250,7 +259,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $this->deleteGroup($groupUri);
 
             $location = new Saft_Url($this->_app->getBaseUri());
-            $location->setParameter('c', 'groupProfile');
+            $location->setParameter('c', 'groupprofile');
             $location->setParameter('a', 'list');
 
             $template->redirect($location);
@@ -268,7 +277,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      * @param String $name Name of the new group
      * @todo $groupUri might not be needed
      */
-    public function createGroup ($groupUri = null, $name)
+    public function createGroup ($name, $description)
     {
         // getResources & set namespaces
         $bootstrap = $this->_app->getBootstrap();
@@ -278,10 +287,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
         $nsDssn = 'http://purl.org/net/dssn/';
 
-        // fetch empty groupUri
-        if ($groupUri === null) {
-            $groupUri = $this->_app->getBaseUri() . '?c=group&id=' . urlencode($name);
-        }
+        $groupUri = $this->_app->getBaseUri() . '?c=group&id=' . urlencode($name);
 
         // verify that there is not already a group with that name
         $testQuery  = 'ASK {' . PHP_EOL;
@@ -320,7 +326,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                         array('type' => 'literal', 'value' => $name)
                     ),
                     $nsFoaf . 'primaryTopic' => array(
-                        array('type' => 'literal', 'value' => 'Enter description here...')
+                        array('type' => 'literal', 'value' => $description)
                     )
                 )
             );
