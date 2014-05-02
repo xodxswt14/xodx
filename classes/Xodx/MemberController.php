@@ -12,61 +12,6 @@
  */
 class Xodx_MemberController extends Xodx_ResourceController
 {
-
-    /**
-     * A view action for adding a new member.
-     * 
-     * @param Saft_Layout $template used template
-     * @return Saft_Layout modified template
-     */
-    public function addmemberAction($template)
-    {
-        $bootstrap = $this->_app->getBootstrap();
-        $request = $bootstrap->getResource('request');
-
-        $groupUri = $request->getValue('group', 'post');
-        $personUri = $request->getValue('person', 'post');
-        echo 'test';
-        $personUri = 'http://127.0.0.1:8080/?c=person&id=test7';
-        $groupUri = 'http://127.0.0.1:8080/?c=Group&id=gtest7';
-        $this->addMember($personUri, $groupUri);
-        echo 'test1';
-        $location = new Saft_Url($this->_app->getBaseUri());
-        $location->setParameter('c', 'groupprofile');
-        $location->setParameter('a', 'list');
-
-        $template->redirect($location);
-
-        return $template;
-    }
-
-    /**
-     * A view action for deleting an existing member.
-     * 
-     * @param Saft_Layout $template used template
-     * @return Saft_Layout modified template
-     */
-    public function deletememberAction($template)
-    {
-        $bootstrap = $this->_app->getBootstrap();
-        $request = $bootstrap->getResource('request');
-
-        $groupUri = $request->getValue('group', 'post');
-        $personUri = $request->getValue('person', 'post');
-
-        $personUri = 'http://127.0.0.1:8080/?c=person&id=test7';
-        $groupUri = 'http://127.0.0.1:8080/?c=Group&id=gtest7';
-        $this->deleteMember($personUri, $groupUri);
-
-        $location = new Saft_Url($this->_app->getBaseUri());
-        $location->setParameter('c', 'groupprofile');
-        $location->setParameter('a', 'list');
-
-        $template->redirect($location);
-
-        return $template;
-    }
-
     /**
      * This adds a new member to a specified group.
      * 
@@ -99,17 +44,19 @@ class Xodx_MemberController extends Xodx_ResourceController
         );
         $activityController->addActivity($groupUri, $nsAair . 'StartFollowing', $object);
 
-        // Send Ping to new friend
+        // Send Ping to new member
         $pingbackController = $this->_app->getController('Xodx_PingbackController');
         $pingbackController->sendPing($groupUri, $personUri, 'You joined this group.');
 
-        // Subscribe to new friend
-        //$userUri = $userController->getUserUri($personUri);
-        $feedUri = $this->getActivityFeedUri($personUri);
+        // Subscribe to new member
+        $baseUri = $this->_app->getBaseUri();
+        $feedUri = $baseUri .  '?c=feed&a=getFeed&uri=' .
+                urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
 
+        //$personUri extended to identify an actor for every grouppost
         if ($feedUri !== null) {
             $logger->debug('MemberController/addMember: Found feed for newly added member ("' . $personUri . '"): "' . $feedUri . '"');
-            $this->subscribeToResource ($groupUri, $personUri, $feedUri);
+            $this->subscribeToResource ($groupUri, $personUri . $groupUri, $feedUri);
         } else {
             $logger->error('MemberController/addMember: Couldn\'t find feed for newly added member ("' . $personUri . '").');
         }
@@ -139,16 +86,19 @@ class Xodx_MemberController extends Xodx_ResourceController
 
         $nsAair = 'http://xmlns.notu.be/aair#';
 
-        // Send Ping to new friend
+        // Send Ping to member
         $pingbackController = $this->_app->getController('Xodx_PingbackController');
         $pingbackController->sendPing($groupUri, $personUri, 'You left this group.');
 
-        // Subscribe to new friend
-        $feedUri = $this->getActivityFeedUri($personUri);
+        // Unsubscribe from member
+        $baseUri = $this->_app->getBaseUri();
+        $feedUri = $baseUri .  '?c=feed&a=getFeed&uri=' .
+                urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
+
 
         if ($feedUri !== null) {
             $logger->debug('MemberController/deletemember: Found feed of member ("' . $personUri . '"): "' . $feedUri . '"');
-            $this->unsubscribeFromResource ($groupUri, $personUri, $feedUri);
+            $this->unsubscribeFromResource ($groupUri, $personUri. $groupUri, $feedUri);
         } else {
             $logger->error('MemberController/deleteMember: Couldn\'t find feed of member ("' . $personUri . '").');
         }
@@ -392,4 +342,65 @@ class Xodx_MemberController extends Xodx_ResourceController
         return count($subscribedResult);
     }
 
+    
+    
+     /**
+     *
+     * Method returns all activities the group is subscribed to
+     * @param Xodx_Group $group
+     * @return array of activities
+     */
+    public function getActivityStream (Xodx_Group $group)
+    {
+        $subscribedResources = $this->getSubscribedResources($group);
+
+        $activityController = $this->_app->getController('Xodx_ActivityController');
+        $activities = array();
+
+        foreach ($subscribedResources as $resourceUri) {
+            $act = $activityController->getActivities($resourceUri);
+            $activities = array_merge($activities, $act);
+        }
+        $tmp = Array();
+        foreach($activities as &$act) {
+            $tmp[] = &$act["pubDate"];
+        }
+        array_multisort($tmp, SORT_DESC, $activities);
+
+        return $activities;
+    }
+
+    /**
+     * Find all resources a user is subscribed to via Activity Feed
+     * @param $userUri the uri of the user in question
+     * @return array $subscribedResources all resource a user is subscribed to
+     */
+    public function getSubscribedResources (Xodx_Group $group)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $model = $bootstrap->getResource('model');
+        $groupUri = $group->getUri();
+
+        // SPARQL-Query
+        $query = 'PREFIX dssn: <http://purl.org/net/dssn/> ' . PHP_EOL;
+        $query.= 'SELECT  DISTINCT ?resUri' . PHP_EOL;
+        $query.= 'WHERE {' . PHP_EOL;
+        $query.= '   <' . $groupUri . '> dssn:subscribedTo        ?subUri. ' . PHP_EOL;
+        $query.= '   ?subUri            dssn:subscriptionTopic   ?feedUri. ' . PHP_EOL;
+        $query.= '   ?resUri            dssn:activityFeed   ?feedUri. ' . PHP_EOL;
+        $query.= '}' . PHP_EOL;
+
+        $result = $model->sparqlQuery($query);
+
+        $subscribedResources = array();
+
+        // results in array
+        foreach ($result as $resource) {
+            if (isset($resource['resUri'])) {
+                $subscribedResources[] = $resource['resUri'];
+            }
+        }
+
+        return $subscribedResources;
+    }
 }
