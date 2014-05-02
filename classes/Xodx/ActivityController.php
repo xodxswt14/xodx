@@ -172,11 +172,10 @@ class Xodx_ActivityController extends Xodx_ResourceController
         /* Determine the actorFeed. This is usually the user's feed or - if he is posting in a group - 
          * it is the user's feed for this specific group
          */
-        if (groupUri === null) {
+        if ($groupUri === null) {
             $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($actorUri);
         } else {
-            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&userUri=' . 
-                    urlencode($actorUri) . '&groupUri=' . urlencode($groupUri);
+            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($actorUri) . urlencode($groupUri);
         }
 
         $publishFeeds = array(
