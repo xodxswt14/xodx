@@ -45,11 +45,13 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
 
+        //GroupQuery fetching group information
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $groupQuery.= 'SELECT ?name ' .  PHP_EOL;
+        $groupQuery.= 'SELECT ?name ?maker ' .  PHP_EOL;
         $groupQuery.= 'WHERE { ' .  PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> a foaf:Group . ' . PHP_EOL;
-        $groupQuery.= 'OPTIONAL {<' . $groupUri . '> foaf:name ?name .} ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:name ?name . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
 
         //MemberQuery fetching all members of group
