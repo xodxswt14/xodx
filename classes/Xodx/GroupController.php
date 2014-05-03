@@ -157,9 +157,10 @@ class Xodx_GroupController extends Xodx_ResourceController
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
 
-        $activityController = $this->_app->getController('Xodx_ActivityController');
-        $activities = $activityController->getActivities($groupUri);
+        $memberController = $this->_app->getController('Xodx_MemberController');
+        $activities = $memberController->getActivityStream($this->getGroup($groupUri));
 
+        
         //Checks if user is member of group
         $isMember = false;
         foreach($members as $member) {
@@ -480,10 +481,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         // Subscribe to group
         $userUri = $userController->getUserUri($personUri);
-        // get feedUri from given groupUri
-        $pos = strpos($groupUri, '?c=');        
-        $baseUri = substr($groupUri, 0, $pos);
-        $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
+        $feedUri = $this->getGroupFeedUri($groupUri);
 
         if ($feedUri !== null) {
             $logger->debug(
@@ -528,10 +526,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         // unsubscribe from group        
         $userUri = $userController->getUserUri($personUri);
-        // get feedUri from given groupUri
-        $pos = strpos($groupUri, '?c=');        
-        $baseUri = substr($groupUri, 0, $pos);
-        $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
+        $feedUri = $this->getGroupFeedUri($groupUri);
 
         if ($feedUri !== null) {
             // Logging
@@ -630,5 +625,18 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->exception = 'The given URI is not valid: personUri="' . $personUri;
         }
         return $template;
+    }
+
+    /**
+     * Creates feed on given resource
+     * @param Uri $resourceUri the feed searched for
+     * @return Uri $feedUri of $resourceUri
+     */
+    public function getGroupFeedUri($resourceUri)
+    {
+        $pos = strpos($resourceUri, '?c=');        
+        $baseUri = substr($resourceUri, 0, $pos);
+        $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($resourceUri);
+        return $feedUri;
     }
 }
