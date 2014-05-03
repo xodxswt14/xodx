@@ -271,14 +271,14 @@ class Xodx_GroupController extends Xodx_ResourceController
         return $template;
     }
 
-    /**
+/**
      * This creates a new group with the given name.
      * This function is usually called internally
      * @param Uri $groupUri Uri of the new group
      * @param String $name Name of the new group
      * @todo $groupUri might not be needed
      */
-    public function createGroup ($name, $description)
+    public function createGroup ($name, $description = '')
     {
         // getResources & set namespaces
         $bootstrap = $this->_app->getBootstrap();
@@ -332,7 +332,6 @@ class Xodx_GroupController extends Xodx_ResourceController
                 )
             );
             $model->addMultipleStatements($newGroup);
-            $this->joinGroup($adminUri, $groupUri);
         }
     }
 
