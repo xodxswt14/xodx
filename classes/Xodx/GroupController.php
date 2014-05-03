@@ -69,8 +69,9 @@ class Xodx_GroupController extends Xodx_ResourceController
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
 
-        $activityController = $this->_app->getController('Xodx_ActivityController');
-        $activities = $activityController->getActivities($groupUri);
+        $memberController = $this->_app->getController('Xodx_MemberController');
+        $activites = $memberController->getActivityStream($this->getGroup($groupUri));
+        var_dump($activites);
 
         if($user->getName() == 'guest') {
             $template->isGuest = true;
@@ -159,6 +160,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         $memberController = $this->_app->getController('Xodx_MemberController');
         $activities = $memberController->getActivityStream($this->getGroup($groupUri));
+        var_dump($activities);
 
         
         //Checks if user is member of group
@@ -495,8 +497,6 @@ class Xodx_GroupController extends Xodx_ResourceController
                 . $groupUri . '").'
             );
         }
-
-        _subscribeGroupToFeed($personUri, $groupUri);
     }
 
     /**
@@ -539,8 +539,6 @@ class Xodx_GroupController extends Xodx_ResourceController
             // Logging
             $logger->error('GroupController/leavegroup: Couldn\'t find feed for group ("' . $groupUri . '").');
         }
-
-        _unsubscribeGroupFromFeed($personUri, $groupUri);
     }
 
     /**
