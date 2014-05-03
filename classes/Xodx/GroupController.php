@@ -160,9 +160,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         $memberController = $this->_app->getController('Xodx_MemberController');
         $activities = $memberController->getActivityStream($this->getGroup($groupUri));
-        var_dump($activities);
 
-        
         //Checks if user is member of group
         $isMember = false;
         foreach($members as $member) {
