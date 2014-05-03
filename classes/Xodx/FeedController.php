@@ -92,7 +92,13 @@ class Xodx_FeedController extends Saft_Controller
             $object = $activity->getObject();
             $objectUri = $object->getIri();
             //$contextUri = $activity->getTarget();
+
             $resourceController->importResource($activityUri);
+
+            if(strpos($actorUri, "group") != FALSE)
+            {
+                publish($activityUri);
+            }
         }
     }
 
