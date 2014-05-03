@@ -332,6 +332,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                 )
             );
             $model->addMultipleStatements($newGroup);
+            $this->joinGroup($adminUri, $groupUri);
         }
     }
 
