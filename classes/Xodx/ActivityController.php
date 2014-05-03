@@ -84,19 +84,10 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $groupUri = $request->getValue('groupUri', 'post');
 
         $nsAair = 'http://xmlns.notu.be/aair#';
-
-
-        // Determine the actor of the activity. Either the user himself or the group he is posting in
-        $userController = $this->_app->getController('Xodx_UserController');        
-        if (isset($groupUri)) {
-            // In this case the user is posting into a group which is therefore the actor of the activity            
-            $actorUri = $groupUri;
-            $personUri = $userController->getUser()->getPerson();
-        } else {
-            // In this (default) case the user is the actor himself
-            $actorUri = $userController->getUser()->getPerson();
-        }
-
+        
+        $userController = $this->_app->getController('Xodx_UserController');
+        $actorUri = $userController->getUser()->getPerson();
+        
         $logger->debug('Actor URI is: ' . $actorUri);
 
         $object = array('content' => $actContent);
@@ -135,20 +126,20 @@ class Xodx_ActivityController extends Xodx_ResourceController
             break;
         }
 
-        $this->addActivity($actorUri, $verbUri, $object, $personUri);
+        $this->addActivity($actorUri, $verbUri, $object, $groupUri);
 
         return $template;
     }
 
     /**
      * This method adds a new activity to the store
-     * @param $actorUri String Uri of the activity's actor. This is either a user or a group
-     * @param $verbUri String Determines the type of activity (Note, Photo, ...)
-     * @param $objectUri String Content of the activity
-     * @param $personUri String If the actor is a group i.e. the activity is posted in a group this determines the user who published this activity. Otherwise this is null
+     * @param Uri $actorUri String Uri of the activity's actor. This is either a user or a group
+     * @param Uri $verbUri String Determines the type of activity (Note, Photo, ...)
+     * @param Array $object Content of the activity
+     * @param Uri $groupUri If the activity is posted in a group this is that group's Uri. Otherwise (default) this is null
      * TODO should be replaced by a method which takes a DSSN_Activity object
      */
-    public function addActivity ($actorUri, $verbUri, $object, $personUri = null)
+    public function addActivity ($actorUri, $verbUri, $object, $groupUri = null)
     {
         $bootstrap = $this->_app->getBootstrap();
 
@@ -177,7 +168,20 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $objectUri = $baseUri . '?c=resource&id=' . md5(rand());
         $activityUri = $baseUri . '?c=activity&id=' . md5(rand());
         $activityFeedUri = $baseUri . '?c=feed&a=getFeed&uri=' .  urlencode($activityUri);
-        $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($actorUri);
+        
+        /* Determine the actorFeed. This is usually the user's feed or - if he is posting in a group - 
+         * it is the user's feed for this specific group
+         */
+        if ($groupUri === null) {
+            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($actorUri);
+        } else {
+            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . 
+                                urlencode($actorUri) .'&groupUri=' . urlencode($groupUri);
+            /* When posting in a group the user is not the actor itself. 
+             * In that case the actor is made up of both the user and the group.
+             */
+            $actorUri .= $groupUri;
+        }
 
         $publishFeeds = array(
             $actorUri => $actorFeedUri
@@ -245,13 +249,6 @@ class Xodx_ActivityController extends Xodx_ResourceController
                 )
             )
         );
-
-        // Create an additional Tripel if the actor is a group, containing the author's uri
-        if (isset($personUri)) {
-            $activityTriples[$activityUri][$nsFoaf . 'maker'][] = array(
-                'type' => 'uri', 'value' => $personUri
-            );
-        }
 
         // If this activity contains a reply, add this statement, too
         if (isset($object['replyObject']) && Erfurt_Uri::check($object['replyObject'])) {
