@@ -71,7 +71,6 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         $memberController = $this->_app->getController('Xodx_MemberController');
         $activites = $memberController->getActivityStream($this->getGroup($groupUri));
-        var_dump($activites);
 
         if($user->getName() == 'guest') {
             $template->isGuest = true;
@@ -332,7 +331,12 @@ class Xodx_GroupController extends Xodx_ResourceController
                 )
             );
             $model->addMultipleStatements($newGroup);
+$logger->debug("1");
+            $memberController = $this->_app->getController('Xodx_MemberController');
+            $memberController->addMember($adminUri, $groupUri);
+$logger->debug("2");
             $this->joinGroup($adminUri, $groupUri);
+            $logger->debug('3');
         }
     }
 
@@ -617,7 +621,9 @@ class Xodx_GroupController extends Xodx_ResourceController
             //Redirect
             $location = new Saft_Url($this->_app->getBaseUri());
 
-            $location->setParameter('c', 'user');
+            $groupName = $this->getGroup($groupUri)->getName();
+            $location->setParameter('c', 'group');
+            $location->setParameter('id', $groupName);
             $location->setParameter('a', 'home');
             $template->redirect($location);
         } else {

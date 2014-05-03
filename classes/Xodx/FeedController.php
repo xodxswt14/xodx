@@ -76,6 +76,7 @@ class Xodx_FeedController extends Saft_Controller
         // load feedxml and display activities
         $feed = DSSN_Activity_Feed_Factory::newFromXml($feedData);
         $resourceController = $this->_app->getController('Xodx_ResourceController');
+        $pushController = $this->_app->getController('Xodx_PushController');
 
         $nsXsd = 'http://www.w3.org/2001/XMLSchema#';
 
@@ -97,7 +98,7 @@ class Xodx_FeedController extends Saft_Controller
 
             if(strpos($actorUri, "group") != FALSE)
             {
-                publish($activityUri);
+                $pushController->publish($activityUri);
             }
         }
     }
