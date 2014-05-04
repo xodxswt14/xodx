@@ -29,6 +29,7 @@
                     <input placeholder="Share a link" class="input-block-level" type="text" name="content" />
                     <input type="hidden" name="type" value="Bookmark" />
                     <input type="hidden" name="reply" value="false" />
+                    <input type="hidden" name="groupUri" value="<?= htmlentities($this->groupUri) ?>" />
                     <button class="btn btn-primary" type="submit">Share</button>
                 </form>
             </div>
@@ -37,6 +38,7 @@
                     <input type="file" name="content"/>
                     <input type="hidden" name="type" value="Photo" />
                     <input type="hidden" name="reply" value=false />
+                    <input type="hidden" name="groupUri" value="<?= htmlentities($this->groupUri) ?>" />
                     <button class="btn btn-primary" type="submit">Share</button>
                 </form>
             </div>

@@ -70,7 +70,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $user = $userController->getUser();
 
         $memberController = $this->_app->getController('Xodx_MemberController');
-        $activites = $memberController->getActivityStream($this->getGroup($groupUri));
+        $activities = $memberController->getActivityStream($this->getGroup($groupUri));
 
         if($user->getName() == 'guest') {
             $template->isGuest = true;
