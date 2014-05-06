@@ -54,6 +54,13 @@ class Xodx_PersonController extends Xodx_ResourceController
         $contactsQuery.= '   OPTIONAL {?contactUri foaf:nick ?nick .} ' . PHP_EOL;
         $contactsQuery.= '}';
 
+        $groupsQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $groupsQuery.= 'SELECT ?groupUri ?name ' . PHP_EOL;
+        $groupsQuery.= 'WHERE { ' . PHP_EOL;
+        $groupsQuery.= '   <' . $personUri . '> foaf:member ?groupUri . ' . PHP_EOL;
+        $groupsQuery.= '   OPTIONAL {?groupUri foaf:name ?name .} ' . PHP_EOL;
+        $groupsQuery.= '}';
+
         $profile = $model->sparqlQuery($profileQuery);
 
         if (count($profile) < 1) {
@@ -73,8 +80,10 @@ class Xodx_PersonController extends Xodx_ResourceController
                 );
             }
             $friends = $modelNew->getValues($personUri, $nsFoaf . 'knows');
+            $groups = $modelNew->getValues($personUri, $nsFoaf . 'member');
 
             $knows = array();
+            $member = array();
 
             foreach($friends as $friend) {
                 $knows[] = array(
@@ -83,9 +92,17 @@ class Xodx_PersonController extends Xodx_ResourceController
                     'nick' => ''
                 );
             }
+            
+            foreach($groups as $group) {
+                $member[] = array(
+                    'groupUri' => $group['value'],
+                    'name' => ''
+                );
+            }
 
         } else {
             $knows = $model->sparqlQuery($contactsQuery);
+            $member = $model->sparqlQuery($groupsQuery);
         }
 
         $activityController = $this->_app->getController('Xodx_ActivityController');
@@ -141,6 +158,7 @@ class Xodx_PersonController extends Xodx_ResourceController
         $template->profileshowNick = $profile[0]['nick'];
         $template->profileshowActivities = $activities;
         $template->profileshowKnows = $knows;
+        $template->profileshowMember = $member;
         $template->profileshowNews = $news;
         $template->addContent('templates/profileshow.phtml');
 

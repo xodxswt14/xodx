@@ -1,0 +1,30 @@
+<h3>Groups</h3>
+<?php if($this->joinGroup) : ?>
+<form method="post" action="?c=group&amp;a=joingroup">
+    <div class="input-append">
+        <input type="text" name="group" placeholder="Add a groups URI" /><button class="btn btn-primary" type="submit">Join</button>
+    </div>
+</form>
+<?php endif; ?>
+<?php if (isset($this->member)) : ?>
+    <?php foreach($this->member as $group) : ?>
+    <address>
+        <?php
+            if ($group['name'] != null) {
+                $name = $group['name'];
+            } else {
+                $name = "unknown name";
+            }
+        ?>
+        <strong><?= $name ?></strong><br />
+        <a href="?c=group&amp;uri=<?= urlencode($group['groupUri']) ?>"><?= $group['groupUri'] ?></a>
+        <?php if ($this->personUri == $this->logInUri || $this->isHome) : ?>
+        <form method="post" action="?c=group&amp;a=leavegroup">
+            <input type="hidden" name="person" value="<?= htmlentities($this->personUri) ?>" />
+            <input type="hidden" name="group" value="<?= $group['groupUri'] ?>" />
+            <button class="btn btn-block" type="submit">Leave Group</button>
+        </form>
+        <?php endif; ?>
+    </address>
+    <?php endforeach; ?>
+<?php endif; ?>

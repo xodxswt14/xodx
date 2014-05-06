@@ -63,6 +63,15 @@
         <hr />
         <?php
             $this->partial(
+                'grouplist.phtml',
+                array('personUri' => $this->profileshowPersonUri,
+                    'member' => $this->profileshowMember, 'joinGroup' => true,
+                    'logInUri' => $this->profileshowLogInUri, 'isHome' => true)
+            );
+        ?>
+        <hr />
+        <?php
+            $this->partial(
                 'friendlist.phtml',
                 array('personUri' => $this->profileshowPersonUri, 
                     'knows' => $this->profileshowKnows, 'addFriend' => true, 
