@@ -72,6 +72,9 @@ class Xodx_GroupController extends Xodx_ResourceController
         $memberController = $this->_app->getController('Xodx_MemberController');
         $activities = $memberController->getActivityStream($this->getGroup($groupUri));
 
+        $nameHelper = new Xodx_NameHelper($this->_app);
+        $makerName = $nameHelper->getName($group[0]['maker']);
+
         if($user->getName() == 'guest') {
             $template->isGuest = true;
         } else {
@@ -103,9 +106,16 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->redirect($location);
         }
 
+        // Refine array of group members
+        for($i = 0; $i < count($members); $i++) {
+            $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
+        }
+
         $template->groupshowName = $group[0]['name'];
         $template->groupDescription = $group[0]['description'];
         $template->groupUri = $groupUri;
+        $template->groupMaker = $group[0]['maker'];
+        $template->groupMembers = $members;
         $template->groupshowActivities = $activities;
 
         return $template;
@@ -157,8 +167,13 @@ class Xodx_GroupController extends Xodx_ResourceController
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
 
+        // Get group activity stream
         $memberController = $this->_app->getController('Xodx_MemberController');
         $activities = $memberController->getActivityStream($this->getGroup($groupUri));
+
+        // Beautify maker name
+        $nameHelper = new Xodx_NameHelper($this->_app);
+        $makerName = $nameHelper->getName($group[0]['maker']);
 
         //Checks if user is member of group
         $isMember = false;
@@ -190,9 +205,17 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->redirect($location);
         }
 
+        // Refine array of group members
+        for($i = 0; $i < count($members); $i++) {
+            $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
+        }
+
         $template->groupUri = $groupUri;
         $template->groupshowName = $group[0]['name'];
         $template->groupDescription = $group[0]['description'];
+        $template->groupMaker = $group[0]['maker'];
+        $template->groupMakerName = $makerName;
+        $template->groupMembers = $members;
         $template->groupshowActivities = $activities;
 
         return $template;
