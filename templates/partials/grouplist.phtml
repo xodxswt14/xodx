@@ -18,7 +18,8 @@
         ?>
         <strong><?= $name ?></strong><br />
         <a href="?c=group&amp;uri=<?= urlencode($group['groupUri']) ?>"><?= $group['groupUri'] ?></a>
-        <?php if ($this->personUri == $this->logInUri || $this->isHome) : ?>
+        <?php if (($this->personUri == $this->logInUri || $this->isHome) 
+                && $group['maker'] != $this->personUri) : ?>
         <form method="post" action="?c=group&amp;a=leavegroup">
             <input type="hidden" name="person" value="<?= htmlentities($this->personUri) ?>" />
             <input type="hidden" name="group" value="<?= $group['groupUri'] ?>" />

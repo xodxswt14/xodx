@@ -57,9 +57,10 @@ class Xodx_UserController extends Xodx_ResourceController
             $contactsQuery.= '}';
 
             $groupsQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-            $groupsQuery.= 'SELECT ?groupUri ?name ' . PHP_EOL;
+            $groupsQuery.= 'SELECT ?groupUri ?name ?maker ' . PHP_EOL;
             $groupsQuery.= 'WHERE { ' . PHP_EOL;
             $groupsQuery.= '   <' . $personUri . '> foaf:member ?groupUri . ' . PHP_EOL;
+            $groupsQuery.= '   OPTIONAL {?groupUri foaf:maker ?maker .} ' . PHP_EOL;
             $groupsQuery.= '   OPTIONAL {?groupUri foaf:name ?name .} ' . PHP_EOL;
             $groupsQuery.= '}';
 
