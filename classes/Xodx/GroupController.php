@@ -614,18 +614,44 @@ $logger->debug("2");
         }
 
         if (Erfurt_Uri::check($personUri)) {
-            $memberController = $this->_app->getController('Xodx_MemberController');
-            $memberController->addMember($personUri, $groupUri);
+            // Get remote base uri from group uri
+            $uri = "";
+            if (($uriArray = parse_url($groupUri))) {
+                var_dump($uriArray);
+                $uri = $uriArray['scheme'] . '://'
+                     . $uriArray['host']
+                     . $uriArray['path'];
+                if(substr($uri, -1) != '/') {
+                    $uri.= '/';
+                }
+                $uri.= '?c=member&a=addmember';
+            }
+            if (!empty($uri)) {
+                // Send curl post request with needed data
+                $fields = array(
+                    'personUri' => urlencode($personUri),
+                    'groupUri' => urlencode($groupUri)
+                );
+                var_dump($uri);
+                $apiStatus = trim($this->_callMemberApi($uri, $fields));
+                if ($apiStatus == "success") {
+                    $this->joinGroup($personUri, $groupUri);
+                    //Redirect
+                    $location = new Saft_Url($this->_app->getBaseUri());
 
-            $this->joinGroup($personUri, $groupUri);
-            //Redirect
-            $location = new Saft_Url($this->_app->getBaseUri());
-
-            $groupName = $this->getGroup($groupUri)->getName();
-            $location->setParameter('c', 'group');
-            $location->setParameter('id', $groupName);
-            $location->setParameter('a', 'home');
-            $template->redirect($location);
+                    $groupName = $this->getGroup($groupUri)->getName();
+                    $location->setParameter('c', 'group');
+                    $location->setParameter('id', $groupName);
+                    $location->setParameter('a', 'home');
+                    $template->redirect($location);
+                } else {
+                    $template->addContent('templates/error.phtml');
+                    $template->exception = 'API call failed!';
+                }
+            } else {
+                $template->addContent('templates/error.phtml');
+                $template->exception = 'Failed to parse url from $groupUri!';
+            }
         } else {
             $template->addContent('templates/error.phtml');
             $template->exception = 'The given URI is not valid: personUri="' . $personUri;
@@ -644,6 +670,38 @@ $logger->debug("2");
         $baseUri = substr($resourceUri, 0, $pos);
         $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($resourceUri);
         return $feedUri;
+    }
+
+    /**
+     * Calls the API created to get group subscribing person
+     * @param string $uri URI of the API
+     * @param mixed[] $fields Fields to send with
+     * @return mixed content got from request
+     */
+    private function _callMemberApi($uri, $fields) {
+        // uri-fy the date for the POST Request
+        $fields_string = '';
+        foreach ($fields as $field => $value) { 
+            $fields_string .= $field . '=' . $value . '&';
+        }
+        rtrim($fields_string, '&');
+
+        // Open Connection
+        $curlConnection = curl_init();
+
+        // Set the uri, number of POST vars and POST data
+        curl_setopt($curlConnection, CURLOPT_URL, $uri);
+        curl_setopt($curlConnection, CURLOPT_POST, count($fields));
+        curl_setopt($curlConnection, CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($curlConnection, CURLOPT_RETURNTRANSFER, true);
+
+        // Execute
+        $result = curl_exec($curlConnection);
+        
+        // Close Connection
+        curl_close($curlConnection);
+
+        return $result;
     }
 
     /**

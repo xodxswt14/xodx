@@ -13,6 +13,42 @@
 class Xodx_MemberController extends Xodx_ResourceController
 {
     /**
+     * API Action for getting group subsribe to person
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     * @todo more security needed, change hardcoded 'success' and 'fail'
+     */
+    public function addmemberAction ($template) {
+        $bootstrap = $this->_app->getBootstrap();
+        $request = $bootstrap->getResource('request');
+
+        $groupUri = $request->getValue('groupUri', 'post');
+        $personUri = $request->getValue('personUri', 'post');
+
+        $formError = array();
+
+        if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
+            $formError['groupUri'] = true;
+        }
+
+        if (empty($personUri) || !Erfurt_Uri::check($personUri)) {
+            $formError['personUri'] = true;
+        }
+
+        if (count($formError) <= 0) {
+            $this->addMember($personUri, $groupUri);
+            $template->disableLayout();
+            $template->setRawContent('success');
+        } else {
+            $template->formError = $formError;
+            $template->disableLayout();
+            $template->setRawContent('fail');
+        }
+
+        return $template;
+    }
+
+    /**
      * This adds a new member to a specified group.
      * 
      * @param URI $personUri Uri of the new member
