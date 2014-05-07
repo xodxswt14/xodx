@@ -617,7 +617,6 @@ $logger->debug("2");
             // Get remote base uri from group uri
             $uri = "";
             if (($uriArray = parse_url($groupUri))) {
-                var_dump($uriArray);
                 $uri = $uriArray['scheme'] . '://'
                      . $uriArray['host']
                      . $uriArray['path'];
@@ -626,13 +625,14 @@ $logger->debug("2");
                 }
                 $uri.= '?c=member&a=addmember';
             }
+
             if (!empty($uri)) {
                 // Send curl post request with needed data
                 $fields = array(
                     'personUri' => urlencode($personUri),
                     'groupUri' => urlencode($groupUri)
                 );
-                var_dump($uri);
+
                 $apiStatus = trim($this->_callMemberApi($uri, $fields));
                 if ($apiStatus == "success") {
                     $this->joinGroup($personUri, $groupUri);
