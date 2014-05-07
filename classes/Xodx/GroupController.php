@@ -564,16 +564,43 @@ $logger->debug("2");
         }
 
         if (Erfurt_Uri::check($personUri)) {
-            $memberController = $this->_app->getController('Xodx_MemberController');
-            $memberController->deleteMember($personUri, $groupUri);
+            // Get remote base uri from group uri
+            $uri = "";
+            if (($uriArray = parse_url($groupUri))) {
+                $uri = $uriArray['scheme'] . '://'
+                     . $uriArray['host']
+                     . $uriArray['path'];
+                if(substr($uri, -1) != '/') {
+                    $uri.= '/';
+                }
+                $uri.= '?c=member&a=deletemember';
+            }
 
-            $this->leaveGroup($personUri, $groupUri);
-            //Redirect
-            $location = new Saft_Url($this->_app->getBaseUri());
+            if (!empty($uri)) {
+                // Send curl post request with needed data
+                $fields = array(
+                    'personUri' => urlencode($personUri),
+                    'groupUri' => urlencode($groupUri)
+                );
 
-            $location->setParameter('c', 'user');
-            $location->setParameter('a', 'home');
-            $template->redirect($location);
+                $apiStatus = trim($this->_callMemberApi($uri, $fields));
+                if ($apiStatus == "success") {
+                    $this->leaveGroup($personUri, $groupUri);
+                    //Redirect
+                    $location = new Saft_Url($this->_app->getBaseUri());
+
+                    $groupName = $this->getGroup($groupUri)->getName();
+                    $location->setParameter('c', 'user');
+                    $location->setParameter('a', 'home');
+                    $template->redirect($location);
+                } else {
+                    $template->addContent('templates/error.phtml');
+                    $template->exception = 'API call failed!';
+                }
+            } else {
+                $template->addContent('templates/error.phtml');
+                $template->exception = 'Failed to parse url from $groupUri!';
+            }
         } else {
             $template->addContent('templates/error.phtml');
             $template->exception = 'The given URI is not valid: personUri="' . $personUri;
