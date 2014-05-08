@@ -16,6 +16,7 @@
  * @author Lukas Werner
  * @author Gunnar Warnecke
  * @author Toni Pohl
+ * @author Thomas Guett
  */
 class Xodx_GroupController extends Xodx_ResourceController
 {
@@ -72,6 +73,9 @@ class Xodx_GroupController extends Xodx_ResourceController
         $memberController = $this->_app->getController('Xodx_MemberController');
         $activities = $memberController->getActivityStream($this->getGroup($groupUri));
 
+        $nameHelper = new Xodx_NameHelper($this->_app);
+        $makerName = $nameHelper->getName($group[0]['maker']);
+
         if($user->getName() == 'guest') {
             $template->isGuest = true;
         } else {
@@ -103,9 +107,16 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->redirect($location);
         }
 
+        // Refine array of group members
+        for($i = 0; $i < count($members); $i++) {
+            $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
+        }
+
         $template->groupshowName = $group[0]['name'];
         $template->groupDescription = $group[0]['description'];
         $template->groupUri = $groupUri;
+        $template->groupMaker = $group[0]['maker'];
+        $template->groupMembers = $members;
         $template->groupshowActivities = $activities;
 
         return $template;
@@ -157,8 +168,13 @@ class Xodx_GroupController extends Xodx_ResourceController
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
 
+        // Get group activity stream
         $memberController = $this->_app->getController('Xodx_MemberController');
         $activities = $memberController->getActivityStream($this->getGroup($groupUri));
+
+        // Beautify maker name
+        $nameHelper = new Xodx_NameHelper($this->_app);
+        $makerName = $nameHelper->getName($group[0]['maker']);
 
         //Checks if user is member of group
         $isMember = false;
@@ -190,9 +206,17 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->redirect($location);
         }
 
+        // Refine array of group members
+        for($i = 0; $i < count($members); $i++) {
+            $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
+        }
+
         $template->groupUri = $groupUri;
         $template->groupshowName = $group[0]['name'];
         $template->groupDescription = $group[0]['description'];
+        $template->groupMaker = $group[0]['maker'];
+        $template->groupMakerName = $makerName;
+        $template->groupMembers = $members;
         $template->groupshowActivities = $activities;
 
         return $template;
@@ -270,7 +294,47 @@ class Xodx_GroupController extends Xodx_ResourceController
         return $template;
     }
 
-/**
+    /**
+     * A new action for changing the group name or description.
+     *
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
+    public function changegroupAction($template)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $request = $bootstrap->getResource('request');
+
+        $groupName = $request->getValue('groupname', 'post');
+        $description = $request->getValue('description', 'post');
+        $groupUri = $request->getValue('groupuri', 'post');
+
+        $formError = array();
+
+        if(empty($groupName)) {
+            $formError['groupname'] = true;
+        }
+
+        if(empty($description)) {
+            $description="";
+        }
+
+        if(count($formError) <= 0) {
+            $this->changeGroup($groupUri, $groupName, $description);
+
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'groupprofile');
+            $location->setParameter('a', 'list');
+
+            $template->redirect($location);
+        } else {
+            $template->formError = $formError;
+        }
+
+        return $template;
+    }
+
+    /**
      * This creates a new group with the given name.
      * This function is usually called internally
      * @param Uri $groupUri Uri of the new group
@@ -564,16 +628,43 @@ $logger->debug("2");
         }
 
         if (Erfurt_Uri::check($personUri)) {
-            $memberController = $this->_app->getController('Xodx_MemberController');
-            $memberController->deleteMember($personUri, $groupUri);
+            // Get remote base uri from group uri
+            $uri = "";
+            if (($uriArray = parse_url($groupUri))) {
+                $uri = $uriArray['scheme'] . '://'
+                     . $uriArray['host']
+                     . $uriArray['path'];
+                if(substr($uri, -1) != '/') {
+                    $uri.= '/';
+                }
+                $uri.= '?c=member&a=deletemember';
+            }
 
-            $this->leaveGroup($personUri, $groupUri);
-            //Redirect
-            $location = new Saft_Url($this->_app->getBaseUri());
+            if (!empty($uri)) {
+                // Send curl post request with needed data
+                $fields = array(
+                    'personUri' => urlencode($personUri),
+                    'groupUri' => urlencode($groupUri)
+                );
 
-            $location->setParameter('c', 'user');
-            $location->setParameter('a', 'home');
-            $template->redirect($location);
+                $apiStatus = trim($this->_callMemberApi($uri, $fields));
+                if ($apiStatus == "success") {
+                    $this->leaveGroup($personUri, $groupUri);
+                    //Redirect
+                    $location = new Saft_Url($this->_app->getBaseUri());
+
+                    $groupName = $this->getGroup($groupUri)->getName();
+                    $location->setParameter('c', 'user');
+                    $location->setParameter('a', 'home');
+                    $template->redirect($location);
+                } else {
+                    $template->addContent('templates/error.phtml');
+                    $template->exception = 'API call failed!';
+                }
+            } else {
+                $template->addContent('templates/error.phtml');
+                $template->exception = 'Failed to parse url from $groupUri!';
+            }
         } else {
             $template->addContent('templates/error.phtml');
             $template->exception = 'The given URI is not valid: personUri="' . $personUri;
@@ -614,18 +705,44 @@ $logger->debug("2");
         }
 
         if (Erfurt_Uri::check($personUri)) {
-            $memberController = $this->_app->getController('Xodx_MemberController');
-            $memberController->addMember($personUri, $groupUri);
+            // Get remote base uri from group uri
+            $uri = "";
+            if (($uriArray = parse_url($groupUri))) {
+                $uri = $uriArray['scheme'] . '://'
+                     . $uriArray['host']
+                     . $uriArray['path'];
+                if(substr($uri, -1) != '/') {
+                    $uri.= '/';
+                }
+                $uri.= '?c=member&a=addmember';
+            }
 
-            $this->joinGroup($personUri, $groupUri);
-            //Redirect
-            $location = new Saft_Url($this->_app->getBaseUri());
+            if (!empty($uri)) {
+                // Send curl post request with needed data
+                $fields = array(
+                    'personUri' => urlencode($personUri),
+                    'groupUri' => urlencode($groupUri)
+                );
 
-            $groupName = $this->getGroup($groupUri)->getName();
-            $location->setParameter('c', 'group');
-            $location->setParameter('id', $groupName);
-            $location->setParameter('a', 'home');
-            $template->redirect($location);
+                $apiStatus = trim($this->_callMemberApi($uri, $fields));
+                if ($apiStatus == "success") {
+                    $this->joinGroup($personUri, $groupUri);
+                    //Redirect
+                    $location = new Saft_Url($this->_app->getBaseUri());
+
+                    $groupName = $this->getGroup($groupUri)->getName();
+                    $location->setParameter('c', 'group');
+                    $location->setParameter('id', $groupName);
+                    $location->setParameter('a', 'home');
+                    $template->redirect($location);
+                } else {
+                    $template->addContent('templates/error.phtml');
+                    $template->exception = 'API call failed!';
+                }
+            } else {
+                $template->addContent('templates/error.phtml');
+                $template->exception = 'Failed to parse url from $groupUri!';
+            }
         } else {
             $template->addContent('templates/error.phtml');
             $template->exception = 'The given URI is not valid: personUri="' . $personUri;
@@ -644,6 +761,38 @@ $logger->debug("2");
         $baseUri = substr($resourceUri, 0, $pos);
         $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($resourceUri);
         return $feedUri;
+    }
+
+    /**
+     * Calls the API created to get group subscribing person
+     * @param string $uri URI of the API
+     * @param mixed[] $fields Fields to send with
+     * @return mixed content got from request
+     */
+    private function _callMemberApi($uri, $fields) {
+        // uri-fy the date for the POST Request
+        $fields_string = '';
+        foreach ($fields as $field => $value) { 
+            $fields_string .= $field . '=' . $value . '&';
+        }
+        rtrim($fields_string, '&');
+
+        // Open Connection
+        $curlConnection = curl_init();
+
+        // Set the uri, number of POST vars and POST data
+        curl_setopt($curlConnection, CURLOPT_URL, $uri);
+        curl_setopt($curlConnection, CURLOPT_POST, count($fields));
+        curl_setopt($curlConnection, CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($curlConnection, CURLOPT_RETURNTRANSFER, true);
+
+        // Execute
+        $result = curl_exec($curlConnection);
+        
+        // Close Connection
+        curl_close($curlConnection);
+
+        return $result;
     }
 
     /**
@@ -705,6 +854,70 @@ $logger->debug("2");
                 'GroupController/_unsubscribeGroupFromFeed: Couldn\'t find feed for leaving member ("'
                 . $personUri . '").'
             );
+        }
+    }
+
+    /**
+     * This method changes the name and description of a group
+     *
+     * @param string $groupUri The group's URI
+     * @param string $newName New name of the group
+     * @param string $newTopic New description of the group
+     */
+    public function changeGroup($groupUri, $newName, $newTopic)
+    {
+        $bootstrap  = $this->_app->getBootstrap();
+        $model      = $bootstrap->getResource('model');
+        $logger     = $bootstrap->getResource('logger');
+        $nsFoaf     = 'http://xmlns.com/foaf/0.1/';
+
+        if($grouUri!=null) {
+            // delete old name from db
+            $model->deleteMatchingStatements($groupUri, $nsFoaf . 'name', null);
+
+            // set new name in db
+            $setName = array (
+                $groupUri => array (
+                    $nsFoaf . 'name' => array(
+                        array (
+                            'type'  => 'literal',
+                            'value' => $newName
+                        )
+                    )
+                )
+            );
+            $model->addMultipleStatements($setName);
+            // log new name
+            $logger->debug(
+                'GroupController/changeGroup: Group ' . $groupUri
+                . ' changed its name from \'' . $oldName . '\' to \'' . $newName . '\'.'
+            );
+        } else {
+            $logger->error('GroupController/changeGroup: Group URI is null.');
+        }
+        if($groupUri!=null) {
+            // delete old description(s)
+            $model->deleteMatchingStatements($groupUri, $nsFoaf . 'primaryTopic', null);
+
+            // set new description
+            $setTopic = array (
+                $groupUri => array (
+                    $nsFoaf . 'primaryTopic' => array(
+                        array (
+                            'type'  => 'literal',
+                            'value' => $newTopic
+                        )
+                    )
+                )
+            );
+            $model->addMultipleStatements($setTopic);
+            // log new description
+            $logger->debug(
+                'GroupController/changeGroup: Group ' . $grouUri .
+                ' changed its description to \'' . $newTopic . '\'.'
+            );
+        } else {
+            $logger->error('GroupController/changeGroup: Group URI is null.');
         }
     }
 }
