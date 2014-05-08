@@ -306,6 +306,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         $groupname = $request->getValue('groupname', 'post');
         $description = $request->getValue('description', 'post');
+        $groupUri = $request->getValue('groupUri','post');
 
         $formError = array();
 
@@ -317,9 +318,12 @@ class Xodx_GroupController extends Xodx_ResourceController
             $description="";
         }
 
+        if(empty($groupUri)) {
+            $formError['groupUri'] = true;
+        }
+
         if(count($formError) <= 0) {
-            $this->renameGroup($groupname);
-            $this->changeDescription($description);
+            $this->changeGroup($groupUri, $groupname, $description);
 
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'groupprofile');

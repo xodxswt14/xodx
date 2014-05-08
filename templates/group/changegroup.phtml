@@ -31,9 +31,11 @@
     </div>
 </div>
 <div class="form-actions">
+    <input type="hidden" name="groupUri" value="<?= $_POST['groupUri'] ?>">
     <button class="btn btn-primary" type="submit">Change</button>
 </form>
-<form action="?c&amp;a=leavegroup" method="post" class="form-inline">
+<form action="?c&amp;a=deletegroup" method="post" class="form-inline">
+    <input type="hidden" name="groupUri" value="<?= $_POST['groupUri']>">
     <button class="btn btn-danger" type="submit">Delete</button>
 </form>
 </div>
