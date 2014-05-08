@@ -9,10 +9,13 @@
  * This class manages Groups. This includes so far:
  * - Creating a group
  * - Deleting a group
+ * - Getting a group from its uri
  * 
  * @author Jan Buchholz
  * @author Stephan Kemper
  * @author Lukas Werner
+ * @author Gunnar Warnecke
+ * @author Toni Pohl
  */
 class Xodx_GroupController extends Xodx_ResourceController
 {
@@ -21,6 +24,11 @@ class Xodx_GroupController extends Xodx_ResourceController
      */
     private $_groups = array();
 
+    /**
+     * A view action to show a group
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
     public function showAction($template)
     {
         $bootstrap  = $this->_app->getBootstrap();
@@ -30,28 +38,94 @@ class Xodx_GroupController extends Xodx_ResourceController
         $groupUri  = $request->getValue('uri', 'get');
         $id         = $request->getValue('id', 'get');
         $controller = $request->getValue('c', 'get');
-        
+
         if ($id !== null) {
             $groupUri = $this->_app->getBaseUri() . '?c=' . $controller . '&id=' . $id;
         }
-        
+
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
-        
+
+        //GroupQuery fetching group information
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $groupQuery.= 'SELECT ?nick ' .  PHP_EOL;
+        $groupQuery.= 'SELECT ?name ?maker ?description ' .  PHP_EOL;
         $groupQuery.= 'WHERE { ' .  PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> a foaf:Group . ' . PHP_EOL;
-        $groupQuery.= 'OPTIONAL {<' . $groupUri . '> foaf:nick ?nick .} ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:name ?name . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:primaryTopic ?description . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
-        
+
+        //MemberQuery fetching all members of group
+        $memberQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $memberQuery.= 'SELECT ?member ' .  PHP_EOL;
+        $memberQuery.= 'WHERE { ' .  PHP_EOL;
+        $memberQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
+        $memberQuery.= '   <' . $groupUri . '> foaf:member ?member .' . PHP_EOL;
+        $memberQuery.= '}'; PHP_EOL;
+
         $group = $model->sparqlQuery($groupQuery);
-        
-        $template->groupshowNick = $group[0]['nick'];
+        $members = $model->sparqlQuery($memberQuery);
+
+        $userController = $this->_app->getController('Xodx_UserController');
+        $user = $userController->getUser();
+
+        $memberController = $this->_app->getController('Xodx_MemberController');
+        $activities = $memberController->getActivityStream($this->getGroup($groupUri));
+
+        $nameHelper = new Xodx_NameHelper($this->_app);
+        $makerName = $nameHelper->getName($group[0]['maker']);
+
+        if($user->getName() == 'guest') {
+            $template->isGuest = true;
+        } else {
+            $template->isGuest = false;
+        }
+
+        //Checks if user is member of group
+        $isMember = false;
+        foreach($members as $member) {
+            if($member['member'] === $user->getPerson()) {
+                $isMember = true;
+            }
+        }
+
+        //Checks if user is maker and marks him as member
+        if($user->getPerson() == $group[0]['maker']) {
+            $template->isMaker = true;
+            $isMember = true;
+        } else {
+            $template->isMaker = false;
+        }
+
+        // Redirect from show to home if user is member
+        if($isMember) { // Redirect user from home to show if he is not a member
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'group');
+            $location->setParameter('id', $group[0]['name']);
+            $location->setParameter('a', 'home');
+            $template->redirect($location);
+        }
+
+        // Refine array of group members
+        for($i = 0; $i < count($members); $i++) {
+            $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
+        }
+
+        $template->groupshowName = $group[0]['name'];
+        $template->groupDescription = $group[0]['description'];
         $template->groupUri = $groupUri;
-        
+        $template->groupMaker = $group[0]['maker'];
+        $template->groupMembers = $members;
+        $template->groupshowActivities = $activities;
+
         return $template;
     }
-    
+
+    /**
+     * A view action to show the home of a group
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
     public function homeAction($template)
     {
         $bootstrap  = $this->_app->getBootstrap();
@@ -67,29 +141,83 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
         
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
-        
+
+        //GroupQuery fetching group information
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $groupQuery.= 'SELECT ?nick ?maker ' .  PHP_EOL;
+        $groupQuery.= 'SELECT ?name ?maker ?description ' .  PHP_EOL;
         $groupQuery.= 'WHERE { ' .  PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> foaf:nick ?nick . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:name ?name . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:primaryTopic ?description . ' . PHP_EOL;
         $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
-        
+
         $group = $model->sparqlQuery($groupQuery);
-        
-        /* get loged in user */
+
+        //MemberQuery fetching all members of group
+        $memberQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $memberQuery.= 'SELECT ?member ' .  PHP_EOL;
+        $memberQuery.= 'WHERE { ' .  PHP_EOL;
+        $memberQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
+        $memberQuery.= '   <' . $groupUri . '> foaf:member ?member .' . PHP_EOL;
+        $memberQuery.= '}'; PHP_EOL;
+
+        $members = $model->sparqlQuery($memberQuery);
+
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
-        
+
+        // Get group activity stream
+        $memberController = $this->_app->getController('Xodx_MemberController');
+        $activities = $memberController->getActivityStream($this->getGroup($groupUri));
+
+        // Beautify maker name
+        $nameHelper = new Xodx_NameHelper($this->_app);
+        $makerName = $nameHelper->getName($group[0]['maker']);
+
+        //Checks if user is member of group
+        $isMember = false;
+        foreach($members as $member) {
+            if($member['member'] === $user->getPerson()) {
+                $isMember = true;
+            }
+        }
+
+        //Checks if user is maker and marks him as member
         if($user->getPerson() == $group[0]['maker']) {
             $template->isMaker = true;
+            $isMember = true;
         } else {
             $template->isMaker = false;
         }
-        
-        $template->groupshowNick = $group[0]['nick'];
-        
+
+        // Redirect from home to login if user is guest
+        if($user->getName() == 'guest') {
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'application');
+            $location->setParameter('a', 'login');
+            $template->redirect($location);
+        } elseif(!$isMember) { // Redirect user from home to show if he is not a member
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'group');
+            $location->setParameter('id', $group[0]['name']);
+            $location->setParameter('a', 'show');
+            $template->redirect($location);
+        }
+
+        // Refine array of group members
+        for($i = 0; $i < count($members); $i++) {
+            $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
+        }
+
+        $template->groupUri = $groupUri;
+        $template->groupshowName = $group[0]['name'];
+        $template->groupDescription = $group[0]['description'];
+        $template->groupMaker = $group[0]['maker'];
+        $template->groupMakerName = $makerName;
+        $template->groupMembers = $members;
+        $template->groupshowActivities = $activities;
+
         return $template;
     }
     /**
@@ -104,15 +232,20 @@ class Xodx_GroupController extends Xodx_ResourceController
         $request = $bootstrap->getResource('request');
 
         $groupname = $request->getValue('groupname', 'post');
+        $description = $request->getValue('description', 'post');
 
         $formError = array();
 
         if (empty($groupname)) {
             $formError['groupname'] = true;
         }
+        
+        if (empty($description)) {
+            $description = "";
+        }
 
         if (count($formError) <= 0) {
-            $this->createGroup(null, $groupname);
+            $this->createGroup($groupname, $description);
 
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'groupprofile');
@@ -149,7 +282,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $this->deleteGroup($groupUri);
 
             $location = new Saft_Url($this->_app->getBaseUri());
-            $location->setParameter('c', 'groupProfile');
+            $location->setParameter('c', 'groupprofile');
             $location->setParameter('a', 'list');
 
             $template->redirect($location);
@@ -160,14 +293,14 @@ class Xodx_GroupController extends Xodx_ResourceController
         return $template;
     }
 
-    /**
+/**
      * This creates a new group with the given name.
      * This function is usually called internally
      * @param Uri $groupUri Uri of the new group
      * @param String $name Name of the new group
      * @todo $groupUri might not be needed
      */
-    public function createGroup ($groupUri = null, $name)
+    public function createGroup ($name, $description = '')
     {
         // getResources & set namespaces
         $bootstrap = $this->_app->getBootstrap();
@@ -177,10 +310,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
         $nsDssn = 'http://purl.org/net/dssn/';
 
-        // fetch empty groupUri
-        if ($groupUri === null) {
-            $groupUri = $this->_app->getBaseUri() . '?c=group&id=' . urlencode($name);
-        }
+        $groupUri = $this->_app->getBaseUri() . '?c=group&id=' . urlencode($name);
 
         // verify that there is not already a group with that name
         $testQuery  = 'ASK {' . PHP_EOL;
@@ -215,15 +345,21 @@ class Xodx_GroupController extends Xodx_ResourceController
                     $nsFoaf . 'maker' => array(
                         array('type' => 'uri', 'value' => $adminUri)
                     ),
-                    $nsFoaf . 'nick' => array(
+                    $nsFoaf . 'name' => array(
                         array('type' => 'literal', 'value' => $name)
                     ),
                     $nsFoaf . 'primaryTopic' => array(
-                        array('type' => 'literal', 'value' => 'Enter description here...')
+                        array('type' => 'literal', 'value' => $description)
                     )
                 )
             );
             $model->addMultipleStatements($newGroup);
+$logger->debug("1");
+            $memberController = $this->_app->getController('Xodx_MemberController');
+            $memberController->addMember($adminUri, $groupUri);
+$logger->debug("2");
+            $this->joinGroup($adminUri, $groupUri);
+            $logger->debug('3');
         }
     }
 
@@ -299,6 +435,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             }
         }
     }
+
      /**
      * This method creates a new object of the class Xodx_Group
      * @param $groupUri a string which contains the URI of the required group
@@ -314,7 +451,7 @@ class Xodx_GroupController extends Xodx_ResourceController
            $query = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
            $query.= 'SELECT ?name ?topic' . PHP_EOL;
            $query.= 'WHERE {' . PHP_EOL;
-           $query.= '  <' . $groupUri . '> foaf:nick ?name ;' . PHP_EOL;
+           $query.= '  <' . $groupUri . '> foaf:name ?name ;' . PHP_EOL;
            $query.= '      foaf:primaryTopic ?topic .' . PHP_EOL;
            $query.= '}' . PHP_EOL;
 
@@ -333,5 +470,349 @@ class Xodx_GroupController extends Xodx_ResourceController
            $this->_groups[$groupUri] = $group;
        }
        return $this->_groups[$groupUri];
+    }
+
+    /**
+     * Declare a person a member of a group
+     *
+     * @param string $personUri  the URI of the group's new member
+     * @param $groupUri   the URI of the group that the member shall be added to
+     */
+    public function joinGroup ($personUri, $groupUri)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $logger = $bootstrap->getResource('logger');
+        $model  = $bootstrap->getResource('model');
+        $userController = $this->_app->getController('Xodx_UserController');
+
+        // Update WebID
+        $model->addStatement(
+            $personUri,
+            'http://xmlns.com/foaf/0.1/member',
+            array('type' => 'uri', 'value' => $groupUri)
+        );
+
+        $nsAair = 'http://xmlns.notu.be/aair#';
+        $activityController = $this->_app->getController('Xodx_ActivityController');
+
+        // Add Activity to activity Stream
+        $object = array(
+            'type' => 'uri',
+            'content' => $groupUri,
+            'replyObject' => 'false'
+        );
+        $activityController->addActivity($personUri, $nsAair . 'Join', $object);
+        // Send Ping to group
+        $pingbackController = $this->_app->getController('Xodx_PingbackController');
+        $pingbackController->sendPing($personUri, $groupUri, 'I hereby declare myself a member of this group.');
+
+        // Subscribe to group
+        $userUri = $userController->getUserUri($personUri);
+        $feedUri = $this->getGroupFeedUri($groupUri);
+
+        if ($feedUri !== null) {
+            $logger->debug(
+                'GroupController/joinGroup: Found feed for newly joined Group ("'
+                . $groupUri . '"): "' . $feedUri . '"'
+            );
+            $userController->subscribeToResource ($userUri, $groupUri, $feedUri);
+        } else {
+            $logger->error(
+                'GroupController/joinGroup: Couldn\'t find feed for newly joined group ("'
+                . $groupUri . '").'
+            );
+        }
+    }
+
+    /**
+     * This makes it possible for persons to leave a group
+     * @param string $personUri URI of the person who is leaving
+     * @param string $groupUri URI of the group to be left
+     * @throws Exception if the WebID of this group does not exist
+     */
+    public function leaveGroup ($personUri, $groupUri)
+    {
+        // getResources
+        $bootstrap = $this->_app->getBootstrap();
+        $logger = $bootstrap->getResource('logger');
+        $model  = $bootstrap->getResource('model');
+        $userController = $this->_app->getController('Xodx_UserController');
+
+        // delete Statement added by joinGroup ($personUri, member, $groupUri)
+        $statementArray = array (
+            $personUri => array (                               
+                'http://xmlns.com/foaf/0.1/member' => array(     
+                    array (                                     
+                        'type'  => 'uri',
+                        'value' => $groupUri
+                    )
+                )
+            )
+        );        
+        $model->deleteMultipleStatements($statementArray);
+
+        // unsubscribe from group        
+        $userUri = $userController->getUserUri($personUri);
+        $feedUri = $this->getGroupFeedUri($groupUri);
+
+        if ($feedUri !== null) {
+            // Logging
+            $logger->debug('GroupController/leavegroup: Found feed for group ("' . $groupUri . '"): "' . $feedUri . '"');
+            // unsubscription of friend's feed            
+            $userController->unsubscribeFromResource ($userUri, $groupUri, $feedUri);
+        } else {
+            // Logging
+            $logger->error('GroupController/leavegroup: Couldn\'t find feed for group ("' . $groupUri . '").');
+        }
+    }
+
+    /**
+     * A view action for leaving a specified group.
+     * 
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
+    public function leavegroupAction($template)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $request = $bootstrap->getResource('request');
+
+        // get URI
+        $groupUri = $request->getValue('group', 'post');
+        $personUri = $request->getValue('person', 'post');
+
+        if ($personUri == null) {
+            $userController = $this->_app->getController('Xodx_UserController');
+            $personUri = $userController->getUser()->getPerson();
+        }
+
+        if (Erfurt_Uri::check($personUri)) {
+            // Get remote base uri from group uri
+            $uri = "";
+            if (($uriArray = parse_url($groupUri))) {
+                $uri = $uriArray['scheme'] . '://'
+                     . $uriArray['host']
+                     . $uriArray['path'];
+                if(substr($uri, -1) != '/') {
+                    $uri.= '/';
+                }
+                $uri.= '?c=member&a=deletemember';
+            }
+
+            if (!empty($uri)) {
+                // Send curl post request with needed data
+                $fields = array(
+                    'personUri' => urlencode($personUri),
+                    'groupUri' => urlencode($groupUri)
+                );
+
+                $apiStatus = trim($this->_callMemberApi($uri, $fields));
+                if ($apiStatus == "success") {
+                    $this->leaveGroup($personUri, $groupUri);
+                    //Redirect
+                    $location = new Saft_Url($this->_app->getBaseUri());
+
+                    $groupName = $this->getGroup($groupUri)->getName();
+                    $location->setParameter('c', 'user');
+                    $location->setParameter('a', 'home');
+                    $template->redirect($location);
+                } else {
+                    $template->addContent('templates/error.phtml');
+                    $template->exception = 'API call failed!';
+                }
+            } else {
+                $template->addContent('templates/error.phtml');
+                $template->exception = 'Failed to parse url from $groupUri!';
+            }
+        } else {
+            $template->addContent('templates/error.phtml');
+            $template->exception = 'The given URI is not valid: personUri="' . $personUri;
+        }
+
+        return $template;
+    }
+
+    /**
+     * View action for joining a new group.
+     * 
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
+    public function joingroupAction($template)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $request = $bootstrap->getResource('request');
+        $logger = $bootstrap->getResource('logger');
+
+        // get URI
+        $groupUri = $request->getValue('group', 'post');
+        $personUri = $request->getValue('person', 'post');
+
+        if ($personUri == null) {
+            $userController = $this->_app->getController('Xodx_UserController');
+            $personUri = $userController->getUser()->getPerson();
+            $user = $userController->getUser();
+        }
+        
+        // Redirect to login if user is guest
+        if($user->getName() == 'guest') {
+            $location = new Saft_Url($this->_app->getBaseUri());
+
+            $location->setParameter('c', 'application');
+            $location->setParameter('a', 'login');
+            $template->redirect($location);
+        }
+
+        if (Erfurt_Uri::check($personUri)) {
+            // Get remote base uri from group uri
+            $uri = "";
+            if (($uriArray = parse_url($groupUri))) {
+                $uri = $uriArray['scheme'] . '://'
+                     . $uriArray['host']
+                     . $uriArray['path'];
+                if(substr($uri, -1) != '/') {
+                    $uri.= '/';
+                }
+                $uri.= '?c=member&a=addmember';
+            }
+
+            if (!empty($uri)) {
+                // Send curl post request with needed data
+                $fields = array(
+                    'personUri' => urlencode($personUri),
+                    'groupUri' => urlencode($groupUri)
+                );
+
+                $apiStatus = trim($this->_callMemberApi($uri, $fields));
+                if ($apiStatus == "success") {
+                    $this->joinGroup($personUri, $groupUri);
+                    //Redirect
+                    $location = new Saft_Url($this->_app->getBaseUri());
+
+                    $groupName = $this->getGroup($groupUri)->getName();
+                    $location->setParameter('c', 'group');
+                    $location->setParameter('id', $groupName);
+                    $location->setParameter('a', 'home');
+                    $template->redirect($location);
+                } else {
+                    $template->addContent('templates/error.phtml');
+                    $template->exception = 'API call failed!';
+                }
+            } else {
+                $template->addContent('templates/error.phtml');
+                $template->exception = 'Failed to parse url from $groupUri!';
+            }
+        } else {
+            $template->addContent('templates/error.phtml');
+            $template->exception = 'The given URI is not valid: personUri="' . $personUri;
+        }
+        return $template;
+    }
+
+    /**
+     * Creates feed on given resource
+     * @param Uri $resourceUri the feed searched for
+     * @return Uri $feedUri of $resourceUri
+     */
+    public function getGroupFeedUri($resourceUri)
+    {
+        $pos = strpos($resourceUri, '?c=');        
+        $baseUri = substr($resourceUri, 0, $pos);
+        $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($resourceUri);
+        return $feedUri;
+    }
+
+    /**
+     * Calls the API created to get group subscribing person
+     * @param string $uri URI of the API
+     * @param mixed[] $fields Fields to send with
+     * @return mixed content got from request
+     */
+    private function _callMemberApi($uri, $fields) {
+        // uri-fy the date for the POST Request
+        $fields_string = '';
+        foreach ($fields as $field => $value) { 
+            $fields_string .= $field . '=' . $value . '&';
+        }
+        rtrim($fields_string, '&');
+
+        // Open Connection
+        $curlConnection = curl_init();
+
+        // Set the uri, number of POST vars and POST data
+        curl_setopt($curlConnection, CURLOPT_URL, $uri);
+        curl_setopt($curlConnection, CURLOPT_POST, count($fields));
+        curl_setopt($curlConnection, CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($curlConnection, CURLOPT_RETURNTRANSFER, true);
+
+        // Execute
+        $result = curl_exec($curlConnection);
+        
+        // Close Connection
+        curl_close($curlConnection);
+
+        return $result;
+    }
+
+    /**
+     * Subscribes a group to a user's group-specific activity feed and vice versa.
+     * Should be called while joining a group. Can be reverted using {@link _unsubscribeFromGroupFeed()}
+     *
+     * @param   string  $personUri  URI of the person joining the group
+     * @param   string  $groupUri   URI of the group being joined
+     * @see     _unsubscribeGroupFromFeed()
+     * @access  private
+     */
+    private function _subscribeGroupToFeed($personUri, $groupUri)
+    {
+        $userController  = $this->_app->getController('Xodx_UserController');
+
+        // Subscribe to new member
+        $userUri = $userController->getUserUri($personUri);
+        $feedUri = $this->getActivityFeedUri($personUri);
+        if ($feedUri !== null) {
+            $logger->debug(
+                'GroupController/_subscribeToGroupFeed: Found feed for newly added member ("'
+                . $personUri . '"): "'
+                . $feedUri . '"'
+            );
+            $userController->subscribeToResource ($groupUri, $userUri, $feedUri);
+        } else {
+            $logger->error(
+                'GroupController/_subscribeToGroupFeed: Couldn\'t find feed for newly added member ("'
+                . $personUri . '").'
+            );
+        }
+    }
+
+    /**
+     * Unsubscribes a user from a group feed and vice versa. Should be called when leaving a group.
+     * Reverts the actions of {@link _subscribeToGroupFeed()}
+     *
+     * @param   string  $personUri  URI of the person leaving the group
+     * @param   string  $groupUri   URI of the group being left
+     * @see     _subscribeGroupToFeed()
+     * @access  private
+     */
+    private function _unsubscribeGroupFromFeed($personUri, $groupUri)
+    {
+        $userController  = $this->_app->getController('Xodx_UserController');
+
+        // Unsubscribe from leaving member
+        $userUri = $userController->getUserUri($personUri);
+        $feedUri = $this->getActivityFeedUri($personUri);
+        if ($feedUri !== null) {
+            $logger->debug(
+                'GroupController/_unsubscribeGroupFromFeed: Found feed for leaving member ("'
+                . $personUri . '"): "'
+                . $feedUri . '"'
+            );
+            $userController->unsubscribeFromResource ($groupUri, $userUri, $feedUri);
+        } else {
+            $logger->error(
+                'GroupController/_unsubscribeGroupFromFeed: Couldn\'t find feed for leaving member ("'
+                . $personUri . '").'
+            );
+        }
     }
 }

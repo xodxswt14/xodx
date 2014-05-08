@@ -56,10 +56,19 @@ class Xodx_UserController extends Xodx_ResourceController
             $contactsQuery.= '   OPTIONAL {?contactUri foaf:nick ?nick .} ' . PHP_EOL;
             $contactsQuery.= '}';
 
+            $groupsQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+            $groupsQuery.= 'SELECT ?groupUri ?name ?maker ' . PHP_EOL;
+            $groupsQuery.= 'WHERE { ' . PHP_EOL;
+            $groupsQuery.= '   <' . $personUri . '> foaf:member ?groupUri . ' . PHP_EOL;
+            $groupsQuery.= '   OPTIONAL {?groupUri foaf:maker ?maker .} ' . PHP_EOL;
+            $groupsQuery.= '   OPTIONAL {?groupUri foaf:name ?name .} ' . PHP_EOL;
+            $groupsQuery.= '}';
+
             $profile = $model->sparqlQuery($profileQuery);
 
             if (count($profile) > 0) {
                 $knows = $model->sparqlQuery($contactsQuery);
+                $member = $model->sparqlQuery($groupsQuery);
 
                 $activities = $this->getActivityStream($user);
                 $factory = new Xodx_NotificationFactory($this->_app);
@@ -72,6 +81,7 @@ class Xodx_UserController extends Xodx_ResourceController
                 $template->profileshowActivities = $activities;
                 $template->profileshowKnows = $knows;
                 $template->profileshowNews = $notifications;
+                $template->profileshowMember = $member;
             }
         }
         return $template;

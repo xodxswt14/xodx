@@ -69,4 +69,22 @@ class ModelDummy
     public function addMultipleStatements(array $statements, $useAc = true)
     {
     }
+    /**
+     * Implementation not needed.
+     * @param string $subject
+     * @param string $predicate
+     * @param array $object
+     */
+    public function addStatement($subject, $predicate, array $object)
+    {
+    }
+    /**
+     * Implementation not needed.
+     * @param string $subject
+     * @param string $predicate
+     * @param array $object
+     */
+    public function deleteStatement($subject, $predicate, array $object)
+    {
+    }
 }

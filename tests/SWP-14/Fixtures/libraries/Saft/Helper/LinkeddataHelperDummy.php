@@ -18,7 +18,7 @@ class LinkeddataHelperDummy extends HelperDummy
      */
     public function resourceDescriptionExists ($resourceUri)
     {
-        if ($resourceUri == 'validResourceUri') {
+        if (($resourceUri == 'validResourceUri') || ($resourceUri == 'validPersonUri')){
             return TRUE;
         } else {
             return FALSE;

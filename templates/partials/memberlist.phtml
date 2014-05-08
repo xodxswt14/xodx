@@ -1,0 +1,21 @@
+<h3>Members</h3>
+<?php if(isset($this->groupMembers)): 
+    foreach($this->groupMembers as $member):
+?>
+    <?php
+        if (!empty($member['memberName'])) :
+    ?>
+        <strong><?= $member['memberName']; ?></strong><br />
+        <a href="<?= urldecode($member['member']); ?>"><?= $member['member']; ?></a><br />
+    <?php
+        else :
+    ?>
+        <a href="?c=person&amp;uri=<?= urlencode($member['member']); ?>"><?= $member['member']; ?></a><br />
+    <?php
+        endif;
+    ?>
+<?php
+    endforeach;
+?>
+
+<?php endif; ?>

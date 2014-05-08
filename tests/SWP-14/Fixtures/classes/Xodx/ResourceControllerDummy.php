@@ -39,6 +39,13 @@ class ResourceControllerDummy extends ControllerDummy
         if ($resourceUri == 'validUnsubscriberUri') {
             $type = 'valid';
         }
+        if ($resourceUri == 'invalidGroupUri') {
+            $nsFoaf = 'http://xmlns.com/foaf/0.1/';
+            $type = $nsFoaf . 'Group';
+        }
+        if ($resourceUri == 'validGroupUri') {
+            $type = 'valid';
+        }
         return $type;
     }
 

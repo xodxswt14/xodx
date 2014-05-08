@@ -78,17 +78,19 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $actType = strtolower($request->getValue('type', 'post'));
         $actContent = $request->getValue('content', 'post');
         $replyObject = $request->getValue('reply', 'post');
+        /* If the activity is published on a group's site its uri is committed.
+         * Otherwise this variable is empty.
+         */
+        $groupUri = $request->getValue('groupUri', 'post');
 
         $nsAair = 'http://xmlns.notu.be/aair#';
-
-        // Get Person of current User
+        
         $userController = $this->_app->getController('Xodx_UserController');
         $actorUri = $userController->getUser()->getPerson();
-
+        
         $logger->debug('Actor URI is: ' . $actorUri);
 
         $object = array('content' => $actContent);
-
         if (Erfurt_Uri::check($replyObject)) {
             $object['replyObject'] = $replyObject;
         }
@@ -124,16 +126,20 @@ class Xodx_ActivityController extends Xodx_ResourceController
             break;
         }
 
-        $this->addActivity($actorUri, $verbUri, $object);
+        $this->addActivity($actorUri, $verbUri, $object, $groupUri);
 
         return $template;
     }
 
     /**
      * This method adds a new activity to the store
+     * @param Uri $actorUri String Uri of the activity's actor. This is either a user or a group
+     * @param Uri $verbUri String Determines the type of activity (Note, Photo, ...)
+     * @param Array $object Content of the activity
+     * @param Uri $groupUri If the activity is posted in a group this is that group's Uri. Otherwise (default) this is null
      * TODO should be replaced by a method which takes a DSSN_Activity object
      */
-    public function addActivity ($actorUri, $verbUri, $object)
+    public function addActivity ($actorUri, $verbUri, $object, $groupUri = null)
     {
         $bootstrap = $this->_app->getBootstrap();
 
@@ -161,8 +167,21 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $postUri = $baseUri . '?c=resource&id=' . md5(rand());
         $objectUri = $baseUri . '?c=resource&id=' . md5(rand());
         $activityUri = $baseUri . '?c=activity&id=' . md5(rand());
-        $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($actorUri);
         $activityFeedUri = $baseUri . '?c=feed&a=getFeed&uri=' .  urlencode($activityUri);
+        
+        /* Determine the actorFeed. This is usually the user's feed or - if he is posting in a group - 
+         * it is the user's feed for this specific group
+         */
+        if ($groupUri === null) {
+            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($actorUri);
+        } else {
+            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . 
+                                urlencode($actorUri) .'&groupUri=' . urlencode($groupUri);
+            /* When posting in a group the user is not the actor itself. 
+             * In that case the actor is made up of both the user and the group.
+             */
+            $actorUri .= $groupUri;
+        }
 
         $publishFeeds = array(
             $actorUri => $actorFeedUri

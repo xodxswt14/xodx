@@ -60,6 +60,14 @@ class Xodx_PersonController extends Xodx_ResourceController
         $groupQuery.= '   ?groupUri foaf:maker <' . $personUri . '> ' . PHP_EOL;
         $groupQuery.= '}'; PHP_EOL;
 
+        $groupsQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $groupsQuery.= 'SELECT ?groupUri ?maker ?name ' . PHP_EOL;
+        $groupsQuery.= 'WHERE { ' . PHP_EOL;
+        $groupsQuery.= '   <' . $personUri . '> foaf:member ?groupUri . ' . PHP_EOL;
+        $groupsQuery.= '   OPTIONAL {?groupUri foaf:maker ?maker .} ' . PHP_EOL;
+        $groupsQuery.= '   OPTIONAL {?groupUri foaf:name ?name .} ' . PHP_EOL;
+        $groupsQuery.= '}';
+
         $profile = $model->sparqlQuery($profileQuery);
         $groups = $model->sparqlQuery($groupQuery);
 
@@ -82,8 +90,10 @@ class Xodx_PersonController extends Xodx_ResourceController
                 );
             }
             $friends = $modelNew->getValues($personUri, $nsFoaf . 'knows');
+            $groups = $modelNew->getValues($personUri, $nsFoaf . 'member');
 
             $knows = array();
+            $member = array();
 
             foreach($friends as $friend) {
                 $knows[] = array(
@@ -92,9 +102,17 @@ class Xodx_PersonController extends Xodx_ResourceController
                     'nick' => ''
                 );
             }
+            
+            foreach($groups as $group) {
+                $member[] = array(
+                    'groupUri' => $group['value'],
+                    'name' => ''
+                );
+            }
 
         } else {
             $knows = $model->sparqlQuery($contactsQuery);
+            $member = $model->sparqlQuery($groupsQuery);
         }
 
         $activityController = $this->_app->getController('Xodx_ActivityController');
@@ -150,6 +168,7 @@ class Xodx_PersonController extends Xodx_ResourceController
         $template->profileshowNick = $profile[0]['nick'];
         $template->profileshowActivities = $activities;
         $template->profileshowKnows = $knows;
+        $template->profileshowMember = $member;
         $template->profileshowNews = $news;
         $template->profileshowGroups = $groups[0]['groupUri'];
         $template->addContent('templates/profileshow.phtml');

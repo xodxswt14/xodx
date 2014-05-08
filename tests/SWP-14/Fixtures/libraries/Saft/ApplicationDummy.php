@@ -8,6 +8,8 @@ require_once (__DIR__ . '/../../classes/Xodx/ResourceControllerDummy.php');
 require_once (__DIR__ . '/../../classes/Xodx/PushControllerDummy.php');
 require_once (__DIR__ . '/../../classes/Xodx/UserControllerDummy.php');
 require_once (__DIR__ . '/../../classes/Xodx/PersonControllerDummy.php');
+require_once (__DIR__ . '/../../classes/Xodx/PingbackControllerDummy.php');
+require_once (__DIR__ . '/../../classes/Xodx/ActivityControllerDummy.php');
 require_once (__DIR__ . '/../../libraries/Saft/Helper/LinkeddataHelperDummy.php');
 require_once (__DIR__ . '/BootstrapDummy.php');
 /**
@@ -44,6 +46,7 @@ class ApplicationDummy
      * Returns ControllerDummy dependent on $controllerName.
      * @param type $controllerName
      * @return \PushControllerDummy|\ResourceControllerDummy|\UserControllerDummy|PersonControllerDummy
+     *         |\PingbackConreollerDummy|\ActivityControllerDummy
      */
     public function getController ($controllerName)
     {
@@ -58,6 +61,12 @@ class ApplicationDummy
         }
         if ($controllerName == 'Xodx_PersonController'){
             return new PersonControllerDummy($this);
+        }
+        if ($controllerName == 'Xodx_PingbackController'){
+            return new PingbackControllerDummy($this);
+        }
+        if ($controllerName == 'Xodx_ActivityController'){
+            return new ActivityControllerDummy($this);
         }
     }
     /**
