@@ -5,11 +5,12 @@
     <?php
         if (!empty($member['memberName'])) :
     ?>
-        <strong><a href="<?= urldecode($member['member']); ?>"><?= urlencode($member['memberName']); ?></a></strong><br />
+        <strong><?= $member['memberName']; ?></strong><br />
+        <a href="<?= urldecode($member['member']); ?>"><?= $member['member']; ?></a><br />
     <?php
         else :
     ?>
-        <strong><a href="<?= urldecode($member['member']); ?>"><?= urlencode($member['member']); ?></a></strong><br />
+        <a href="?c=person&amp;uri=<?= urlencode($member['member']); ?>"><?= $member['member']; ?></a><br />
     <?php
         endif;
     ?>
