@@ -1,0 +1,20 @@
+<h3>Members</h3>
+<?php if(isset($this->groupMembers)): 
+    foreach($this->groupMembers as $member):
+?>
+    <?php
+        if (!empty($member['memberName'])) :
+    ?>
+        <strong><a href="<?= urldecode($member['member']); ?>"><?= urlencode($member['memberName']); ?></a></strong><br />
+    <?php
+        else :
+    ?>
+        <strong><a href="<?= urldecode($member['member']); ?>"><?= urlencode($member['member']); ?></a></strong><br />
+    <?php
+        endif;
+    ?>
+<?php
+    endforeach;
+?>
+
+<?php endif; ?>

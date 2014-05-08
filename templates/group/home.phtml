@@ -2,6 +2,13 @@
     <div class="span9">
         <h2>Site of <?= $this->groupshowName ?></h2>
         <?php
+        if (!empty($this->groupMaker)):
+        ?>
+        <p>Administrator: <a href="<?= $this->groupMaker; ?>"><?= $this->groupMakerName; ?></a></p>
+        <?php
+        endif;
+        ?>
+        <?php
         if (!empty($this->groupDescription)) :
         ?>
         <blockquote>Description: <?= $this->groupDescription ?></blockquote>
@@ -38,8 +45,8 @@
                     <input type="file" name="content"/>
                     <input type="hidden" name="type" value="Photo" />
                     <input type="hidden" name="reply" value=false />
-                    <input type="hidden" name="groupUri" value="<?= htmlentities($this->groupUri) ?>" />
-                    <button class="btn btn-primary" type="submit">Share</button>
+                    <input type="hidden" name="groupUri" value="<?= htmlentities($this->groupUri) ?>" />lo 
+                   <button class="btn btn-primary" type="submit">Share</button>
                 </form>
             </div>
         </div>
@@ -58,16 +65,27 @@
         <?php
         if (!empty($this->isMaker)) :
         ?>
-        <form method="post" action="?c=group&amp;a=deletegroup">  
+        <form method="post" action="?c=group&amp;a=changegroup">  
             <input type="hidden" name="groupUri" value="<?= htmlentities($this->groupUri) ?>" />
-            <button class="btn btn-block btn-danger" type="submit">Delete Group</button>
+            <button class="btn btn-block btn-warning" type="submit">Administration</button>
         </form>
         <?php
-        endif;
+        else :
         ?>
         <form method="post" action="?c=group&amp;a=leavegroup">  
             <input type="hidden" name="group" value="<?= htmlentities($this->groupUri) ?>" />
             <button class="btn btn-block" type="submit">Leave Group</button>
         </form>
+        <?php
+        endif;
+        ?>
+        <?php
+            $this->partial(
+                    'memberlist.phtml',
+                    array(
+                        'groupMembers' => $this->groupMembers
+                    )
+            )
+        ?>
     </div>
 </div>

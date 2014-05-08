@@ -29,5 +29,13 @@
             <button class="btn btn-block" type="submit">Join Group</button>
             <?php endif; ?>
         </form>
+        <?php
+            $this->partial(
+                    'memberlist.phtml',
+                    array(
+                        'groupMembers' => $this->groupMembers
+                    )
+            )
+        ?>
     </div>
 </div>
