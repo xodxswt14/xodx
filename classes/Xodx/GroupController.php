@@ -591,7 +591,8 @@ $logger->debug("2");
             $uri = "";
             if (($uriArray = parse_url($groupUri))) {
                 $uri = $uriArray['scheme'] . '://'
-                     . $uriArray['host']
+                     . $uriArray['host'] . ':'
+                     . $uriArray['port']
                      . $uriArray['path'];
                 if(substr($uri, -1) != '/') {
                     $uri.= '/';
@@ -668,7 +669,8 @@ $logger->debug("2");
             $uri = "";
             if (($uriArray = parse_url($groupUri))) {
                 $uri = $uriArray['scheme'] . '://'
-                     . $uriArray['host']
+                     . $uriArray['host'] . ':'
+                     . $uriArray['port']
                      . $uriArray['path'];
                 if(substr($uri, -1) != '/') {
                     $uri.= '/';
