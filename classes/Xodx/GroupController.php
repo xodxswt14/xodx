@@ -293,7 +293,47 @@ class Xodx_GroupController extends Xodx_ResourceController
         return $template;
     }
 
-/**
+    /**
+     * A new action for changing the group name or description.
+     *
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
+     */
+    public function changegroupAction($template)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $request = $bootstrap->getResource('request');
+
+        $groupname = $request->getValue('groupname', 'post');
+        $description = $request->getValue('description', 'post');
+
+        $formError = array();
+
+        if(empty($groupname)) {
+            $formError['groupname'] = true;
+        }
+
+        if(empty($description)) {
+            $description="";
+        }
+
+        if(count($formError) <= 0) {
+            $this->renameGroup($groupname);
+            $this->changeDescription($description);
+
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'groupprofile');
+            $location->setParameter('a', 'list');
+
+            $template->redirect($location);
+        } else {
+            $template->formError = $formError;
+        }
+
+        return $template;
+    }
+
+    /**
      * This creates a new group with the given name.
      * This function is usually called internally
      * @param Uri $groupUri Uri of the new group
