@@ -40,7 +40,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $model      = $bootstrap->getResource('model');
         $request    = $bootstrap->getResource('request');
         $logger     = $bootstrap->getResource('logger');
-        $groupUri  = $request->getValue('uri', 'get');
+        $groupUri  = urldecode($request->getValue('uri', 'get'));
         $id         = $request->getValue('id', 'get');
         $controller = $request->getValue('c', 'get');
 
@@ -108,6 +108,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'group');
             $location->setParameter('id', $id);
+            $location->setParameter('uri', $groupUri);
             $location->setParameter('a', 'home');
             $template->redirect($location);
         }
@@ -170,7 +171,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $model      = $bootstrap->getResource('model');
         $request    = $bootstrap->getResource('request');
         $logger     = $bootstrap->getResource('logger');
-        $groupUri  = $request->getValue('uri', 'get');
+        $groupUri  = urldecode($request->getValue('uri', 'get'));
         $id         = $request->getValue('id', 'get');
         $controller = $request->getValue('c', 'get');
 
@@ -244,6 +245,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'group');
             $location->setParameter('id', $id);
+            $location->setParameter('uri', urlencode($groupUri));
             $location->setParameter('a', 'show');
             $template->redirect($location);
         }

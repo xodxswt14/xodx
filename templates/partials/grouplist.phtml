@@ -21,8 +21,8 @@
         <?php if (($this->personUri == $this->logInUri || $this->isHome) 
                 && $group['maker'] != $this->personUri) : ?>
         <form method="post" action="?c=group&amp;a=leavegroup">
-            <input type="hidden" name="person" value="<?= htmlentities($this->personUri) ?>" />
-            <input type="hidden" name="group" value="<?= $group['groupUri'] ?>" />
+            <input type="hidden" name="person" value="<?= htmlentities($this->personUri); ?>" />
+            <input type="hidden" name="group" value="<?= htmlentities($group['groupUri']); ?>" />
             <button class="btn btn-block" type="submit">Leave Group</button>
         </form>
         <?php endif; ?>

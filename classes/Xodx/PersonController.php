@@ -70,9 +70,7 @@ class Xodx_PersonController extends Xodx_ResourceController
 
         $profile = $model->sparqlQuery($profileQuery);
         $groups = $model->sparqlQuery($groupQuery);
-
-        $logger->debug('group:' . var_dump($groups[0]['groupUri']));
-
+        
         if (count($profile) < 1) {
             $linkeddataHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
             $newStatements = $linkeddataHelper->getResource($personUri);
@@ -170,7 +168,6 @@ class Xodx_PersonController extends Xodx_ResourceController
         $template->profileshowKnows = $knows;
         $template->profileshowMember = $member;
         $template->profileshowNews = $news;
-        $template->profileshowGroups = $groups[0]['groupUri'];
         $template->addContent('templates/profileshow.phtml');
 
         return $template;
