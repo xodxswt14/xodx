@@ -9,6 +9,7 @@
  * This class manages Groups. This includes so far:
  * - Creating a group
  * - Deleting a group
+ * - Changing group attributes
  * - Getting a group from its uri
  *
  * @author Jan Buchholz
@@ -17,6 +18,7 @@
  * @author Gunnar Warnecke
  * @author Toni Pohl
  * @author Thomas Guett
+ * @author Henrik Hillebrand
  */
 class Xodx_GroupController extends Xodx_ResourceController
 {
@@ -39,6 +41,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $groupUri  = $request->getValue('uri', 'get');
         $id         = $request->getValue('id', 'get');
         $controller = $request->getValue('c', 'get');
+
 
         if ($id !== null) {
             $groupUri = $this->_app->getBaseUri() . '?c=' . $controller . '&id=' . $id;
@@ -102,7 +105,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         if($isMember) { // Redirect user from home to show if he is not a member
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'group');
-            $location->setParameter('id', $group[0]['name']);
+            $location->setParameter('id', $id);
             $location->setParameter('a', 'home');
             $template->redirect($location);
         }
@@ -201,7 +204,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         } elseif(!$isMember) { // Redirect user from home to show if he is not a member
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'group');
-            $location->setParameter('id', $group[0]['name']);
+            $location->setParameter('id', $id);
             $location->setParameter('a', 'show');
             $template->redirect($location);
         }
