@@ -45,6 +45,12 @@
         <hr />
         <?php
             $this->partial(
+                'grouplist.phtml',
+                array('groupUri' => $this->profileshowGroups)
+            );
+        ?>
+        <?php
+            $this->partial(
                 'friendlist.phtml',
                 array('personUri' => $this->profileshowPersonUri, 
                     'knows' => $this->profileshowKnows, 'addFriend' => false,
