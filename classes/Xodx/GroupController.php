@@ -9,14 +9,16 @@
  * This class manages Groups. This includes so far:
  * - Creating a group
  * - Deleting a group
+ * - Changing group attributes
  * - Getting a group from its uri
- * 
+ *
  * @author Jan Buchholz
  * @author Stephan Kemper
  * @author Lukas Werner
  * @author Gunnar Warnecke
  * @author Toni Pohl
  * @author Thomas Guett
+ * @author Henrik Hillebrand
  */
 class Xodx_GroupController extends Xodx_ResourceController
 {
@@ -39,6 +41,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $groupUri  = $request->getValue('uri', 'get');
         $id         = $request->getValue('id', 'get');
         $controller = $request->getValue('c', 'get');
+
 
         if ($id !== null) {
             $groupUri = $this->_app->getBaseUri() . '?c=' . $controller . '&id=' . $id;
@@ -102,7 +105,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         if($isMember) { // Redirect user from home to show if he is not a member
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'group');
-            $location->setParameter('id', $group[0]['name']);
+            $location->setParameter('id', $id);
             $location->setParameter('a', 'home');
             $template->redirect($location);
         }
@@ -168,11 +171,11 @@ class Xodx_GroupController extends Xodx_ResourceController
         $groupUri  = $request->getValue('uri', 'get');
         $id         = $request->getValue('id', 'get');
         $controller = $request->getValue('c', 'get');
-        
+
         if ($id !== null) {
             $groupUri = $this->_app->getBaseUri() . '?c=' . $controller . '&id=' . $id;
         }
-        
+
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
 
         //GroupQuery fetching group information
@@ -238,7 +241,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         } elseif(!$isMember) { // Redirect user from home to show if he is not a member
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'group');
-            $location->setParameter('id', $group[0]['name']);
+            $location->setParameter('id', $id);
             $location->setParameter('a', 'show');
             $template->redirect($location);
         }
@@ -261,7 +264,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * A view action for creating a new group.
-     * 
+     *
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      */
@@ -278,7 +281,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         if (empty($groupname)) {
             $formError['groupname'] = true;
         }
-        
+
         if (empty($description)) {
             $description = "";
         }
@@ -300,7 +303,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * A view action for deleting an existing group.
-     * 
+     *
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      */
@@ -345,12 +348,12 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         $groupName = $request->getValue('groupname', 'post');
         $description = $request->getValue('description', 'post');
-        $groupUri = $request->getValue('groupuri', 'post');
+        $groupUri = $request->getValue('groupUri','post');
 
         $formError = array();
 
         if(empty($groupName)) {
-            $formError['groupname'] = true;
+            $formError['groupName'] = true;
         }
 
         if(empty($description)) {
@@ -453,7 +456,7 @@ class Xodx_GroupController extends Xodx_ResourceController
     public function deleteGroup ($groupUri)
     {
         // getResources & set namespaces
-        $bootstrap = $this->_app->getBootstrap();     
+        $bootstrap = $this->_app->getBootstrap();
         $model = $bootstrap->getResource('model');
         $logger = $bootstrap->getResource('logger');
 
@@ -463,12 +466,12 @@ class Xodx_GroupController extends Xodx_ResourceController
         // verify that there is a group with that uri
         $testQuery  = 'ASK {' . PHP_EOL;
         $testQuery .= '<' . $groupUri . '> ?p ?o' . PHP_EOL;
-        $testQuery .= '}';            
+        $testQuery .= '}';
         $result = $model->sparqlQuery($testQuery);
         if (!$result) {
             $logger->error('GroupController/deleteGroup: Group does not exist: ' . $groupUri);
             throw new Exception('Group does not exist.');
-        } else {                               
+        } else {
             $name = $this->getGroup($groupUri)->getName();
             // feed of the group
             $groupFeed = $this->_app->getBaseUri() . '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
@@ -487,7 +490,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                 $deleteQuery .= 'SELECT ?topic ' . PHP_EOL;
                 $deleteQuery .= 'WHERE {' . PHP_EOL;
                 $deleteQuery .= '<' . $groupUri . '> foaf:primaryTopic ?topic' . PHP_EOL;
-                $deleteQuery .= '}';            
+                $deleteQuery .= '}';
                 $deleteResult = $model->sparqlQuery($deleteQuery);
 
                 $deleteGroup = array(
@@ -622,25 +625,25 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         // delete Statement added by joinGroup ($personUri, member, $groupUri)
         $statementArray = array (
-            $personUri => array (                               
-                'http://xmlns.com/foaf/0.1/member' => array(     
-                    array (                                     
+            $personUri => array (
+                'http://xmlns.com/foaf/0.1/member' => array(
+                    array (
                         'type'  => 'uri',
                         'value' => $groupUri
                     )
                 )
             )
-        );        
+        );
         $model->deleteMultipleStatements($statementArray);
 
-        // unsubscribe from group        
+        // unsubscribe from group
         $userUri = $userController->getUserUri($personUri);
         $feedUri = $this->getGroupFeedUri($groupUri);
 
         if ($feedUri !== null) {
             // Logging
             $logger->debug('GroupController/leavegroup: Found feed for group ("' . $groupUri . '"): "' . $feedUri . '"');
-            // unsubscription of friend's feed            
+            // unsubscription of friend's feed
             $userController->unsubscribeFromResource ($userUri, $groupUri, $feedUri);
         } else {
             // Logging
@@ -650,7 +653,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * A view action for leaving a specified group.
-     * 
+     *
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      */
@@ -717,7 +720,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * View action for joining a new group.
-     * 
+     *
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      */
@@ -736,7 +739,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $personUri = $userController->getUser()->getPerson();
             $user = $userController->getUser();
         }
-        
+
         // Redirect to login if user is guest
         if($user->getName() == 'guest') {
             $location = new Saft_Url($this->_app->getBaseUri());
@@ -800,7 +803,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      */
     public function getGroupFeedUri($resourceUri)
     {
-        $pos = strpos($resourceUri, '?c=');        
+        $pos = strpos($resourceUri, '?c=');
         $baseUri = substr($resourceUri, 0, $pos);
         $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($resourceUri);
         return $feedUri;
@@ -815,7 +818,7 @@ class Xodx_GroupController extends Xodx_ResourceController
     private function _callMemberApi($uri, $fields) {
         // uri-fy the date for the POST Request
         $fields_string = '';
-        foreach ($fields as $field => $value) { 
+        foreach ($fields as $field => $value) {
             $fields_string .= $field . '=' . $value . '&';
         }
         rtrim($fields_string, '&');
@@ -831,7 +834,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         // Execute
         $result = curl_exec($curlConnection);
-        
+
         // Close Connection
         curl_close($curlConnection);
 
@@ -914,7 +917,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $logger     = $bootstrap->getResource('logger');
         $nsFoaf     = 'http://xmlns.com/foaf/0.1/';
 
-        if($grouUri!=null) {
+        if($groupUri!=null) {
             // delete old name from db
             $model->deleteMatchingStatements($groupUri, $nsFoaf . 'name', null);
 
