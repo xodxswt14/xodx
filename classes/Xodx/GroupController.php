@@ -122,6 +122,36 @@ class Xodx_GroupController extends Xodx_ResourceController
     }
 
     /**
+     * If the author of an activity is made up of both, the person- and the groupUri, this returns the personUri
+     * @param Uri $authorUri Uri that is to be manipulated
+     * @return Uri the extracted personUri
+     */
+    public function getPersonByAuthorUri($authorUri)
+    {
+        $pos = strpos($authorUri, 'http', 5);
+        if (!$pos) {
+            return $authorUri;
+        } else {
+            return substr($authorUri, 0, $pos);
+        }
+    }
+
+    /**
+     * If the author of an activity is made up of both, the person- and the groupUri, this returns the groupUri, otherwise FALSE
+     * @param Uri $authorUri Uri that is to be manipulated
+     * @return Uri|Boolean The extracted groupUri or FALSE
+     */
+    public function getGroupByAuthorUri ($authorUri)
+    {
+        $pos = strpos($authorUri, 'http', 5);
+        if (!$pos) {
+            return FALSE;
+        } else {
+            return substr($authorUri, $pos);
+        }
+    }
+    
+    /**
      * A view action to show the home of a group
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
@@ -167,13 +197,13 @@ class Xodx_GroupController extends Xodx_ResourceController
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
 
-        // Get group activity stream
         $memberController = $this->_app->getController('Xodx_MemberController');
         $activities = $memberController->getActivityStream($this->getGroup($groupUri));
-
-        // Beautify maker name
-        $nameHelper = new Xodx_NameHelper($this->_app);
-        $makerName = $nameHelper->getName($group[0]['maker']);
+        
+        foreach ($activities as $activity) {
+            $activity['personUri'] = $this->getPersonByAuthorUri($activity['authorUri']);
+            $activity['groupUri']  = $this->getGroupByAuthorUri($activity['authorUri']);
+        }
 
         //Checks if user is member of group
         $isMember = false;
@@ -205,21 +235,14 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->redirect($location);
         }
 
-        // Refine array of group members
-        for($i = 0; $i < count($members); $i++) {
-            $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
-        }
-
         $template->groupUri = $groupUri;
         $template->groupshowName = $group[0]['name'];
         $template->groupDescription = $group[0]['description'];
-        $template->groupMaker = $group[0]['maker'];
-        $template->groupMakerName = $makerName;
-        $template->groupMembers = $members;
         $template->groupshowActivities = $activities;
 
         return $template;
     }
+
     /**
      * A view action for creating a new group.
      * 
