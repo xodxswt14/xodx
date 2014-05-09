@@ -4,7 +4,7 @@
     <div class="row-fluid">
         <form method="post" action="?c=activity&amp;a=reply">
             <div class="span10">
-                <a href="<?= htmlentities($activity['authorUri']) ?>"><?= htmlentities($activity['author']) ?></a>
+                <a href="<?= htmlentities($activity['personUri']) ?>"><?= htmlentities($activity['personName']) ?></a>
                 <?php if (isset($activity['objectType'])) : ?>
                 <a  href="<?= htmlentities($activity['verb']) ?>"><span class="label label-important"><?= Xodx_NameHelper::getSpokenWord($activity['verb']) ?></span></a>
                 <?php if(isset($activity['objectContent'])) : ?>
