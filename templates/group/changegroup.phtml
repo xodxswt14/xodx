@@ -11,7 +11,7 @@
 <h2>Group administration</h2>
 <form action="?c=group&amp;a=changegroup" method="post" class="form-horizontal">
 <fieldset>
-<legend>Editing an existing Group on this Xodx isntance.</legend>
+<legend>Editing an existing Group on this Xodx instance.</legend>
 <div class="control-group" <?= errorClass('groupname', $this->formError) ?>">
     <label class="control-label" for="groupname">Group name</label>
     <div class="controls">
@@ -33,10 +33,18 @@
 <div class="form-actions">
     <input type="hidden" name="groupUri" value="<?= $_POST['groupUri'] ?>">
     <button class="btn btn-primary" type="submit">Change</button>
+</div>
 </form>
-<form action="?c=group&amp;a=deletegroup" method="post" class="form-inline">
+</fieldset>
+
+<fieldset>
+<legend>Deleting an extisting Group on this Xodx instance.</legend>
+<strong>Deleting the Group can not be undone!</strong>
+<form action="?c=group&amp;a=deletegroup" method="post" class="form-horizontal">
+<div class="form-actions">
     <input type="hidden" name="groupUri" value="<?= $_POST['groupUri'] ?>">
     <button class="btn btn-danger" type="submit">Delete</button>
-</form>
 </div>
+</form>
+
 </fieldset>
