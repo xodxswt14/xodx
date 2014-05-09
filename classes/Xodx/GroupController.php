@@ -354,12 +354,11 @@ class Xodx_GroupController extends Xodx_ResourceController
                 )
             );
             $model->addMultipleStatements($newGroup);
-$logger->debug("1");
+
             $memberController = $this->_app->getController('Xodx_MemberController');
             $memberController->addMember($adminUri, $groupUri);
-$logger->debug("2");
+
             $this->joinGroup($adminUri, $groupUri);
-            $logger->debug('3');
         }
     }
 
