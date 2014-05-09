@@ -12,6 +12,7 @@
  *
  * @author Thomas Guett
  * @author Gunnar Warnecke
+ * @author Lukas Werner
  */
 class Xodx_Group
 {
@@ -97,7 +98,7 @@ class Xodx_Group
 
         $groupDescription = $model->sparqlQuery($query);
 
-        return $this->$groupDescription[0]['description'];
+        return $groupDescription[0]['description'];
     }
 
     /**

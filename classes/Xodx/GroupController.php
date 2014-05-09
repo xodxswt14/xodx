@@ -9,6 +9,8 @@
  * This class manages Groups. This includes so far:
  * - Creating a group
  * - Deleting a group
+ * - Joining a group
+ * - Leaving a group
  * - Changing group attributes
  * - Getting a group from its uri
  *
@@ -341,39 +343,50 @@ class Xodx_GroupController extends Xodx_ResourceController
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      */
-    public function changegroupAction($template)
+    public function changegroupAction ($template)
     {
         $bootstrap = $this->_app->getBootstrap();
         $request = $bootstrap->getResource('request');
 
         $groupName = $request->getValue('groupname', 'post');
         $description = $request->getValue('description', 'post');
-        $groupUri = $request->getValue('groupUri','post');
+        $groupUri = urldecode($request->getValue('groupUri','get'));
 
-        $formError = array();
-
-        if(empty($groupName)) {
-            $formError['groupName'] = true;
-        }
-
-        if(empty($description)) {
-            $description="";
-        }
-
-        if(empty($groupUri)) {
-            $formError['groupUri'] = true;
-        }
-
-        if(count($formError) <= 0) {
-            $this->changeGroup($groupUri, $groupName, $description);
-
+        if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'groupprofile');
             $location->setParameter('a', 'list');
 
             $template->redirect($location);
+        } elseif ($groupName === null && $description === null) {
+            $template->groupUri = $groupUri;
+            $template->groupName = $this->getGroup($groupUri)->getName();
+            $template->description = $this->getGroup($groupUri)->getDescription();
         } else {
-            $template->formError = $formError;
+            $formError = array();
+
+            if (empty($groupName)) {
+                $formError['groupname'] = true;
+            }
+
+            if (empty($description)) {
+                $description = "";
+            }
+
+            if (count($formError) <= 0) {
+                $this->changeGroup($groupUri, $groupName, $description);
+
+                $location = new Saft_Url($this->_app->getBaseUri());
+                $location->setParameter('c', 'groupprofile');
+                $location->setParameter('a', 'list');
+
+                $template->redirect($location);
+            } else {
+                $template->groupUri = $groupUri;
+                $template->groupName = $groupName;
+                $template->description = $description;
+                $template->formError = $formError;
+            }
         }
 
         return $template;

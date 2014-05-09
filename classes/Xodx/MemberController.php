@@ -8,7 +8,8 @@
 /**
  * Description of MemberController
  *
- * @author Stephan
+ * @author Stephan Kemper
+ * @author Lukas Werner
  */
 class Xodx_MemberController extends Xodx_ResourceController
 {
