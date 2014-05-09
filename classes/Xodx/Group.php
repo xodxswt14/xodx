@@ -9,8 +9,9 @@
  * This class represents a group it is very similar to a user
  *
  * foaf: http://xmlns.com/foaf/spec/
- * 
+ *
  * @author Thomas Guett
+ * @author Gunnar Warnecke
  */
 class Xodx_Group
 {
@@ -91,7 +92,7 @@ class Xodx_Group
         $query = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
         $query.= 'SELECT  ?description ' . PHP_EOL;
         $query.= 'WHERE {' . PHP_EOL;
-        $query.= '   <' . $this->_uri . '> foaf:topic ?description' . PHP_EOL;
+        $query.= '   <' . $this->_uri . '> foaf:primaryTopic ?description' . PHP_EOL;
         $query.= '}' . PHP_EOL;
 
         $groupDescription = $model->sparqlQuery($query);
