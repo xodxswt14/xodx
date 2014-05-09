@@ -166,7 +166,7 @@ class Xodx_ActivityController extends Xodx_ResourceController
         // Generate URIs for the post, activity, actorFeed and object
         $postUri = $baseUri . '?c=resource&id=' . md5(rand());
         $objectUri = $baseUri . '?c=resource&id=' . md5(rand());
-        $activityUri = $baseUri . '?c=activity&id=' . md5(rand());
+        $activityUri = $baseUri . '?c=activity&id=' . md5(uniqid(rand(), true));
         $activityFeedUri = $baseUri . '?c=feed&a=getFeed&uri=' .  urlencode($activityUri);
         
         /* Determine the actorFeed. This is usually the user's feed or - if he is posting in a group - 
@@ -484,6 +484,8 @@ class Xodx_ActivityController extends Xodx_ResourceController
         if ($type == $nsAair . 'Activity') {
             $query = $activityQuery;
         } else if ($type == $nsFoaf . 'Person') {
+            $query = $personQuery;
+        } else if ($type == $nsFoaf . 'Group') {
             $query = $personQuery;
         } else {
             $query = $objectQuery;
