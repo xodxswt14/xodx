@@ -485,6 +485,8 @@ class Xodx_ActivityController extends Xodx_ResourceController
             $query = $activityQuery;
         } else if ($type == $nsFoaf . 'Person') {
             $query = $personQuery;
+        } else if ($type == $nsFoaf . 'Group') {
+            $query = $personQuery;
         } else {
             $query = $objectQuery;
         }
