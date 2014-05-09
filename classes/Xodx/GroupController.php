@@ -16,6 +16,7 @@
  * @author Lukas Werner
  * @author Gunnar Warnecke
  * @author Toni Pohl
+ * @author Thomas Guett
  */
 class Xodx_GroupController extends Xodx_ResourceController
 {
@@ -199,6 +200,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
 
+        // Get group activity stream
         $memberController = $this->_app->getController('Xodx_MemberController');
         $activities = $memberController->getActivityStream($this->getGroup($groupUri));
 
@@ -341,13 +343,13 @@ class Xodx_GroupController extends Xodx_ResourceController
         $bootstrap = $this->_app->getBootstrap();
         $request = $bootstrap->getResource('request');
 
-        $groupname = $request->getValue('groupname', 'post');
+        $groupName = $request->getValue('groupname', 'post');
         $description = $request->getValue('description', 'post');
-        $groupUri = $request->getValue('groupUri','post');
+        $groupUri = $request->getValue('groupuri', 'post');
 
         $formError = array();
 
-        if(empty($groupname)) {
+        if(empty($groupName)) {
             $formError['groupname'] = true;
         }
 
@@ -360,7 +362,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
 
         if(count($formError) <= 0) {
-            $this->changeGroup($groupUri, $groupname, $description);
+            $this->changeGroup($groupUri, $groupName, $description);
 
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'groupprofile');
@@ -895,6 +897,70 @@ class Xodx_GroupController extends Xodx_ResourceController
                 'GroupController/_unsubscribeGroupFromFeed: Couldn\'t find feed for leaving member ("'
                 . $personUri . '").'
             );
+        }
+    }
+
+    /**
+     * This method changes the name and description of a group
+     *
+     * @param string $groupUri The group's URI
+     * @param string $newName New name of the group
+     * @param string $newTopic New description of the group
+     */
+    public function changeGroup($groupUri, $newName, $newTopic)
+    {
+        $bootstrap  = $this->_app->getBootstrap();
+        $model      = $bootstrap->getResource('model');
+        $logger     = $bootstrap->getResource('logger');
+        $nsFoaf     = 'http://xmlns.com/foaf/0.1/';
+
+        if($grouUri!=null) {
+            // delete old name from db
+            $model->deleteMatchingStatements($groupUri, $nsFoaf . 'name', null);
+
+            // set new name in db
+            $setName = array (
+                $groupUri => array (
+                    $nsFoaf . 'name' => array(
+                        array (
+                            'type'  => 'literal',
+                            'value' => $newName
+                        )
+                    )
+                )
+            );
+            $model->addMultipleStatements($setName);
+            // log new name
+            $logger->debug(
+                'GroupController/changeGroup: Group ' . $groupUri
+                . ' changed its name from \'' . $oldName . '\' to \'' . $newName . '\'.'
+            );
+        } else {
+            $logger->error('GroupController/changeGroup: Group URI is null.');
+        }
+        if($groupUri!=null) {
+            // delete old description(s)
+            $model->deleteMatchingStatements($groupUri, $nsFoaf . 'primaryTopic', null);
+
+            // set new description
+            $setTopic = array (
+                $groupUri => array (
+                    $nsFoaf . 'primaryTopic' => array(
+                        array (
+                            'type'  => 'literal',
+                            'value' => $newTopic
+                        )
+                    )
+                )
+            );
+            $model->addMultipleStatements($setTopic);
+            // log new description
+            $logger->debug(
+                'GroupController/changeGroup: Group ' . $grouUri .
+                ' changed its description to \'' . $newTopic . '\'.'
+            );
+        } else {
+            $logger->error('GroupController/changeGroup: Group URI is null.');
         }
     }
 }
