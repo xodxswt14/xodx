@@ -30,6 +30,8 @@ class Xodx_UserController extends Xodx_ResourceController
         $bootstrap = $this->_app->getBootstrap();
         $model = $bootstrap->getResource('model');
         $request = $bootstrap->getResource('request');
+        $memberController = $this->_app->getController('Xodx_MemberController');
+        $groupController = $this->_app->getController('Xodx_GroupController');
 
         $user = $this->getUser();
 
@@ -71,6 +73,14 @@ class Xodx_UserController extends Xodx_ResourceController
                 $member = $model->sparqlQuery($groupsQuery);
 
                 $activities = $this->getActivityStream($user);
+                // Add to your own ActivityStream those belonging to groups you are subscribed to
+                foreach ($member as $subscribedGroup) {
+                    $activities = array_merge($activities, $memberController->getActivityStream(
+                                $groupController->getGroup($subscribedGroup['groupUri']))
+                            );
+                }                
+                $activities = $this->sortActivities($activities);
+
                 $factory = new Xodx_NotificationFactory($this->_app);
                 $notifications = $factory->getForUser($user->getUri(), false);
 
@@ -86,6 +96,23 @@ class Xodx_UserController extends Xodx_ResourceController
         }
         return $template;
     }
+
+    /**
+     * Sorts the given array of activities in order of their publishing dates
+     * @param  Array $activities Array of activities
+     * @return Array $activities Sorted array of activities
+     */
+    public function sortActivities ($activities)
+    {
+        $tmp = Array();
+        foreach($activities as &$act) {
+            $tmp[] = &$act["pubDate"];
+        }
+        array_multisort($tmp, SORT_DESC, $activities);
+
+        return $activities;
+    }
+
 
     public function getPersonUriAction ($template)
     {
