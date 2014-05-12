@@ -80,6 +80,12 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         $nameHelper = new Xodx_NameHelper($this->_app);
         $makerName = $nameHelper->getName($group[0]['maker']);
+        
+        foreach ($activities as &$activity) {
+            $activity['personUri'] = $this->getPersonByAuthorUri($activity['authorUri']);
+            $activity['groupUri']  = $this->getGroupByAuthorUri($activity['authorUri']);
+            $activity['personName'] = $nameHelper->getName($activity['personUri']);
+        }
 
         if($user->getName() == 'guest') {
             $template->isGuest = true;
@@ -136,7 +142,6 @@ class Xodx_GroupController extends Xodx_ResourceController
      */
     public function getPersonByAuthorUri($authorUri)
     {
-        //var_dump($authorUri);
         $pos = strpos($authorUri, 'http', 5);
         if (!$pos) {
             return $authorUri;

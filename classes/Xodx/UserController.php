@@ -81,6 +81,18 @@ class Xodx_UserController extends Xodx_ResourceController
                 }                
                 $activities = $this->sortActivities($activities);
 
+                $nameHelper = new Xodx_NameHelper($this->_app);
+                $groupController = $this->_app->getController('Xodx_GroupController');
+
+                foreach ($activities as &$activity) {
+                    $activity['personUri'] = $groupController->getPersonByAuthorUri($activity['authorUri']);
+                    $activity['groupUri']  = $groupController->getGroupByAuthorUri($activity['authorUri']);
+                    $activity['personName'] = $nameHelper->getName($activity['personUri']);
+                    if (!empty($activity['groupUri'])) {
+                        $activity['groupName'] = $nameHelper->getName($activity['groupUri']);
+                    }
+                }
+
                 $factory = new Xodx_NotificationFactory($this->_app);
                 $notifications = $factory->getForUser($user->getUri(), false);
 
