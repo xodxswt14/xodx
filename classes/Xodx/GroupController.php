@@ -696,15 +696,18 @@ class Xodx_GroupController extends Xodx_ResourceController
             $uri = "";
             if (($uriArray = parse_url($groupUri))) {
                 $uri = $uriArray['scheme'] . '://'
-                     . $uriArray['host'] . ':'
-                     . $uriArray['port']
-                     . $uriArray['path'];
+                     . $uriArray['host'];
+                if (!empty($uriArray['port'])) {
+                    $uri.= ':' . $uriArray['port'];
+                }
+                if (!empty($uriArray['path'])) {
+                    $uri.= $uriArray['path'];
+                }
                 if(substr($uri, -1) != '/') {
                     $uri.= '/';
                 }
                 $uri.= '?c=member&a=deletemember';
             }
-
             if (!empty($uri)) {
                 // Send curl post request with needed data
                 $fields = array(
@@ -774,15 +777,18 @@ class Xodx_GroupController extends Xodx_ResourceController
             $uri = "";
             if (($uriArray = parse_url($groupUri))) {
                 $uri = $uriArray['scheme'] . '://'
-                     . $uriArray['host'] . ':'
-                     . $uriArray['port']
-                     . $uriArray['path'];
+                     . $uriArray['host'];
+                if (!empty($uriArray['port'])) {
+                    $uri.= ':' . $uriArray['port'];
+                }
+                if (!empty($uriArray['path'])) {
+                    $uri.= $uriArray['path'];
+                }
                 if(substr($uri, -1) != '/') {
                     $uri.= '/';
                 }
                 $uri.= '?c=member&a=addmember';
             }
-
             if (!empty($uri)) {
                 // Send curl post request with needed data
                 $fields = array(
