@@ -420,12 +420,12 @@ class Xodx_MemberController extends Xodx_ResourceController
      /**
      *
      * Method returns all activities the group is subscribed to
-     * @param Xodx_Group $group
+     * @param Uri $groupUri Uri of the group
      * @return array of activities
      */
-    public function getActivityStream (Xodx_Group $group)
+    public function getActivityStream ($groupUri)
     {
-        $subscribedResources = $this->getSubscribedResources($group);
+        $subscribedResources = $this->getSubscribedResources($groupUri);
 
         $activityController = $this->_app->getController('Xodx_ActivityController');
         $activities = array();
@@ -445,14 +445,13 @@ class Xodx_MemberController extends Xodx_ResourceController
 
     /**
      * Find all resources a user is subscribed to via Activity Feed
-     * @param $userUri the uri of the user in question
-     * @return array $subscribedResources all resource a user is subscribed to
+     * @param $groupUri the uri of the group in question
+     * @return array $subscribedResources all resource a group is subscribed to
      */
-    public function getSubscribedResources (Xodx_Group $group)
+    public function getSubscribedResources ($groupUri)
     {
         $bootstrap = $this->_app->getBootstrap();
         $model = $bootstrap->getResource('model');
-        $groupUri = $group->getUri();
 
         // SPARQL-Query
         $query = 'PREFIX dssn: <http://purl.org/net/dssn/> ' . PHP_EOL;

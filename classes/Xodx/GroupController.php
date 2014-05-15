@@ -76,7 +76,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $user = $userController->getUser();
 
         $memberController = $this->_app->getController('Xodx_MemberController');
-        $activities = $memberController->getActivityStream($this->getGroup($groupUri));
+        $activities = $memberController->getActivityStream($groupUri);
 
         $nameHelper = new Xodx_NameHelper($this->_app);
         $makerName = $nameHelper->getName($group[0]['maker']);
@@ -213,7 +213,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         // Get group activity stream
         $memberController = $this->_app->getController('Xodx_MemberController');
-        $activities = $memberController->getActivityStream($this->getGroup($groupUri));
+        $activities = $memberController->getActivityStream($groupUri);
 
         $nameHelper = new Xodx_NameHelper($this->_app);
         $makerName = $nameHelper->getName($group[0]['maker']);
@@ -544,7 +544,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      /**
      * This method creates a new object of the class Xodx_Group
      * @param $groupUri a string which contains the URI of the required group
-     * @return Xodx_Group instance with the specified URI
+     * @return Xodx_Group|null instance with the specified URI or null if there is no such group on this server
      */
     public function getGroup ($groupUri)
     {
@@ -566,7 +566,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                $groupTopic = $result[0]['topic'];
            } else {
                $logger->error('GroupController/getGroup: Group does not exist.' . $groupUri);
-               throw new Exception('Group does not exist.');
+               return null;
            }
            $group = new Xodx_Group($groupUri, $this->_app);
            $group->setName($groupId);
