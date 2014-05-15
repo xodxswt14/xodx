@@ -50,4 +50,18 @@ class UserControllerDummy extends ResourceControllerDummy
     public function unsubscribeFromResource($unsubscriberUri, $resourceUri, $feedUri = null, $local = false) 
     { 
     }
+    /**
+     * Method is called in PersonController but an implementation
+     * is not needed for testing.
+     * 
+     * Subscriebes a user to a resource
+     * 
+     * @param type $unsubscriberUri Uri of the person who wants to unsubscribe from a resource
+     * @param type $resourceUri Uri of the resource that ist to be unsubscribed
+     * @param type $feedUri Feed of the given resource
+     * @param type $local Indicates whether the resource is stored locally
+     */
+    public function subscribeToResource($unsubscriberUri, $resourceUri, $feedUri = null, $local = false) 
+    { 
+    }
 }
