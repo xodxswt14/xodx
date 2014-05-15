@@ -26,7 +26,8 @@ class Xodx_GroupprofileController extends Xodx_ResourceController
             'SELECT DISTINCT ?group ' .
             'WHERE { ' .
             '   ?group a foaf:Group . ' .
-            '}'
+                '?group foaf:name ?name .' .
+            '} ORDER BY ASC(?name)'
         );
 
         $groups = array();
