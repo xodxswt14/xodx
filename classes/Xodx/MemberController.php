@@ -18,6 +18,7 @@ class Xodx_MemberController extends Xodx_ResourceController
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      * @todo more security needed, change hardcoded 'success' and 'fail'
+     * @deprecated should be implemented with semantic pingback
      */
     public function addmemberAction ($template) {
         $bootstrap = $this->_app->getBootstrap();
@@ -54,6 +55,7 @@ class Xodx_MemberController extends Xodx_ResourceController
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      * @todo more security needed, change hardcoded 'success' and 'fail'
+     * @deprecated should be implemented with semantic pingback
      */
     public function deletememberAction ($template) {
         $bootstrap = $this->_app->getBootstrap();

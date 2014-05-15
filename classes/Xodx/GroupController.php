@@ -285,26 +285,37 @@ class Xodx_GroupController extends Xodx_ResourceController
         $groupname = $request->getValue('groupname', 'post');
         $description = $request->getValue('description', 'post');
 
-        $formError = array();
+        $userController = $this->_app->getController('Xodx_UserController');
+        $user = $userController->getUser();
 
-        if (empty($groupname)) {
-            $formError['groupname'] = true;
-        }
-
-        if (empty($description)) {
-            $description = "";
-        }
-
-        if (count($formError) <= 0) {
-            $this->createGroup($groupname, $description);
-
+        if ($user->getName() == 'guest') {
             $location = new Saft_Url($this->_app->getBaseUri());
-            $location->setParameter('c', 'groupprofile');
-            $location->setParameter('a', 'list');
+            $location->setParameter('c', 'application');
+            $location->setParameter('a', 'login');
 
             $template->redirect($location);
-        } else {
-            $template->formError = $formError;
+        } elseif ($groupname !== null || $description !== null) {
+            $formError = array();
+
+            if (empty($groupname)) {
+                $formError['groupname'] = true;
+            }
+
+            if (empty($description)) {
+                $description = "";
+            }
+
+            if (count($formError) <= 0) {
+                $this->createGroup($groupname, $description);
+
+                $location = new Saft_Url($this->_app->getBaseUri());
+                $location->setParameter('c', 'groupprofile');
+                $location->setParameter('a', 'list');
+
+                $template->redirect($location);
+            } else {
+                $template->formError = $formError;
+            }
         }
 
         return $template;
@@ -315,6 +326,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      *
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
+     * @todo should use semantic pingback instead of a curl request
      */
     public function deletegroupAction($template)
     {
@@ -768,6 +780,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      *
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
+     * @todo should use semantic pingback instead of a curl request
      */
     public function joingroupAction($template)
     {
@@ -862,6 +875,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      * @param string $uri URI of the API
      * @param mixed[] $fields Fields to send with
      * @return mixed content got from request
+     * @deprecated should be implemented with semantic pingback
      */
     private function _callMemberApi($uri, $fields) {
         // uri-fy the date for the POST Request
