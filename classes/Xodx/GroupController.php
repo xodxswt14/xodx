@@ -513,6 +513,20 @@ class Xodx_GroupController extends Xodx_ResourceController
                 $deleteQuery .= '}';
                 $deleteResult = $model->sparqlQuery($deleteQuery);
 
+                $deleteSubscribeQuery  = 'PREFIX dssn: <' . $nsDssn . '> ' . PHP_EOL;
+                $deleteSubscribeQuery .= 'SELECT ?subscription ' . PHP_EOL;
+                $deleteSubscribeQuery .= 'WHERE {' . PHP_EOL;
+                $deleteSubscribeQuery .= '<' . $groupUri . '> dssn:subscribedTo ?subscription' . PHP_EOL;
+                $deleteSubscribeQuery .= '}';
+                $deleteSubscribeResult = $model->sparqlQuery($deleteSubscribeQuery);
+
+                $deleteMemberQuery  = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+                $deleteMemberQuery .= 'SELECT ?member ' . PHP_EOL;
+                $deleteMemberQuery .= 'WHERE {' . PHP_EOL;
+                $deleteMemberQuery .= '<' . $groupUri . '> foaf:member ?member' . PHP_EOL;
+                $deleteMemberQuery .= '}';
+                $deleteMemberResult = $model->sparqlQuery($deleteMemberQuery);
+
                 $deleteGroup = array(
                     $groupUri => array(
                         EF_RDF_TYPE => array(
@@ -524,7 +538,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                         $nsFoaf . 'maker' => array(
                             array('type' => 'uri', 'value' => $personUri)
                         ),
-                        $nsFoaf . 'nick' => array(
+                        $nsFoaf . 'name' => array(
                             array('type' => 'literal', 'value' => $name)
                         ),
                         $nsFoaf . 'primaryTopic' => array(
@@ -532,6 +546,16 @@ class Xodx_GroupController extends Xodx_ResourceController
                         )
                     )
                 );
+
+                foreach($deleteSubscribeResult as $value) {                    
+                    $deleteGroup[$groupUri][$nsDssn . 'subscribedTo'][] = 
+                            array('type' => 'uri', 'value' => $value['subscription']);
+                }
+                foreach($deleteMemberResult as $value) {                    
+                    $deleteGroup[$groupUri][$nsFoaf . 'member'][] = 
+                            array('type' => 'uri', 'value' => $value['member']);
+                }
+
                 $model->deleteMultipleStatements($deleteGroup);
             } else {
                 $logger->error('GroupController/deleteGroup: Person is not authorised'
