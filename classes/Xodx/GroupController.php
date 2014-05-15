@@ -599,7 +599,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                $groupId = $result[0]['name'];
                $groupTopic = $result[0]['topic'];
            } else {
-               $logger->error('GroupController/getGroup: Group does not exist.' . $groupUri);
+               $logger->error('GroupController/getGroup: Group does not exist ("' . $groupUri . '")');
                throw new Exception('Group does not exist.');
            }
            $group = new Xodx_Group($groupUri, $this->_app);
@@ -689,6 +689,9 @@ class Xodx_GroupController extends Xodx_ResourceController
             )
         );
         $model->deleteMultipleStatements($statementArray);
+        // Send Ping to group
+        $pingbackController = $this->_app->getController('Xodx_PingbackController');
+        $pingbackController->sendPing($personUri, $groupUri, 'I hereby leave this group.');
 
         // unsubscribe from group
         $userUri = $userController->getUserUri($personUri);
