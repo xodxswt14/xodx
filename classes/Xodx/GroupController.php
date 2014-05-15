@@ -353,13 +353,35 @@ class Xodx_GroupController extends Xodx_ResourceController
     public function changegroupAction ($template)
     {
         $bootstrap = $this->_app->getBootstrap();
+        $model = $bootstrap->getResource('model');
         $request = $bootstrap->getResource('request');
 
         $groupName = $request->getValue('groupname', 'post');
         $description = $request->getValue('description', 'post');
         $groupUri = urldecode($request->getValue('groupUri','get'));
 
-        if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
+        $nsFoaf = 'http://xmlns.com/foaf/0.1/';
+
+        //GroupQuery fetching group maker
+        $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $groupQuery.= 'SELECT ?maker ' .  PHP_EOL;
+        $groupQuery.= 'WHERE { ' .  PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker . ' . PHP_EOL;
+        $groupQuery.= '}'; PHP_EOL;
+
+        $group = $model->sparqlQuery($groupQuery);
+
+        $userController = $this->_app->getController('Xodx_UserController');
+        $user = $userController->getUser();
+
+        if ($group[0]['maker'] != $user->getPerson()) {
+            $location = new Saft_Url($this->_app->getBaseUri());
+            $location->setParameter('c', 'groupprofile');
+            $location->setParameter('a', 'list');
+
+            $template->redirect($location);
+        } elseif (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'groupprofile');
             $location->setParameter('a', 'list');
