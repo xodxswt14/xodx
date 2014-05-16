@@ -75,8 +75,8 @@ class Xodx_UserController extends Xodx_ResourceController
                 $activities = $this->getActivityStream($user);
                 // Add to your own ActivityStream those belonging to groups you are subscribed to
                 foreach ($member as $subscribedGroup) {
-                    $activities = array_merge($activities, $memberController->getActivityStream(
-                                $groupController->getGroup($subscribedGroup['groupUri']))
+                    $activities = array_merge($activities, 
+                            $memberController->getActivityStream($subscribedGroup['groupUri'])
                             );
                 }                
                 $activities = $this->sortActivities($activities);
