@@ -22,4 +22,15 @@ class ActivityControllerDummy extends ResourceControllerDummy
     public function addActivity ($actorUri, $verbUri, $object, $personUri = null)
     {
     }
+    /**
+     * @param $personUri the uri of the person whoes activities should be returned
+     * @return an array of activity arrays
+     * TODO return an array of DSSN_Activity objects
+     * TODO getActivity by objectURI
+     */
+    public function getActivities ($resourceUri)
+    {
+        $activities = array('validActivityUri1' => array('pubDate' => 'validPubDate'));
+        return $activities;
+    }
 }

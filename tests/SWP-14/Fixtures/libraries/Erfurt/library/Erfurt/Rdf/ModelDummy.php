@@ -32,7 +32,7 @@ class ModelDummy
     public function sparqlQuery($query, $options = array())
     {
         $result = null;
-        //used for UserControllerTest: testUnsubscribeFromFeed
+        //used for Member/UserControllerTest: testUnsubscribeFromFeed
         if ($this->testMethod == 'testUnsubscribeFromFeed') {
             $result = array();
             $result[0]['subUri'] = 'validSubUri';      
@@ -43,13 +43,26 @@ class ModelDummy
         }
         //used for GroupControllerTest: testDeleteGroup 
         if ($this->testMethod == 'testDeleteGroup') {
-            $result = TRUE;
+            $result = array();
+            $result[0]['subscription'] = 'validSubscription';
+            $result[0]['member'] = 'validMemberUri';
+            $result[0]['topic'] = 'validTopic';
         }
         //used for GroupControllerTest: testGetGroup
         if ($this->testMethod == 'testGetGroup') {
             $result = array();
             $result[0]['name'] = 'validGroupName';
             $result[0]['topic'] = 'validGroupTopic';
+        }
+        //used for GroupControllerTest: testIsSubscribed
+        if ($this->testMethod == 'testIsSubscribed') {
+            $result = array();
+            $result[0]= 'validSubscriptionState';
+        }
+        //used for GroupControllerTest: testGetSubscribedResources
+        if ($this->testMethod == 'testGetSubscribedResources') {
+            $result = array();
+            $result[0]['resUri']= 'validResourceUri';
         }
         return $result;
     }

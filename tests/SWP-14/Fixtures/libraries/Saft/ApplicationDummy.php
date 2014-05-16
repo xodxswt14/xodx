@@ -10,6 +10,7 @@ require_once (__DIR__ . '/../../classes/Xodx/UserControllerDummy.php');
 require_once (__DIR__ . '/../../classes/Xodx/PersonControllerDummy.php');
 require_once (__DIR__ . '/../../classes/Xodx/PingbackControllerDummy.php');
 require_once (__DIR__ . '/../../classes/Xodx/ActivityControllerDummy.php');
+require_once (__DIR__ . '/../../classes/Xodx/MemberControllerDummy.php');
 require_once (__DIR__ . '/../../libraries/Saft/Helper/LinkeddataHelperDummy.php');
 require_once (__DIR__ . '/BootstrapDummy.php');
 /**
@@ -46,7 +47,7 @@ class ApplicationDummy
      * Returns ControllerDummy dependent on $controllerName.
      * @param type $controllerName
      * @return \PushControllerDummy|\ResourceControllerDummy|\UserControllerDummy|PersonControllerDummy
-     *         |\PingbackConreollerDummy|\ActivityControllerDummy
+     *         |\PingbackConreollerDummy|\ActivityControllerDummy|\MemberControllerDummy
      */
     public function getController ($controllerName)
     {
@@ -67,6 +68,9 @@ class ApplicationDummy
         }
         if ($controllerName == 'Xodx_ActivityController'){
             return new ActivityControllerDummy($this);
+        }
+        if ($controllerName == 'Xodx_MemberController'){
+            return new MemberControllerDummy($this);
         }
     }
     /**

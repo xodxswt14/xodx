@@ -233,7 +233,7 @@ class Xodx_MemberController extends Xodx_ResourceController
      * @param URI $unscriberUri the uri of the group which wants to be subscribed
      * @param URI $feedUri the uri of the feed where the group wants to subscribe
      */
-    private function _subscribeToFeed ($subscriberUri, $feedUri, $local = false)
+    protected function _subscribeToFeed ($subscriberUri, $feedUri, $local = false)
     {
         $bootstrap = $this->_app->getBootstrap();
         $logger = $bootstrap->getResource('logger');
@@ -303,7 +303,7 @@ class Xodx_MemberController extends Xodx_ResourceController
      * @param URI $feedUri the uri of the feed where the group wants to unsubscribe
      * @param boolean $local Indicates whether the feed is stored locally
      */
-    private function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = false)
+    protected function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = false)
     {
         // getResources & set namespaces
         $bootstrap = $this->_app->getBootstrap();
@@ -401,7 +401,7 @@ class Xodx_MemberController extends Xodx_ResourceController
      * @param $groupUri the uri of the user in question
      * @param $feedUri the uri of the feed in question
      */
-    private function _isSubscribed ($groupUri, $feedUri)
+    protected function _isSubscribed ($groupUri, $feedUri)
     {
         $bootstrap = $this->_app->getBootstrap();
         $model = $bootstrap->getResource('model');

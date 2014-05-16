@@ -547,6 +547,20 @@ class Xodx_GroupController extends Xodx_ResourceController
                 $deleteQuery .= '}';
                 $deleteResult = $model->sparqlQuery($deleteQuery);
 
+                $deleteSubscribeQuery  = 'PREFIX dssn: <' . $nsDssn . '> ' . PHP_EOL;
+                $deleteSubscribeQuery .= 'SELECT ?subscription ' . PHP_EOL;
+                $deleteSubscribeQuery .= 'WHERE {' . PHP_EOL;
+                $deleteSubscribeQuery .= '<' . $groupUri . '> dssn:subscribedTo ?subscription' . PHP_EOL;
+                $deleteSubscribeQuery .= '}';
+                $deleteSubscribeResult = $model->sparqlQuery($deleteSubscribeQuery);
+
+                $deleteMemberQuery  = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+                $deleteMemberQuery .= 'SELECT ?member ' . PHP_EOL;
+                $deleteMemberQuery .= 'WHERE {' . PHP_EOL;
+                $deleteMemberQuery .= '<' . $groupUri . '> foaf:member ?member' . PHP_EOL;
+                $deleteMemberQuery .= '}';
+                $deleteMemberResult = $model->sparqlQuery($deleteMemberQuery);
+
                 $deleteGroup = array(
                     $groupUri => array(
                         EF_RDF_TYPE => array(
@@ -558,7 +572,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                         $nsFoaf . 'maker' => array(
                             array('type' => 'uri', 'value' => $personUri)
                         ),
-                        $nsFoaf . 'nick' => array(
+                        $nsFoaf . 'name' => array(
                             array('type' => 'literal', 'value' => $name)
                         ),
                         $nsFoaf . 'primaryTopic' => array(
@@ -566,6 +580,16 @@ class Xodx_GroupController extends Xodx_ResourceController
                         )
                     )
                 );
+
+                foreach($deleteSubscribeResult as $value) {                    
+                    $deleteGroup[$groupUri][$nsDssn . 'subscribedTo'][] = 
+                            array('type' => 'uri', 'value' => $value['subscription']);
+                }
+                foreach($deleteMemberResult as $value) {                    
+                    $deleteGroup[$groupUri][$nsFoaf . 'member'][] = 
+                            array('type' => 'uri', 'value' => $value['member']);
+                }
+
                 $model->deleteMultipleStatements($deleteGroup);
             } else {
                 $logger->error('GroupController/deleteGroup: Person is not authorised'
@@ -790,6 +814,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $bootstrap = $this->_app->getBootstrap();
         $request = $bootstrap->getResource('request');
         $logger = $bootstrap->getResource('logger');
+        $model = $bootstrap->getResource('model');
 
         // get URI
         $groupUri = $request->getValue('group', 'post');
@@ -811,47 +836,64 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
 
         if (Erfurt_Uri::check($personUri)) {
-            // Get remote base uri from group uri
-            $uri = "";
-            if (($uriArray = parse_url($groupUri))) {
-                $uri = $uriArray['scheme'] . '://'
-                     . $uriArray['host'];
-                if (!empty($uriArray['port'])) {
-                    $uri.= ':' . $uriArray['port'];
-                }
-                if (!empty($uriArray['path'])) {
-                    $uri.= $uriArray['path'];
-                }
-                if(substr($uri, -1) != '/') {
-                    $uri.= '/';
-                }
-                $uri.= '?c=member&a=addmember';
-            }
-            if (!empty($uri)) {
-                // Send curl post request with needed data
-                $fields = array(
-                    'personUri' => urlencode($personUri),
-                    'groupUri' => urlencode($groupUri)
-                );
+            $nsFoaf = 'http://xmlns.com/foaf/0.1/';
+            //verify that User is not already member of the group
+            $memberQuery  = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+            $memberQuery .= 'ASK {' .PHP_EOL;
+            $memberQuery .= '   <' . $personUri . '>' . ' foaf:member <' . $groupUri . '>.' .PHP_EOL;
+            $memberQuery .= '}';
 
-                $apiStatus = trim($this->_callMemberApi($uri, $fields));
-                if ($apiStatus == "success") {
-                    $this->joinGroup($personUri, $groupUri);
-                    //Redirect
-                    $location = new Saft_Url($this->_app->getBaseUri());
+            if (!$model->sparqlQuery($memberQuery)) {
+                // Get remote base uri from group uri
+                $uri = "";
+                if (($uriArray = parse_url($groupUri))) {
+                    $uri = $uriArray['scheme'] . '://'
+                         . $uriArray['host'];
+                    if (!empty($uriArray['port'])) {
+                        $uri.= ':' . $uriArray['port'];
+                    }
+                    if (!empty($uriArray['path'])) {
+                        $uri.= $uriArray['path'];
+                    }
+                    if(substr($uri, -1) != '/') {
+                        $uri.= '/';
+                    }
+                    $uri.= '?c=member&a=addmember';
+                }
+                if (!empty($uri)) {
+                    // Send curl post request with needed data
+                    $fields = array(
+                        'personUri' => urlencode($personUri),
+                        'groupUri' => urlencode($groupUri)
+                    );
 
-                    $groupName = $this->getGroup($groupUri)->getName();
-                    $location->setParameter('c', 'group');
-                    $location->setParameter('id', $groupName);
-                    $location->setParameter('a', 'home');
-                    $template->redirect($location);
+                    $apiStatus = trim($this->_callMemberApi($uri, $fields));
+                    if ($apiStatus == "success") {
+                        $this->joinGroup($personUri, $groupUri);
+                        //Redirect
+                        $location = new Saft_Url($this->_app->getBaseUri());
+
+                        $groupName = $this->getGroup($groupUri)->getName();
+                        $location->setParameter('c', 'group');
+                        $location->setParameter('id', $groupName);
+                        $location->setParameter('a', 'home');
+                        $template->redirect($location);
+                    } else {
+                        $template->addContent('templates/error.phtml');
+                        $template->exception = 'API call failed!';
+                    }
                 } else {
                     $template->addContent('templates/error.phtml');
-                    $template->exception = 'API call failed!';
+                    $template->exception = 'Failed to parse url from $groupUri!';
                 }
             } else {
                 $template->addContent('templates/error.phtml');
-                $template->exception = 'Failed to parse url from $groupUri!';
+                $template->exception = 'You are already member of that group ("'
+                    . $groupUri . '").';
+                $logger->error(
+                    'GroupController/joinGroup: You are already member of that group ("'
+                    . $groupUri . '").'
+                );
             }
         } else {
             $template->addContent('templates/error.phtml');

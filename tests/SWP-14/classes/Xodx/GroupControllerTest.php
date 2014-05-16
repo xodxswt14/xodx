@@ -14,8 +14,8 @@ define('EF_RDF_NS', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
 define('EF_RDF_TYPE', EF_RDF_NS.'type');
 /**
  * This class tests \classes\Xodx\GroupController.php
- * @author Stephan
- * @author Jan
+ * @author Stephan Kemper
+ * @author Jan Buchholz
  */
 class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
 {
@@ -70,7 +70,7 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
     public function testCreateGroup ()
     {
         $this->initFixture(FALSE, 'testCreateGroup');
-        $this->groupController->createGroup(null, 'gtest');
+        $this->groupController->createGroup('gtest', 'gtestdesc');
     }
     /**
      * Tests if a Group is deleted correctly
@@ -78,7 +78,7 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
      */
     public function testDeleteGroup ()
     {
-        $this->initFixture(FALSE, 'testDeleteGroup');
+        $this->initFixture(TRUE, 'testDeleteGroup');
         $this->groupController->deleteGroup($this->validGroupUri);
     }
     /**
@@ -89,6 +89,16 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
         $this->initFixture(FALSE, 'testGetGroup');
         $this->groupController->getGroup($this->validGroupUri);
     }
+    /**
+     * @covers GroupController::getGroupFeedUri
+     */
+    public function testGetGroupFeedUri()
+    {
+        $this->initFixture(FALSE, 'testGetGroupFeedUri');
+        $resourceUri = 'baseUri/?c=testcontr&a=testapl';
+        $feedUri = 'baseUri/' . '?c=feed&a=getFeed&uri=' . urlencode($resourceUri);
+        $this->assertEquals($feedUri,  $this->groupController->getGroupFeedUri($resourceUri));
+    }        
 }
 /**
  * A proxyclass for \classes\Xodx\GroupController.
@@ -98,5 +108,9 @@ class Xodx_GroupControllerProxy extends Xodx_GroupController
 {
     public function getGroup($userUri = null)
     {
+        $group = new Xodx_Group($userUri, new ApplicationDummy());
+        $group->setName('validName');
+        $group->setDescription('validDescription');
+        return $group;
     }
 }
