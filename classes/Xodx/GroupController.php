@@ -206,7 +206,16 @@ class Xodx_GroupController extends Xodx_ResourceController
         $memberQuery.= '   <' . $groupUri . '> foaf:member ?member .' . PHP_EOL;
         $memberQuery.= '}'; PHP_EOL;
 
+        // GroupMemberQuery fetching all groups one is subscribed to
+        $groupMemberQuery  = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $groupMemberQuery .= 'SELECT ?member ' .  PHP_EOL;
+        $groupMemberQuery .= 'WHERE { ' .  PHP_EOL;
+        $groupMemberQuery .= '  ?member foaf:member <' . $groupUri . '> .' . PHP_EOL;
+        $groupMemberQuery .= '}'; PHP_EOL;
+
+        
         $members = $model->sparqlQuery($memberQuery);
+        $groupMember = $model->sparqlQuery($groupMemberQuery);
 
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
@@ -231,6 +240,11 @@ class Xodx_GroupController extends Xodx_ResourceController
                 $isMember = true;
             }
         }
+        foreach($groupMember as $member) {
+            if($member['member'] === $user->getPerson()) {
+                $isMember = true;
+            }
+        }
 
         //Checks if user is maker and marks him as member
         if($user->getPerson() == $group[0]['maker']) {
@@ -247,7 +261,9 @@ class Xodx_GroupController extends Xodx_ResourceController
             $location->setParameter('a', 'login');
             $template->redirect($location);
         } elseif(!$isMember) { // Redirect user from home to show if he is not a member
-            $location = new Saft_Url($this->_app->getBaseUri());
+            $pos = strpos($groupUri, '?c=');
+            $baseUri = substr($groupUri, 0, $pos);            
+            $location = new Saft_Url($baseUri);
             $location->setParameter('c', 'group');
             $location->setParameter('id', $id);
             $location->setParameter('uri', urlencode($groupUri));
