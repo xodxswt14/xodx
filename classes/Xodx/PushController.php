@@ -65,6 +65,7 @@ class Xodx_PushController extends Saft_Controller
             curl_close($curlHandler);
 
             if ($httpCode-($httpCode%100) == 200) {
+                libxml_use_internal_errors(true);
                 $xml = simplexml_load_string($feedResult);
 
                 $hubUrl = null;
