@@ -540,6 +540,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $makerQuery .= '}';
 
             if ($model->sparqlQuery($makerQuery)) {
+                $this->leaveGroup($personUri, $groupUri);
                 $deleteQuery  = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
                 $deleteQuery .= 'SELECT ?topic ' . PHP_EOL;
                 $deleteQuery .= 'WHERE {' . PHP_EOL;
