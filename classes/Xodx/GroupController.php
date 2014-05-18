@@ -80,7 +80,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         $nameHelper = new Xodx_NameHelper($this->_app);
         $makerName = $nameHelper->getName($group[0]['maker']);
-        
+
         foreach ($activities as &$activity) {
             $activity['personUri'] = $this->getPersonByAuthorUri($activity['authorUri']);
             $activity['groupUri']  = $this->getGroupByAuthorUri($activity['authorUri']);
@@ -164,7 +164,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             return substr($authorUri, $pos);
         }
     }
-    
+
     /**
      * A view action to show the home of a group
      * @param Saft_Layout $template used template
@@ -185,7 +185,6 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
 
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
-
         //GroupQuery fetching group information
         $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
         $groupQuery.= 'SELECT ?name ?maker ?description ' .  PHP_EOL;
@@ -847,7 +846,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             if (!$model->sparqlQuery($memberQuery)) {
                 // Get remote base uri from group uri
                 $uri = "";
-                if (($uriArray = parse_url($groupUri))) {
+                if (($uriArray = parse_url($groupUri)) && (count($uriArray) > 1)) {
                     $uri = $uriArray['scheme'] . '://'
                          . $uriArray['host'];
                     if (!empty($uriArray['port'])) {
