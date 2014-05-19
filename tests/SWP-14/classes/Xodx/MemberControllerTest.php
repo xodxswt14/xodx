@@ -113,7 +113,7 @@ class Xodx_MemberControllerTest extends PHPUnit_Framework_Testcase
     public function testGetSubscribedResources() {
         $this->initFixture(FALSE, 'testGetSubscribedResources');
         $group = new Xodx_Group($this->validGroupUri, $this->app);
-        $this->memberController->getSubscribedResources($group);
+        $this->memberController->getSubscribedResources($group->getUri());
     }
 }
 /**

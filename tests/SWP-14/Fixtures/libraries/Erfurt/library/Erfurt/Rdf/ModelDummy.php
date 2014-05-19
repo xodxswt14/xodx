@@ -75,6 +75,16 @@ class ModelDummy
     {
     }
     /**
+     * Implementation not needed
+     *
+     * @param string|null $subjectSpec
+     * @param string|null $predicateSpec
+     * @param string|null $objectSpec
+     */
+    public function deleteMatchingStatements ($subjectSpec, $predicateSpec, $objectSpec, array $options = array())
+    {    
+    }
+    /**
      * Implementation not needed.
      * @param array $statements
      * @param boolean $useAc

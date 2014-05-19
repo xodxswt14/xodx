@@ -1024,7 +1024,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $logger     = $bootstrap->getResource('logger');
         $nsFoaf     = 'http://xmlns.com/foaf/0.1/';
 
-        if($groupUri!=null) {
+        if ($groupUri != null) {
             // delete old name from db
             $model->deleteMatchingStatements($groupUri, $nsFoaf . 'name', null);
 
@@ -1043,12 +1043,12 @@ class Xodx_GroupController extends Xodx_ResourceController
             // log new name
             $logger->debug(
                 'GroupController/changeGroup: Group ' . $groupUri
-                . ' changed its name from \'' . $oldName . '\' to \'' . $newName . '\'.'
+                . ' changed its name to \'' . $newName . '\'.'
             );
         } else {
             $logger->error('GroupController/changeGroup: Group URI is null.');
         }
-        if($groupUri!=null) {
+        if ($groupUri != null) {
             // delete old description(s)
             $model->deleteMatchingStatements($groupUri, $nsFoaf . 'primaryTopic', null);
 
@@ -1066,7 +1066,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $model->addMultipleStatements($setTopic);
             // log new description
             $logger->debug(
-                'GroupController/changeGroup: Group ' . $grouUri .
+                'GroupController/changeGroup: Group ' . $groupUri .
                 ' changed its description to \'' . $newTopic . '\'.'
             );
         } else {

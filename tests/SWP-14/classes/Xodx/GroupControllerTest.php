@@ -72,6 +72,36 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
         $this->initFixture(FALSE, 'testCreateGroup');
         $this->groupController->createGroup('gtest', 'gtestdesc');
     }
+
+    /**
+     * Tests if a new Group is joined correctly
+     * @covers GroupController:joinGroup
+     */
+    public function testJoinGroup ()
+    {
+        $this->initFixture(TRUE, 'testJoinGroup');
+        $this->groupController->joinGroup('anyPersonURI', $this->validGroupUri);
+    }
+
+    /**
+     * Tests if a new Group is leaved correctly
+     * @covers GroupController:joinGroup
+     */
+    public function testLeaveGroup ()
+    {
+        $this->initFixture(TRUE, 'testLeaveGroup');
+        $this->groupController->leaveGroup('anyPersonURI', $this->validGroupUri);
+    }
+
+    /**
+     * Tests if a Group is changed correctly
+     * @covers GroupController::changeGroup
+     */
+    public function testChangeGroup () {
+        $this->initFixture(TRUE, 'testChangeGroup');
+        $this->groupController->changeGroup($this->validGroupUri, "newName", "newTopic");
+    }
+
     /**
      * Tests if a Group is deleted correctly
      * @covers GroupController::deleteGroup
@@ -81,6 +111,7 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
         $this->initFixture(TRUE, 'testDeleteGroup');
         $this->groupController->deleteGroup($this->validGroupUri);
     }
+
     /**
      * @covers GroupController::getGroup
      */
