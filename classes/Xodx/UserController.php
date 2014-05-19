@@ -617,4 +617,78 @@ protected function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = fa
     }
 }
 
+/**
+ * 
+ * @param type $template
+ */
+public function addmemberAction($template) {
+    $bootstrap = $this->_app->getBootstrap();
+    $request = $bootstrap->getResource('request');
+    $pushController = $this->_app->getController('Xodx_PushController');
+
+    $groupUri = $request->getValue('groupUri', 'post');
+    $personUri = $request->getValue('personUri', 'post');
+
+    $formError = array();
+
+    if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
+        $formError['groupUri'] = true;
+    }
+
+    if (empty($personUri) || !Erfurt_Uri::check($personUri)) {
+        $formError['personUri'] = true;
+    }
+
+    if (count($formError) <= 0) {
+        $pos = strpos($resourceUri, '?c=');
+        $baseUri = substr($resourceUri, 0, $pos);
+        $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' .
+                urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
+        $pushController->subscribe($feedUri);
+        $template->disableLayout();
+        $template->setRawContent('success');
+    } else {
+        $template->formError = $formError;
+        $template->disableLayout();
+        $template->setRawContent('fail');
+    }
+}
+
+/**
+ * 
+ * @param type $template
+ */
+public function deletememberAction($template) {
+    $bootstrap = $this->_app->getBootstrap();
+    $request = $bootstrap->getResource('request');
+    $pushController = $this->_app->getController('Xodx_PushController');
+
+    $groupUri = $request->getValue('groupUri', 'post');
+    $personUri = $request->getValue('personUri', 'post');
+
+    $formError = array();
+
+    if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
+        $formError['groupUri'] = true;
+    }
+
+    if (empty($personUri) || !Erfurt_Uri::check($personUri)) {
+        $formError['personUri'] = true;
+    }
+
+    if (count($formError) <= 0) {
+        $pos = strpos($resourceUri, '?c=');
+        $baseUri = substr($resourceUri, 0, $pos);
+        $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' .
+                urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
+        $pushController->unsubscribe($feedUri);
+        $template->disableLayout();
+        $template->setRawContent('success');
+    } else {
+        $template->formError = $formError;
+        $template->disableLayout();
+        $template->setRawContent('fail');
+    }
+}
+
 }

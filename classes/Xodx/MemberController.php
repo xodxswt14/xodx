@@ -13,6 +13,58 @@
  */
 class Xodx_MemberController extends Xodx_ResourceController
 {
+
+    private function _createAPIUri($memberUri, $callAction) {
+        $uri = "";
+        if (($uriArray = parse_url($memberUri))) {
+            $uri = $uriArray['scheme'] . '://'
+                 . $uriArray['host'];
+            if (!empty($uriArray['port'])) {
+                $uri.= ':' . $uriArray['port'];
+            }
+            if (!empty($uriArray['path'])) {
+                $uri.= $uriArray['path'];
+            }
+            if(substr($uri, -1) != '/') {
+                $uri.= '/';
+            }
+            $uri.= '?c=user&a=' . $callAction;
+        }
+    }
+
+ /**
+     * Calls the API
+     * @param string $uri URI of the API
+     * @param mixed[] $fields Fields to send with
+     * @return mixed content got from request
+     * @deprecated should be implemented with semantic pingback
+     */
+    private function _callApi($uri, $fields) {
+        // uri-fy the date for the POST Request
+        $fields_string = '';
+        foreach ($fields as $field => $value) {
+            $fields_string .= $field . '=' . $value . '&';
+        }
+        rtrim($fields_string, '&');
+
+        // Open Connection
+        $curlConnection = curl_init();
+
+        // Set the uri, number of POST vars and POST data
+        curl_setopt($curlConnection, CURLOPT_URL, $uri);
+        curl_setopt($curlConnection, CURLOPT_POST, count($fields));
+        curl_setopt($curlConnection, CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($curlConnection, CURLOPT_RETURNTRANSFER, true);
+
+        // Execute
+        $result = curl_exec($curlConnection);
+
+        // Close Connection
+        curl_close($curlConnection);
+
+        return $result;
+    }
+
     /**
      * API Action for getting group subsribe to person
      * @param Saft_Layout $template used template
@@ -103,6 +155,28 @@ class Xodx_MemberController extends Xodx_ResourceController
         $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
         if (!$ldHelper->resourceDescriptionExists($personUri)) {
             throw new Exception('The WebID of your friend does not exist.');
+        }
+        // fetch all members of the group
+        $memberQuery  = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
+        $memberQuery .= 'SELECT ?memberUri {' .PHP_EOL;
+        $memberQuery .= '   <' . $groupUri . '>' . ' foaf:member ?memberUri' .PHP_EOL;
+        $memberQuery .= '}';
+        
+        $members = $model->sqarplQuery($memberQuery);
+        
+        $fields = array (
+            'groupUri' => $groupUri,
+            'personUri' => $personUri
+        );
+        $fields2 = array (
+            'groupUri' => $groupUri,
+            'personUri' => ''
+        );
+        foreach ($members as $member) {
+            // inform each member about new member
+            $this->_callApi($this->_createAPIUri($member['memberUri'], 'addmember'), $fields);
+            // inform the new member about the other members
+            $this->_callApi($this->_createAPIUri($personUri, 'addmember'), $fields2);
         }
 
         // Update WebID

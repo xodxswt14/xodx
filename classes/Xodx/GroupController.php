@@ -663,7 +663,6 @@ class Xodx_GroupController extends Xodx_ResourceController
         $logger = $bootstrap->getResource('logger');
         $model  = $bootstrap->getResource('model');
         $userController = $this->_app->getController('Xodx_UserController');
-
         // Update WebID
         $model->addStatement(
             $personUri,
@@ -831,7 +830,6 @@ class Xodx_GroupController extends Xodx_ResourceController
         $request = $bootstrap->getResource('request');
         $logger = $bootstrap->getResource('logger');
         $model = $bootstrap->getResource('model');
-
         // get URI
         $groupUri = $request->getValue('group', 'post');
         $personUri = $request->getValue('person', 'post');
