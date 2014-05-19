@@ -624,7 +624,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                $groupTopic = $result[0]['topic'];
            } else {
                $logger->error('GroupController/getGroup: Group does not exist ("' . $groupUri . '")');
-               throw new Exception('Group does not exist.');
+               return null;
            }
            $group = new Xodx_Group($groupUri, $this->_app);
            $group->setName($groupId);
