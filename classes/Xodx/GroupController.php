@@ -793,7 +793,6 @@ class Xodx_GroupController extends Xodx_ResourceController
                     //Redirect
                     $location = new Saft_Url($this->_app->getBaseUri());
 
-                    $groupName = $this->getGroup($groupUri)->getName();
                     $location->setParameter('c', 'user');
                     $location->setParameter('a', 'home');
                     $template->redirect($location);
@@ -872,9 +871,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                         //Redirect
                         $location = new Saft_Url($this->_app->getBaseUri());
 
-                        $groupName = $this->getGroup($groupUri)->getName();
-                        $location->setParameter('c', 'group');
-                        $location->setParameter('id', $groupName);
+                        $location->setParameter('c', 'user');
                         $location->setParameter('a', 'home');
                         $template->redirect($location);
                     } else {
