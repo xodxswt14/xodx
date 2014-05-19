@@ -647,7 +647,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                $groupTopic = $result[0]['topic'];
            } else {
                $logger->error('GroupController/getGroup: Group does not exist ("' . $groupUri . '")');
-               throw new Exception('Group does not exist.');
+               return null;
            }
            $group = new Xodx_Group($groupUri, $this->_app);
            $group->setName($groupId);
@@ -764,6 +764,7 @@ class Xodx_GroupController extends Xodx_ResourceController
     {
         $bootstrap = $this->_app->getBootstrap();
         $request = $bootstrap->getResource('request');
+        $nameHelper = new Xodx_NameHelper($this->_app);
 
         // get URI
         $groupUri = $request->getValue('group', 'post');
@@ -776,22 +777,10 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         if (Erfurt_Uri::check($personUri)) {
             // Get remote base uri from group uri
-            $uri = "";
-            if (($uriArray = parse_url($groupUri))) {
-                $uri = $uriArray['scheme'] . '://'
-                     . $uriArray['host'];
-                if (!empty($uriArray['port'])) {
-                    $uri.= ':' . $uriArray['port'];
-                }
-                if (!empty($uriArray['path'])) {
-                    $uri.= $uriArray['path'];
-                }
-                if(substr($uri, -1) != '/') {
-                    $uri.= '/';
-                }
-                $uri.= '?c=member&a=deletemember';
-            }
+            $uri = $nameHelper->getBaseUriByResourceUri($groupUri);
+
             if (!empty($uri)) {
+                $uri.= '?c=member&a=deletemember';
                 // Send curl post request with needed data
                 $fields = array(
                     'personUri' => urlencode($personUri),
@@ -837,6 +826,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         $request = $bootstrap->getResource('request');
         $logger = $bootstrap->getResource('logger');
         $model = $bootstrap->getResource('model');
+        $nameHelper = new Xodx_NameHelper($this->_app);
         // get URI
         $groupUri = $request->getValue('group', 'post');
         $personUri = $request->getValue('person', 'post');
@@ -866,22 +856,10 @@ class Xodx_GroupController extends Xodx_ResourceController
 
             if (!$model->sparqlQuery($memberQuery)) {
                 // Get remote base uri from group uri
-                $uri = "";
-                if (($uriArray = parse_url($groupUri)) && (count($uriArray) > 1)) {
-                    $uri = $uriArray['scheme'] . '://'
-                         . $uriArray['host'];
-                    if (!empty($uriArray['port'])) {
-                        $uri.= ':' . $uriArray['port'];
-                    }
-                    if (!empty($uriArray['path'])) {
-                        $uri.= $uriArray['path'];
-                    }
-                    if(substr($uri, -1) != '/') {
-                        $uri.= '/';
-                    }
-                    $uri.= '?c=member&a=addmember';
-                }
+                $uri = $nameHelper->getBaseUriByResourceUri($groupUri);
+
                 if (!empty($uri)) {
+                    $uri.= '?c=member&a=addmember';
                     // Send curl post request with needed data
                     $fields = array(
                         'personUri' => urlencode($personUri),

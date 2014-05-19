@@ -168,4 +168,29 @@ class Xodx_NameHelper extends Saft_Helper
             return $uri;
         }
     }
+
+    /**
+     * Method to get a base uri of a given resource
+     * 
+     * @param string $resourceUri
+     * @return string the baseUri searched for
+     */
+    public function getBaseUriByResourceUri($resourceUri)
+    {
+        $baseUri = "";
+        if (($baseUriArray = parse_url($resourceUri)) && (count($baseUriArray) > 1)) {
+            $baseUri = $baseUriArray['scheme'] . '://'
+                 . $baseUriArray['host'];
+            if (!empty($baseUriArray['port'])) {
+                $baseUri.= ':' . $baseUriArray['port'];
+            }
+            if (!empty($baseUriArray['path'])) {
+                $baseUri.= $baseUriArray['path'];
+            }
+            if(substr($baseUri, -1) != '/') {
+                $baseUri.= '/';
+            }
+        }
+        return $baseUri;
+    }
 }

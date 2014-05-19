@@ -25,6 +25,11 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
      */
     protected $validGroupUri = 'validGroupUri';
     /**
+     * This is a valid Uri of a person.
+     * @var string
+     */
+    protected $validPersonUri = 'validPersonUri';
+    /**
      * An application for testing purposes.
      * @var \Fixtures\classes\Xodx\ApplicationDummy
      */
@@ -129,7 +134,24 @@ class Xodx_GroupControllerTest extends PHPUnit_Framework_Testcase
         $resourceUri = 'baseUri/?c=testcontr&a=testapl';
         $feedUri = 'baseUri/' . '?c=feed&a=getFeed&uri=' . urlencode($resourceUri);
         $this->assertEquals($feedUri,  $this->groupController->getGroupFeedUri($resourceUri));
-    }        
+    }
+    
+    /**
+     * @covers GroupController::getGroupByAuthorUri
+     */
+    public function testGetGroupByAuthorUri() {
+        $this->initFixture(FALSE, 'testGetGroupByAuthorUri');
+        $authorUri = 'http' . $this->validPersonUri . 'http' . $this->validGroupUri;
+        $this->assertEquals('http' . $this->validGroupUri, $this->groupController->getGroupByAuthorUri($authorUri));
+    }
+    /**
+     * @covers GroupController::getPersonByAuthorUri
+     */
+    public function testGetPersonByAuthorUri() {
+        $this->initFixture(FALSE, 'testGetPersonByAuthorUri');
+        $authorUri = 'http' . $this->validPersonUri . 'http' . $this->validGroupUri;
+        $this->assertEquals('http' . $this->validPersonUri, $this->groupController->getPersonByAuthorUri($authorUri));
+    }
 }
 /**
  * A proxyclass for \classes\Xodx\GroupController.
