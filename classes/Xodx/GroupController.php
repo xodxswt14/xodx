@@ -31,16 +31,16 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * A view action to show a group
+     * 
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      */
-    public function showAction($template)
+    public function showAction ($template)
     {
         $bootstrap  = $this->_app->getBootstrap();
         $model      = $bootstrap->getResource('model');
         $request    = $bootstrap->getResource('request');
-        $logger     = $bootstrap->getResource('logger');
-        $groupUri  = urldecode($request->getValue('uri', 'get'));
+        $groupUri   = urldecode($request->getValue('uri', 'get'));
         $id         = $request->getValue('id', 'get');
         $controller = $request->getValue('c', 'get');
 
@@ -87,7 +87,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $activity['personName'] = $nameHelper->getName($activity['personUri']);
         }
 
-        if($user->getName() == 'guest') {
+        if ($user->getName() == 'guest') {
             $template->isGuest = true;
         } else {
             $template->isGuest = false;
@@ -95,14 +95,14 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         //Checks if user is member of group
         $isMember = false;
-        foreach($members as $member) {
-            if($member['member'] === $user->getPerson()) {
+        foreach ($members as $member) {
+            if ($member['member'] === $user->getPerson()) {
                 $isMember = true;
             }
         }
 
         //Checks if user is maker and marks him as member
-        if($user->getPerson() == $group[0]['maker']) {
+        if ($user->getPerson() == $group[0]['maker']) {
             $template->isMaker = true;
             $isMember = true;
         } else {
@@ -110,7 +110,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
 
         // Redirect from show to home if user is member
-        if($isMember) { // Redirect user from home to show if he is not a member
+        if ($isMember) { // Redirect user from home to show if he is not a member
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'group');
             $location->setParameter('id', $id);
@@ -120,7 +120,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
 
         // Refine array of group members
-        for($i = 0; $i < count($members); $i++) {
+        for ($i = 0; $i < count($members); $i++) {
             $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
         }
 
@@ -137,10 +137,11 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * If the author of an activity is made up of both, the person- and the groupUri, this returns the personUri
+     * 
      * @param Uri $authorUri Uri that is to be manipulated
      * @return Uri the extracted personUri
      */
-    public function getPersonByAuthorUri($authorUri)
+    public function getPersonByAuthorUri ($authorUri)
     {
         $pos = strpos($authorUri, 'http', 5);
         if (!$pos) {
@@ -152,6 +153,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * If the author of an activity is made up of both, the person- and the groupUri, this returns the groupUri, otherwise FALSE
+     * 
      * @param Uri $authorUri Uri that is to be manipulated
      * @return Uri|Boolean The extracted groupUri or FALSE
      */
@@ -167,15 +169,15 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * A view action to show the home of a group
+     * 
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      */
-    public function homeAction($template)
+    public function homeAction ($template)
     {
         $bootstrap  = $this->_app->getBootstrap();
         $model      = $bootstrap->getResource('model');
         $request    = $bootstrap->getResource('request');
-        $logger     = $bootstrap->getResource('logger');
         $groupUri  = urldecode($request->getValue('uri', 'get'));
         $id         = $request->getValue('id', 'get');
         $controller = $request->getValue('c', 'get');
@@ -234,19 +236,19 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         //Checks if user is member of group
         $isMember = false;
-        foreach($members as $member) {
-            if($member['member'] === $user->getPerson()) {
+        foreach ($members as $member) {
+            if ($member['member'] === $user->getPerson()) {
                 $isMember = true;
             }
         }
-        foreach($groupMember as $member) {
-            if($member['member'] === $user->getPerson()) {
+        foreach ($groupMember as $member) {
+            if ($member['member'] === $user->getPerson()) {
                 $isMember = true;
             }
         }
 
         //Checks if user is maker and marks him as member
-        if($user->getPerson() == $group[0]['maker']) {
+        if ($user->getPerson() == $group[0]['maker']) {
             $template->isMaker = true;
             $isMember = true;
         } else {
@@ -254,12 +256,12 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
 
         // Redirect from home to login if user is guest
-        if($user->getName() == 'guest') {
+        if ($user->getName() == 'guest') {
             $location = new Saft_Url($this->_app->getBaseUri());
             $location->setParameter('c', 'application');
             $location->setParameter('a', 'login');
             $template->redirect($location);
-        } elseif(!$isMember) { // Redirect user from home to show if he is not a member
+        } elseif (!$isMember) { // Redirect user from home to show if he is not a member
             $pos = strpos($groupUri, '?c=');
             $baseUri = substr($groupUri, 0, $pos);            
             $location = new Saft_Url($baseUri);
@@ -271,7 +273,7 @@ class Xodx_GroupController extends Xodx_ResourceController
         }
 
         // Refine array of group members
-        for($i = 0; $i < count($members); $i++) {
+        for ($i = 0; $i < count($members); $i++) {
             $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
         }
 
@@ -292,7 +294,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      */
-    public function creategroupAction($template)
+    public function creategroupAction ($template)
     {
         $bootstrap = $this->_app->getBootstrap();
         $request = $bootstrap->getResource('request');
@@ -451,9 +453,9 @@ class Xodx_GroupController extends Xodx_ResourceController
     /**
      * This creates a new group with the given name.
      * This function is usually called internally
+     * 
      * @param Uri $groupUri Uri of the new group
      * @param String $name Name of the new group
-     * @todo $groupUri might not be needed
      */
     public function createGroup ($name, $description = '')
     {
@@ -520,6 +522,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      /**
      * This deletes a group with the given Uri.
      * This function is usually called internally
+      * 
      * @param Uri $groupUri Uri of the group to be deleted
      */
     public function deleteGroup ($groupUri)
@@ -597,7 +600,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                     )
                 );
 
-                foreach($deleteSubscribeResult as $value) {                    
+                foreach ($deleteSubscribeResult as $value) {                    
                     $deleteGroup[$groupUri][$nsDssn . 'subscribedTo'][] = 
                             array('type' => 'uri', 'value' => $value['subscription']);
                 }
@@ -605,7 +608,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                     'personUri' => '',
                     'groupUri'  => urlencode($groupUri)
                 );
-                foreach($deleteMemberResult as $value) {                    
+                foreach ($deleteMemberResult as $value) {                    
                     $deleteGroup[$groupUri][$nsFoaf . 'member'][] = 
                             array('type' => 'uri', 'value' => $value['member']);
                     // call API for each member asking him to unsubscribe everybody else
@@ -711,6 +714,7 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * This makes it possible for persons to leave a group
+     * 
      * @param string $personUri URI of the person who is leaving
      * @param string $groupUri URI of the group to be left
      * @throws Exception if the WebID of this group does not exist
@@ -900,10 +904,11 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * Creates feed on given resource
+     * 
      * @param Uri $resourceUri the feed searched for
      * @return Uri $feedUri of $resourceUri
      */
-    public function getGroupFeedUri($resourceUri)
+    public function getGroupFeedUri ($resourceUri)
     {
         $pos = strpos($resourceUri, '?c=');
         $baseUri = substr($resourceUri, 0, $pos);
@@ -913,11 +918,12 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * Creates a Uri to call an API specified by the parameters
+     * 
      * @param Uri $memberUri Uri of the member who is to be notified
      * @param String $callAction Action that is to be called by this Uri
      * @return Uri Uri to call the specified API
      */
-    private function _createAPIUri($memberUri, $callAction) {
+    private function _createAPIUri ($memberUri, $callAction) {
         $uri = "";
         if (($uriArray = parse_url($memberUri))) {
             $uri = $uriArray['scheme'] . '://'
@@ -928,7 +934,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             if (!empty($uriArray['path'])) {
                 $uri.= $uriArray['path'];
             }
-            if(substr($uri, -1) != '/') {
+            if (substr($uri, -1) != '/') {
                 $uri.= '/';
             }
             $uri.= '?c=user&a=' . $callAction;
@@ -938,12 +944,13 @@ class Xodx_GroupController extends Xodx_ResourceController
 
     /**
      * Calls the API created to get group subscribing person
+     * 
      * @param string $uri URI of the API
      * @param mixed[] $fields Fields to send with
      * @return mixed content got from request
      * @deprecated should be implemented with semantic pingback
      */
-    private function _callMemberApi($uri, $fields) {
+    private function _callMemberApi ($uri, $fields) {
         // uri-fy the date for the POST Request
         $fields_string = '';
         foreach ($fields as $field => $value) {
@@ -978,8 +985,10 @@ class Xodx_GroupController extends Xodx_ResourceController
      * @see     _unsubscribeGroupFromFeed()
      * @access  private
      */
-    private function _subscribeGroupToFeed($personUri, $groupUri)
+    private function _subscribeGroupToFeed ($personUri, $groupUri)
     {
+        $bootstrap = $this->_app->getBootstrap();
+        $logger = $bootstrap->getResource('logger');
         $userController  = $this->_app->getController('Xodx_UserController');
 
         // Subscribe to new member
@@ -1009,8 +1018,10 @@ class Xodx_GroupController extends Xodx_ResourceController
      * @see     _subscribeGroupToFeed()
      * @access  private
      */
-    private function _unsubscribeGroupFromFeed($personUri, $groupUri)
+    private function _unsubscribeGroupFromFeed ($personUri, $groupUri)
     {
+        $bootstrap = $this->_app->getBootstrap();
+        $logger = $bootstrap->getResource('logger');
         $userController  = $this->_app->getController('Xodx_UserController');
 
         // Unsubscribe from leaving member
@@ -1038,7 +1049,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      * @param string $newName New name of the group
      * @param string $newTopic New description of the group
      */
-    public function changeGroup($groupUri, $newName, $newTopic)
+    public function changeGroup ($groupUri, $newName, $newTopic)
     {
         $bootstrap  = $this->_app->getBootstrap();
         $model      = $bootstrap->getResource('model');

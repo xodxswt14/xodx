@@ -6,7 +6,7 @@
  */
 
 /**
- * Description of MemberController
+ * Manages Interaction between group and member
  *
  * @author Stephan Kemper
  * @author Lukas Werner
@@ -16,11 +16,12 @@ class Xodx_MemberController extends Xodx_ResourceController
 
     /**
      * Creates a Uri to call an API specified by the parameters
+     * 
      * @param Uri $memberUri Uri of the member who is to be notified
      * @param String $callAction Action that is to be called by this Uri
      * @return Uri Uri to call the specified API
      */
-    private function _createAPIUri($memberUri, $callAction) {
+    private function _createAPIUri ($memberUri, $callAction) {
         $uri = "";
         if (($uriArray = parse_url($memberUri))) {
             $uri = $uriArray['scheme'] . '://'
@@ -39,14 +40,15 @@ class Xodx_MemberController extends Xodx_ResourceController
         return $uri;
     }
 
- /**
+    /**
      * Calls an API
+     * 
      * @param string $uri URI of the API
      * @param mixed[] $fields Fields to send with
      * @return mixed content got from request
      * @deprecated should be implemented with semantic pingback
      */
-    private function _callApi($uri, $fields) {
+    private function _callApi ($uri, $fields) {
         // uri-fy the date for the POST Request
         $fields_string = '';
         foreach ($fields as $field => $value) {
@@ -74,6 +76,7 @@ class Xodx_MemberController extends Xodx_ResourceController
 
     /**
      * API Action for getting group subsribe to person
+     * 
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      * @todo more security needed, change hardcoded 'success' and 'fail'
@@ -111,6 +114,7 @@ class Xodx_MemberController extends Xodx_ResourceController
 
     /**
      * API Action for getting group unsubscribe from person
+     * 
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      * @todo more security needed, change hardcoded 'success' and 'fail'
@@ -153,7 +157,7 @@ class Xodx_MemberController extends Xodx_ResourceController
      * @param URI $groupUri Uri of the group
      * @throws Exception if personUri not found
      */
-    public function addMember($personUri, $groupUri)
+    public function addMember ($personUri, $groupUri)
     {
         $bootstrap = $this->_app->getBootstrap();
         $logger = $bootstrap->getResource('logger');
@@ -233,7 +237,7 @@ class Xodx_MemberController extends Xodx_ResourceController
      * @param URI $groupUri Uri of the group
      * @throws Exception if personUri not found
      */
-    public function deleteMember($personUri, $groupUri)
+    public function deleteMember ($personUri, $groupUri)
     {
         $bootstrap = $this->_app->getBootstrap();
         $logger = $bootstrap->getResource('logger');
@@ -332,10 +336,7 @@ class Xodx_MemberController extends Xodx_ResourceController
     * @param boolean $local Indicates whether the resource is stored locally
     */
     public function unsubscribeFromResource ($unsubscriberUri, $resourceUri, $feedUri = null, $local = false) 
-    {           
-        // getResources & set namespaces
-        $bootstrap = $this->_app->getBootstrap();      
-
+    {             
         // Get Uri of resource's feed (if not given)
         if ($feedUri === null) {
             $feedUri = $this->getActivityFeedUri($resourceUri);
@@ -345,6 +346,7 @@ class Xodx_MemberController extends Xodx_ResourceController
 
      /**
      * This method subscribes a group to a feed
+      * 
      * @param URI $unscriberUri the uri of the group which wants to be subscribed
      * @param URI $feedUri the uri of the feed where the group wants to subscribe
      */
@@ -414,6 +416,7 @@ class Xodx_MemberController extends Xodx_ResourceController
 
      /**
      * This method unsubscribes a group from a feed
+      * 
      * @param URI $subsciberUri the uri of the subscriber who wants to unsubscribe
      * @param URI $feedUri the uri of the feed where the group wants to unsubscribe
      * @param boolean $local Indicates whether the feed is stored locally
@@ -513,6 +516,7 @@ class Xodx_MemberController extends Xodx_ResourceController
 
     /**
      * Check if a group is already subscribed to a feed
+     * 
      * @param $groupUri the uri of the user in question
      * @param $feedUri the uri of the feed in question
      */
@@ -535,8 +539,8 @@ class Xodx_MemberController extends Xodx_ResourceController
     
     
      /**
-     *
      * Method returns all activities the group is subscribed to
+     * 
      * @param Uri $groupUri Uri of the group
      * @return array of activities
      */
@@ -552,7 +556,7 @@ class Xodx_MemberController extends Xodx_ResourceController
             $activities = array_merge($activities, $act);
         }
         $tmp = Array();
-        foreach($activities as &$act) {
+        foreach ($activities as &$act) {
             $tmp[] = &$act["pubDate"];
         }
         array_multisort($tmp, SORT_DESC, $activities);
