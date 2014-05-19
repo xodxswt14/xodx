@@ -99,6 +99,7 @@ class Xodx_MemberController extends Xodx_ResourceController
         $bootstrap = $this->_app->getBootstrap();
         $logger = $bootstrap->getResource('logger');
         $model  = $bootstrap->getResource('model');
+        $nameHelper = new Xodx_NameHelper($this->_app);
 
         $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
         if (!$ldHelper->resourceDescriptionExists($personUri)) {
@@ -124,7 +125,7 @@ class Xodx_MemberController extends Xodx_ResourceController
         $pingbackController->sendPing($groupUri, $personUri, 'You joined this group.');
 
         // Subscribe to new member
-        $baseUri = $this->_app->getBaseUri();
+        $baseUri = $nameHelper->getBaseUriByResourceUri($personUri);
         $feedUri = $baseUri .  '?c=feed&a=getFeed&uri=' .
                 urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
 
@@ -166,10 +167,9 @@ class Xodx_MemberController extends Xodx_ResourceController
         $pingbackController->sendPing($groupUri, $personUri, 'You left this group.');
 
         // Unsubscribe from member
-        $baseUri = $this->_app->getBaseUri();
+        $baseUri = $nameHelper->getBaseUriByResourceUri($personUri);
         $feedUri = $baseUri .  '?c=feed&a=getFeed&uri=' .
                 urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
-
 
         if ($feedUri !== null) {
             $logger->debug('MemberController/deletemember: Found feed of member ("' . $personUri . '"): "' . $feedUri . '"');
