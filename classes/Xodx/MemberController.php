@@ -242,6 +242,7 @@ class Xodx_MemberController extends Xodx_ResourceController
         $bootstrap = $this->_app->getBootstrap();
         $logger = $bootstrap->getResource('logger');
         $model  = $bootstrap->getResource('model');
+        $nameHelper = new Xodx_NameHelper($this->_app);
 
         $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
         if (!$ldHelper->resourceDescriptionExists($personUri)) {
@@ -278,8 +279,6 @@ class Xodx_MemberController extends Xodx_ResourceController
         // Update WebID
         // delete Statement added by addMember ($groupUri, member, $personUri)
         $model->deleteStatement($groupUri, 'http://xmlns.com/foaf/0.1/member', array('type' => 'uri', 'value' => $personUri));
-
-        $nsAair = 'http://xmlns.notu.be/aair#';
 
         // Send Ping to member
         $pingbackController = $this->_app->getController('Xodx_PingbackController');
