@@ -74,12 +74,12 @@ class Xodx_UserController extends Xodx_ResourceController
 
                 $activities = $this->getActivityStream($user);
                 // Add to your own ActivityStream those belonging to groups you are subscribed to
-                foreach ($member as $subscribedGroup) {
-                    $activities = array_merge($activities, 
-                            $memberController->getActivityStream($subscribedGroup['groupUri'])
-                            );
-                }                
-                $activities = $this->sortActivities($activities);
+//                foreach ($member as $subscribedGroup) {
+//                    $activities = array_merge($activities, 
+//                            $memberController->getActivityStream($subscribedGroup['groupUri'])
+//                            );
+//                }                
+//                $activities = $this->sortActivities($activities);
 
                 $nameHelper = new Xodx_NameHelper($this->_app);
                 $groupController = $this->_app->getController('Xodx_GroupController');
@@ -541,7 +541,7 @@ protected function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = fa
 
     // unsubscribe from feed given by $feedUri
 
-    if ($this->_isSubscribed($unsubscriberUri, $feedUri)) {            
+    if ($this->_isSubscribed($unsubscriberUri, $feedUri)) {
         // getResources
         $pushController = $this->_app->getController('Xodx_PushController');
 
@@ -559,6 +559,7 @@ protected function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = fa
             $subUriQuery  = 'PREFIX dssn: <' . $nsDssn . '>' . PHP_EOL;
             $subUriQuery .= 'SELECT ?subUri' . PHP_EOL;
             $subUriQuery .= 'WHERE {' . PHP_EOL;
+            $subUriQuery .= '<' . $unsubscriberUri . '> dssn:subscribedTo ?subUri.' . PHP_EOL;
             $subUriQuery .= '?subUri dssn:subscriptionTopic <' . $feedUri . '> .' . PHP_EOL;
             $subUriQuery .= '}';
             // execute Query and extract $subUri
@@ -624,11 +625,10 @@ protected function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = fa
 public function addmemberAction($template) {
     $bootstrap = $this->_app->getBootstrap();
     $request = $bootstrap->getResource('request');
-    $pushController = $this->_app->getController('Xodx_PushController');
-
-    $groupUri = $request->getValue('groupUri', 'post');
-    $personUri = $request->getValue('personUri', 'post');
-
+    
+    $groupUri = urldecode($request->getValue('groupUri', 'post'));
+    $personUri = urldecode($request->getValue('personUri', 'post'));
+    $userUri = urldecode($request->getValue('userUri', 'post'));
     $formError = array();
 
     if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
@@ -639,12 +639,16 @@ public function addmemberAction($template) {
         $formError['personUri'] = true;
     }
 
+    if (empty($userUri) || !Erfurt_Uri::check($userUri)) {
+        $formError['userUri'] = true;
+    }
+
     if (count($formError) <= 0) {
-        $pos = strpos($resourceUri, '?c=');
-        $baseUri = substr($resourceUri, 0, $pos);
+        $pos = strpos($personUri, '?c=');
+        $baseUri = substr($personUri, 0, $pos);
         $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' .
                 urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
-        $pushController->subscribe($feedUri);
+        $this->subscribeToResource($userUri, $personUri . $groupUri, $feedUri);
         $template->disableLayout();
         $template->setRawContent('success');
     } else {
@@ -661,11 +665,12 @@ public function addmemberAction($template) {
 public function deletememberAction($template) {
     $bootstrap = $this->_app->getBootstrap();
     $request = $bootstrap->getResource('request');
-    $pushController = $this->_app->getController('Xodx_PushController');
-
-    $groupUri = $request->getValue('groupUri', 'post');
-    $personUri = $request->getValue('personUri', 'post');
-
+    $logger  = $bootstrap->getResource('logger');
+    
+    $groupUri = urldecode($request->getValue('groupUri', 'post'));
+    $personUri = urldecode($request->getValue('personUri', 'post'));
+    $userUri = urldecode($request->getValue('userUri', 'post'));
+    $logger->info ('TESTTEST 5' . $groupUri . $personUri . $userUri);
     $formError = array();
 
     if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
@@ -676,12 +681,17 @@ public function deletememberAction($template) {
         $formError['personUri'] = true;
     }
 
+    if (empty($userUri) || !Erfurt_Uri::check($userUri)) {
+        $formError['userUri'] = true;
+    }
+
     if (count($formError) <= 0) {
-        $pos = strpos($resourceUri, '?c=');
-        $baseUri = substr($resourceUri, 0, $pos);
+        $pos = strpos($personUri, '?c=');
+        $baseUri = substr($personUri, 0, $pos);
         $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' .
                 urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
-        $pushController->unsubscribe($feedUri);
+        $logger->info('TESTTEST 4' . $feedUri);
+        $this->unsubscribeFromResource($userUri, $personUri . $groupUri, $feedUri);      
         $template->disableLayout();
         $template->setRawContent('success');
     } else {

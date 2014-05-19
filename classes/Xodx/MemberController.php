@@ -30,6 +30,7 @@ class Xodx_MemberController extends Xodx_ResourceController
             }
             $uri.= '?c=user&a=' . $callAction;
         }
+        return $uri;
     }
 
  /**
@@ -46,7 +47,7 @@ class Xodx_MemberController extends Xodx_ResourceController
             $fields_string .= $field . '=' . $value . '&';
         }
         rtrim($fields_string, '&');
-
+    
         // Open Connection
         $curlConnection = curl_init();
 
@@ -156,31 +157,35 @@ class Xodx_MemberController extends Xodx_ResourceController
         if (!$ldHelper->resourceDescriptionExists($personUri)) {
             throw new Exception('The WebID of your friend does not exist.');
         }
+
+        // Update WebID
+        $model->addStatement($groupUri, 'http://xmlns.com/foaf/0.1/member', array('type' => 'uri', 'value' => $personUri));
+
         // fetch all members of the group
         $memberQuery  = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
         $memberQuery .= 'SELECT ?memberUri {' .PHP_EOL;
         $memberQuery .= '   <' . $groupUri . '>' . ' foaf:member ?memberUri' .PHP_EOL;
-        $memberQuery .= '}';
-        
-        $members = $model->sqarplQuery($memberQuery);
-        
+        $memberQuery .= '}';        
+        $members = $model->sparqlQuery($memberQuery);
+        // fields for post-requests
         $fields = array (
-            'groupUri' => $groupUri,
-            'personUri' => $personUri
+            'groupUri'  => urlencode ($groupUri),
+            'personUri' => urlencode ($personUri),
+            'userUri'   => ''
         );
         $fields2 = array (
-            'groupUri' => $groupUri,
-            'personUri' => ''
+            'groupUri'  => urlencode ($groupUri),
+            'personUri' => '',
+            'userUri'   => urlencode ($personUri)
         );
         foreach ($members as $member) {
             // inform each member about new member
+            $fields['userUri'] = urlencode($member['memberUri']);
             $this->_callApi($this->_createAPIUri($member['memberUri'], 'addmember'), $fields);
             // inform the new member about the other members
+            $fields2['personUri'] = urlencode($member['memberUri']);
             $this->_callApi($this->_createAPIUri($personUri, 'addmember'), $fields2);
         }
-
-        // Update WebID
-        $model->addStatement($groupUri, 'http://xmlns.com/foaf/0.1/member', array('type' => 'uri', 'value' => $personUri));
 
         $nsAair = 'http://xmlns.notu.be/aair#';
         $activityController = $this->_app->getController('Xodx_ActivityController');
@@ -227,6 +232,33 @@ class Xodx_MemberController extends Xodx_ResourceController
         $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
         if (!$ldHelper->resourceDescriptionExists($personUri)) {
             throw new Exception('The WebID of your friend does not exist.');
+        }
+
+        // fetch all members of the group
+        $memberQuery  = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
+        $memberQuery .= 'SELECT ?memberUri {' .PHP_EOL;
+        $memberQuery .= '   <' . $groupUri . '>' . ' foaf:member ?memberUri' .PHP_EOL;
+        $memberQuery .= '}';        
+        $members = $model->sparqlQuery($memberQuery);
+        
+        // fields for post-requests
+        $fields = array (
+            'groupUri'  => urlencode ($groupUri),
+            'personUri' => urlencode ($personUri),
+            'userUri'   => ''
+        );
+        $fields2 = array (
+            'groupUri'  => urlencode ($groupUri),
+            'personUri' => '',
+            'userUri'   => urlencode ($personUri)
+        );
+        foreach ($members as $member) {
+            // inform each member about leaving member
+            $fields['userUri'] = urlencode($member['memberUri']);
+            $this->_callApi($this->_createAPIUri($member['memberUri'], 'deletemember'), $fields);
+            // inform the leaving member which activitiyFeeds are to be unsubscribed
+            $fields2['personUri'] = urlencode($member['memberUri']);
+            $this->_callApi($this->_createAPIUri($personUri, 'deletemember'), $fields2);
         }
 
         // Update WebID
