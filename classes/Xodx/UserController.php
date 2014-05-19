@@ -548,7 +548,7 @@ protected function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = fa
         if ($local || $pushController->unsubscribe($feedUri)) { // this unsubscribes the user from the feed                               
 
             // getResources & set namespaces
-            $model = $bootstrap->getResource('model');              
+            $model = $bootstrap->getResource('model');
             $nsDssn = 'http://purl.org/net/dssn/';
             $nsRdf = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 
@@ -619,16 +619,19 @@ protected function _unsubscribeFromFeed ($unsubscriberUri, $feedUri, $local = fa
 }
 
 /**
- * 
- * @param type $template
+ * API for having someone join a group i.e. the new member subscribes the old ones and the old ones subscribe the new member
+ * @param Saft_Layout $template user template
+ * @return Saft_Layout modified template
  */
-public function addmemberAction($template) {
+public function addmemberAction($template)
+{
     $bootstrap = $this->_app->getBootstrap();
     $request = $bootstrap->getResource('request');
     
     $groupUri = urldecode($request->getValue('groupUri', 'post'));
     $personUri = urldecode($request->getValue('personUri', 'post'));
     $userUri = urldecode($request->getValue('userUri', 'post'));
+    $userUri = $this->getUserUriFromPersonUri($userUri);
     $formError = array();
 
     if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
@@ -656,21 +659,23 @@ public function addmemberAction($template) {
         $template->disableLayout();
         $template->setRawContent('fail');
     }
+    return $template;
 }
 
 /**
- * 
- * @param type $template
+ * API for having someone leave a group i.e. the leaving member unsubscribes the old ones and the old ones unsubscribe the leaving member
+ * @param Saft_Layout $template user template
+ * @return Saft_Layout modified template
  */
-public function deletememberAction($template) {
+public function deletememberAction($template) 
+{
     $bootstrap = $this->_app->getBootstrap();
     $request = $bootstrap->getResource('request');
-    $logger  = $bootstrap->getResource('logger');
     
     $groupUri = urldecode($request->getValue('groupUri', 'post'));
     $personUri = urldecode($request->getValue('personUri', 'post'));
     $userUri = urldecode($request->getValue('userUri', 'post'));
-    $logger->info ('TESTTEST 5' . $groupUri . $personUri . $userUri);
+    $userUri = $this->getUserUriFromPersonUri($userUri);
     $formError = array();
 
     if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
@@ -690,7 +695,6 @@ public function deletememberAction($template) {
         $baseUri = substr($personUri, 0, $pos);
         $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' .
                 urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
-        $logger->info('TESTTEST 4' . $feedUri);
         $this->unsubscribeFromResource($userUri, $personUri . $groupUri, $feedUri);      
         $template->disableLayout();
         $template->setRawContent('success');
@@ -699,6 +703,62 @@ public function deletememberAction($template) {
         $template->disableLayout();
         $template->setRawContent('fail');
     }
+    return $template;
+}
+
+/**
+ * API for deleting a group i.e. every member is asked to unsubscribe all the other members
+ * @param Saft_Layout $template used template
+ * @return Saft_Layout modified template
+ */
+public function deletegroupAction ($template)
+{
+    $bootstrap = $this->_app->getBootstrap();
+    $request = $bootstrap->getResource('request');
+    $model = $bootstrap->getResource('model');
+
+    $groupUri = urldecode($request->getValue('groupUri', 'post'));
+    $personUri = urldecode($request->getValue('personUri', 'post'));
+
+    // check for errors
+    $formError = array();
+
+    if (empty($groupUri) || !Erfurt_Uri::check($groupUri)) {
+        $formError['groupUri'] = true;
+    }
+
+    if (empty($personUri) || !Erfurt_Uri::check($personUri)) {
+        $formError['personUri'] = true;
+    }
+    if (count($formError) <= 0) {
+        $userUri = $this->getUserUriFromPersonUri($personUri);
+        // get all feeds of former members to unsubscribe from them
+        $deleteGroupQuery  = 'PREFIX dssn: <http://purl.org/net/dssn/>' . PHP_EOL;
+        $deleteGroupQuery .= 'SELECT ?subUri ?feedUri' . PHP_EOL;
+        $deleteGroupQuery .= 'WHERE {' . PHP_EOL;
+        $deleteGroupQuery .= '<' . $userUri . '> dssn:subscribedTo ?subUri.' . PHP_EOL;
+        $deleteGroupQuery .= '?subUri dssn:subscriptionTopic ?feedUri.' . PHP_EOL;
+        $deleteGroupQuery .= 'FILTER regex (?feedUri, \'' . urlencode($groupUri) . '\', \'i\') ' . PHP_EOL;
+        $deleteGroupQuery .= '}';
+        $deleteGroupResult = $model->sparqlQuery($deleteGroupQuery);
+
+        // unsubsrcibe from all resources (all members of that group)
+        foreach ($deleteGroupResult as $feedUri) {
+            $this->unsubscribeFromResource($userUri, $personUri . $groupUri, $feedUri['feedUri']);
+        }
+        $template->disableLayout();
+        $template->setRawContent('success');
+    } else {
+        $template->formError = $formError;
+        $template->disableLayout();
+        $template->setRawContent('fail');
+    }
+    return $template;
+}
+
+public function getUserUriFromPersonUri ($personUri)
+{
+    return str_replace('person', 'user', $personUri);
 }
 
 }

@@ -601,9 +601,16 @@ class Xodx_GroupController extends Xodx_ResourceController
                     $deleteGroup[$groupUri][$nsDssn . 'subscribedTo'][] = 
                             array('type' => 'uri', 'value' => $value['subscription']);
                 }
+                $fields = array (
+                    'personUri' => '',
+                    'groupUri'  => urlencode($groupUri)
+                );
                 foreach($deleteMemberResult as $value) {                    
                     $deleteGroup[$groupUri][$nsFoaf . 'member'][] = 
                             array('type' => 'uri', 'value' => $value['member']);
+                    // call API for each member asking him to unsubscribe everybody else
+                    $fields['personUri'] = urlencode($value['member']);
+                    $this->_callMemberApi($this->_createAPIUri($value['member'], 'deletegroup'), $fields);
                 }
 
                 $model->deleteMultipleStatements($deleteGroup);
@@ -927,6 +934,31 @@ class Xodx_GroupController extends Xodx_ResourceController
         $baseUri = substr($resourceUri, 0, $pos);
         $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($resourceUri);
         return $feedUri;
+    }
+
+    /**
+     * Creates a Uri to call an API specified by the parameters
+     * @param Uri $memberUri Uri of the member who is to be notified
+     * @param String $callAction Action that is to be called by this Uri
+     * @return Uri Uri to call the specified API
+     */
+    private function _createAPIUri($memberUri, $callAction) {
+        $uri = "";
+        if (($uriArray = parse_url($memberUri))) {
+            $uri = $uriArray['scheme'] . '://'
+                 . $uriArray['host'];
+            if (!empty($uriArray['port'])) {
+                $uri.= ':' . $uriArray['port'];
+            }
+            if (!empty($uriArray['path'])) {
+                $uri.= $uriArray['path'];
+            }
+            if(substr($uri, -1) != '/') {
+                $uri.= '/';
+            }
+            $uri.= '?c=user&a=' . $callAction;
+        }
+        return $uri;
     }
 
     /**

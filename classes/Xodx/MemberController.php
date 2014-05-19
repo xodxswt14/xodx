@@ -14,6 +14,12 @@
 class Xodx_MemberController extends Xodx_ResourceController
 {
 
+    /**
+     * Creates a Uri to call an API specified by the parameters
+     * @param Uri $memberUri Uri of the member who is to be notified
+     * @param String $callAction Action that is to be called by this Uri
+     * @return Uri Uri to call the specified API
+     */
     private function _createAPIUri($memberUri, $callAction) {
         $uri = "";
         if (($uriArray = parse_url($memberUri))) {
@@ -34,7 +40,7 @@ class Xodx_MemberController extends Xodx_ResourceController
     }
 
  /**
-     * Calls the API
+     * Calls an API
      * @param string $uri URI of the API
      * @param mixed[] $fields Fields to send with
      * @return mixed content got from request
@@ -182,9 +188,12 @@ class Xodx_MemberController extends Xodx_ResourceController
             // inform each member about new member
             $fields['userUri'] = urlencode($member['memberUri']);
             $this->_callApi($this->_createAPIUri($member['memberUri'], 'addmember'), $fields);
-            // inform the new member about the other members
+            // inform the new member about the other members            
             $fields2['personUri'] = urlencode($member['memberUri']);
-            $this->_callApi($this->_createAPIUri($personUri, 'addmember'), $fields2);
+            // Only call it if user and member are different (so the new member does not subscribe itself twice
+            if ($fields2['userUri'] != $fields2['personUri']) {
+                $this->_callApi($this->_createAPIUri($personUri, 'addmember'), $fields2);
+            }
         }
 
         $nsAair = 'http://xmlns.notu.be/aair#';
