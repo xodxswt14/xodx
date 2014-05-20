@@ -613,7 +613,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                             array('type' => 'uri', 'value' => $value['member']);
                     // call API for each member asking him to unsubscribe everybody else
                     $fields['personUri'] = urlencode($value['member']);
-                    $this->_callMemberApi($this->_createAPIUri($value['member'], 'deletegroup'), $fields);
+                    $this->_callApi($this->_createAPIUri($value['member'], 'deletegroup'), $fields);
                 }
 
                 $model->deleteMultipleStatements($deleteGroup);
@@ -791,7 +791,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                     'groupUri' => urlencode($groupUri)
                 );
 
-                $apiStatus = trim($this->_callMemberApi($uri, $fields));
+                $apiStatus = trim($this->_callApi($uri, $fields));
                 if ($apiStatus == "success") {
                     $this->leaveGroup($personUri, $groupUri);
                     //Redirect
@@ -869,7 +869,7 @@ class Xodx_GroupController extends Xodx_ResourceController
                         'groupUri' => urlencode($groupUri)
                     );
 
-                    $apiStatus = trim($this->_callMemberApi($uri, $fields));
+                    $apiStatus = trim($this->_callApi($uri, $fields));
                     if ($apiStatus == "success") {
                         $this->joinGroup($personUri, $groupUri);
                         //Redirect
@@ -914,66 +914,6 @@ class Xodx_GroupController extends Xodx_ResourceController
         $baseUri = substr($resourceUri, 0, $pos);
         $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($resourceUri);
         return $feedUri;
-    }
-
-    /**
-     * Creates a Uri to call an API specified by the parameters
-     * 
-     * @param Uri $memberUri Uri of the member who is to be notified
-     * @param String $callAction Action that is to be called by this Uri
-     * @return Uri Uri to call the specified API
-     */
-    private function _createAPIUri ($memberUri, $callAction) {
-        $uri = "";
-        if (($uriArray = parse_url($memberUri))) {
-            $uri = $uriArray['scheme'] . '://'
-                 . $uriArray['host'];
-            if (!empty($uriArray['port'])) {
-                $uri.= ':' . $uriArray['port'];
-            }
-            if (!empty($uriArray['path'])) {
-                $uri.= $uriArray['path'];
-            }
-            if (substr($uri, -1) != '/') {
-                $uri.= '/';
-            }
-            $uri.= '?c=user&a=' . $callAction;
-        }
-        return $uri;
-    }
-
-    /**
-     * Calls the API created to get group subscribing person
-     * 
-     * @param string $uri URI of the API
-     * @param mixed[] $fields Fields to send with
-     * @return mixed content got from request
-     * @deprecated should be implemented with semantic pingback
-     */
-    private function _callMemberApi ($uri, $fields) {
-        // uri-fy the date for the POST Request
-        $fields_string = '';
-        foreach ($fields as $field => $value) {
-            $fields_string .= $field . '=' . $value . '&';
-        }
-        rtrim($fields_string, '&');
-
-        // Open Connection
-        $curlConnection = curl_init();
-
-        // Set the uri, number of POST vars and POST data
-        curl_setopt($curlConnection, CURLOPT_URL, $uri);
-        curl_setopt($curlConnection, CURLOPT_POST, count($fields));
-        curl_setopt($curlConnection, CURLOPT_POSTFIELDS, $fields_string);
-        curl_setopt($curlConnection, CURLOPT_RETURNTRANSFER, true);
-
-        // Execute
-        $result = curl_exec($curlConnection);
-
-        // Close Connection
-        curl_close($curlConnection);
-
-        return $result;
     }
 
     /**

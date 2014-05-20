@@ -23,6 +23,70 @@ class Xodx_ResourceController extends Saft_Controller
     );
 
     /**
+     * Creates a Uri to call an API specified by the parameters
+     * 
+     * @param Uri $instanceUri Uri of the instance which is to be notified
+     * @param String $callAction Action that is to be called by this Uri
+     * @param string $controller Controller taht is to be called
+     * @return Uri Uri to call the specified API
+     */
+    protected function _createAPIUri ($instanceUri, $callAction, $controller = 'user') {
+        $uri = "";
+        if (($uriArray = parse_url($memberUri))) {
+            $uri = $uriArray['scheme'] . '://'
+                 . $uriArray['host'];
+            if (!empty($uriArray['port'])) {
+                $uri.= ':' . $uriArray['port'];
+            }
+            if (!empty($uriArray['path'])) {
+                $uri.= $uriArray['path'];
+            }
+            if (substr($uri, -1) != '/') {
+                $uri.= '/';
+            }
+            $uri.= '?c=' . $controller . '&a=' . $callAction;
+        }
+        return $uri;
+    }
+
+    /**
+     * Calls the API after a user action.
+     * Usage : - ActivityController  - addactivityAction to add a activity to groups site
+     *         - GroupController     - joingroupAction to write a member into groups list
+     *         - GroupController     - deletegroupAction to delete a member from groups list
+     * 
+     * @param string $uri URI of the API
+     * @param mixed[] $fields Fields to send with
+     * @return mixed content got from request
+     * @deprecated should be implemented with semantic pingback
+     */
+    protected function _callApi ($uri, $fields) {
+        // uri-fy the date for the POST Request
+        $fields_string = '';
+        foreach ($fields as $field => $value) {
+            $fields_string .= $field . '=' . $value . '&';
+        }
+        rtrim($fields_string, '&');
+
+        // Open Connection
+        $curlConnection = curl_init();
+
+        // Set the uri, number of POST vars and POST data
+        curl_setopt($curlConnection, CURLOPT_URL, $uri);
+        curl_setopt($curlConnection, CURLOPT_POST, count($fields));
+        curl_setopt($curlConnection, CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($curlConnection, CURLOPT_RETURNTRANSFER, true);
+
+        // Execute
+        $result = curl_exec($curlConnection);
+
+        // Close Connection
+        curl_close($curlConnection);
+
+        return $result;
+    }
+
+    /**
      *
      * indexAction decides to show a html or a serialized view of a resource if no action is given
      * @param unknown_type $template
