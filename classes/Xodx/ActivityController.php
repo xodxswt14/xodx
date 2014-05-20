@@ -87,8 +87,80 @@ class Xodx_ActivityController extends Xodx_ResourceController
         
         $userController = $this->_app->getController('Xodx_UserController');
         $actorUri = $userController->getUser()->getPerson();
-        
-        $logger->debug('Actor URI is: ' . $actorUri);
+
+        $object = array('content' => $actContent);
+        if (Erfurt_Uri::check($replyObject)) {
+            $object['replyObject'] = $replyObject;
+        }
+
+        switch ($actType) {
+            case 'post';
+            case 'note';
+                $verbUri = $nsAair . 'Post';
+                $object['type'] = 'note';
+            break;
+            case 'comment';
+                $verbUri = $nsAair . 'Post';
+                $object['type'] = 'comment';
+            break;
+            case 'bookmark';
+                $verbUri = $nsAair . 'Share';
+                $object['type'] = 'uri';
+            break;
+            case 'photo';
+                $fieldName = 'content';
+                $mediaController = $this->_app->getController('Xodx_MediaController');
+                $fileInfo = $mediaController->uploadImage($fieldName);
+
+                $verbUri = $nsAair . 'Post';
+                $object['type'] = 'photo';
+                $object['fileName'] = $fileInfo['fileId'];
+                $object['mime'] = $fileInfo['mimeType'];
+            break;
+            default:
+                $message = 'The given activity type ("' . $actType . '") is unknown.';
+                $logger->error($message);
+                throw new Exception($message);
+            break;
+        }
+
+        if ($groupUri !== null) {
+            $apiUri = $this->_createAPIUri ($groupUri, 'addgroupactivity', 'activity');
+            $fields = array (
+                    'actType' => $actType,
+                    'actContent' => $actContent,
+                    'replyObject' => $replyObject,
+                    'groupUri' => $groupUri,
+                    'actorUri' => $actorUri
+                    );
+            $this->_callApi($apiUri, $fields);
+        } else {
+            $this->addActivity($actorUri, $verbUri, $object);
+        }    
+
+        return $template;
+    }
+
+    /**
+     * Add a new activity after group action.
+     * Activities are:  - Post a status note
+     *                  - Reply to an activity
+     */
+    public function addgroupactivityAction ($template)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+
+        $logger = $bootstrap->getResource('logger');
+        $request = $bootstrap->getResource('request');
+
+        $actType = strtolower($request->getValue('type', 'post'));
+        $actContent = $request->getValue('content', 'post');
+        $replyObject = $request->getValue('reply', 'post');
+
+        $groupUri = $request->getValue('groupUri', 'post');
+        $actorUri = $request->getValue('actorUri', 'post');
+
+        $nsAair = 'http://xmlns.notu.be/aair#';
 
         $object = array('content' => $actContent);
         if (Erfurt_Uri::check($replyObject)) {
@@ -128,7 +200,7 @@ class Xodx_ActivityController extends Xodx_ResourceController
 
         $this->addActivity($actorUri, $verbUri, $object, $groupUri);
 
-        return $template;
+        return $template;    
     }
 
     /**
