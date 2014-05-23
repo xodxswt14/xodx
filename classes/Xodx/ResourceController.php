@@ -32,7 +32,7 @@ class Xodx_ResourceController extends Saft_Controller
      */
     protected function _createAPIUri ($instanceUri, $callAction, $controller = 'user') {
         $uri = "";
-        if (($uriArray = parse_url($memberUri))) {
+        if (($uriArray = parse_url($instanceUri))) {
             $uri = $uriArray['scheme'] . '://'
                  . $uriArray['host'];
             if (!empty($uriArray['port'])) {

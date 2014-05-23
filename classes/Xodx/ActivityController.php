@@ -130,10 +130,12 @@ class Xodx_ActivityController extends Xodx_ResourceController
                     'actType' => $actType,
                     'actContent' => $actContent,
                     'replyObject' => $replyObject,
-                    'groupUri' => $groupUri,
-                    'actorUri' => $actorUri
+                    'groupUri' => urlencode ($groupUri),
+                    'actorUri' => urlencode ($actorUri)
                     );
             $this->_callApi($apiUri, $fields);
+            //TODO remove this, its only for localhost testing
+//            $this->addActivity($actorUri, $verbUri, $object, $groupUri);
         } else {
             $this->addActivity($actorUri, $verbUri, $object);
         }    
@@ -153,12 +155,13 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $logger = $bootstrap->getResource('logger');
         $request = $bootstrap->getResource('request');
 
-        $actType = strtolower($request->getValue('type', 'post'));
+        $logger->debug('######### addgroupActivity start');
+        $actType = strtolower($request->getValue('actType', 'post'));
         $actContent = $request->getValue('content', 'post');
         $replyObject = $request->getValue('reply', 'post');
 
-        $groupUri = $request->getValue('groupUri', 'post');
-        $actorUri = $request->getValue('actorUri', 'post');
+        $groupUri = urldecode ($request->getValue('groupUri', 'post'));
+        $actorUri = urldecode ($request->getValue('actorUri', 'post'));
 
         $nsAair = 'http://xmlns.notu.be/aair#';
 
@@ -197,9 +200,9 @@ class Xodx_ActivityController extends Xodx_ResourceController
                 throw new Exception($message);
             break;
         }
-
+$logger->debug('##### . vor addActivity');
         $this->addActivity($actorUri, $verbUri, $object, $groupUri);
-
+$logger->debug('##### . nach addActivity');
         return $template;    
     }
 
@@ -247,12 +250,14 @@ class Xodx_ActivityController extends Xodx_ResourceController
         if ($groupUri === null) {
             $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($actorUri);
         } else {
-            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . 
-                                urlencode($actorUri) .'&groupUri=' . urlencode($groupUri);
-            /* When posting in a group the user is not the actor itself. 
-             * In that case the actor is made up of both the user and the group.
-             */
             $actorUri .= $groupUri;
+            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
+//            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . 
+//                                urlencode($actorUri) .'&groupUri=' . urlencode($groupUri);
+//            /* When posting in a group the user is not the actor itself. 
+//             * In that case the actor is made up of both the user and the group.
+//             */
+//            $actorUri .= $groupUri;
         }
 
         $publishFeeds = array(
@@ -436,11 +441,22 @@ class Xodx_ActivityController extends Xodx_ResourceController
             }
         }
 
-        foreach ($subscribeFeeds as $resourceUri => $feedUri) {
-            if ($feedUri == null) {
-                $userController->subscribeToResource($actorUri, $resourceUri);
-            } else {
-                $userController->subscribeToResource($actorUri, $resourceUri, $feedUri, true);
+        if ($groupUri === null) {
+            foreach ($subscribeFeeds as $resourceUri => $feedUri) {
+                if ($feedUri == null) {
+                    $userController->subscribeToResource($actorUri, $resourceUri);
+                } else {
+                    $userController->subscribeToResource($actorUri, $resourceUri, $feedUri, true);
+                }
+            }
+        } else {
+            $memberController = $this->_app->getController('Xodx_MemberController');
+            foreach ($subscribeFeeds as $resourceUri => $feedUri) {
+                if ($feedUri == null) {
+                    $memberController->subscribeToResource($actorUri, $resourceUri);
+                } else {
+                    $memberController->subscribeToResource($actorUri, $resourceUri, $feedUri, true);
+                }
             }
         }
     }
@@ -482,8 +498,12 @@ class Xodx_ActivityController extends Xodx_ResourceController
      * TODO return an array of DSSN_Activity objects
      * TODO getActivity by objectURI
      */
-    public function getActivities ($resourceUri)
+    public function getActivities ($resourceUri, $memberUri = null)
     {
+        //o get all the activities of one member of a group
+        if ($memberUri !== null) {
+            $resourceUri = $memberUri . $resourceUri;
+        }
         // There are two namespaces, one is used in atom files the other one for RDF
         $nsAairAtom = 'http://activitystrea.ms/schema/1.0/';
         $nsAair = 'http://xmlns.notu.be/aair#';
@@ -543,6 +563,24 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $personQuery.= '} ';
         $personQuery.= 'ORDER BY DESC(?date)'; PHP_EOL;
 
+        // Get all activity with an activityActor given in $resourceUri
+        //memgroup is the combi of member and groupUri, which is the author
+        $groupQuery = 'PREFIX atom: <http://www.w3.org/2005/Atom/> ' . PHP_EOL;
+        $groupQuery.= 'PREFIX aair: <http://xmlns.notu.be/aair#> ' . PHP_EOL;
+        $groupQuery.= 'PREFIX sioc: <http://rdfs.org/sioc/ns#> ' . PHP_EOL;
+        $groupQuery.= 'SELECT DISTINCT ?activity ?date ?verb ?object ?context ' . PHP_EOL;
+        $groupQuery.= 'WHERE { ' . PHP_EOL;
+        $groupQuery.= '     ?activity  a                    aair:Activity ; ' . PHP_EOL;
+        $groupQuery.= '                aair:activityActor   ?memgroup ; ' . PHP_EOL;
+        $groupQuery.= '                atom:published       ?date ; ' . PHP_EOL;
+        $groupQuery.= '                aair:activityVerb    ?verb ; ' . PHP_EOL;
+        $groupQuery.= '                aair:activityObject  ?object . ' . PHP_EOL;
+        $groupQuery.= 'OPTIONAL { ' . PHP_EOL;
+        $groupQuery.= '?memgroup aair:activityContext ?context . } ' . PHP_EOL;
+        $groupQuery.= 'FILTER (?memgroup like "%' . $resourceUri . '") ';
+        $groupQuery.= '} ';
+        $groupQuery.= 'ORDER BY DESC(?date)'; PHP_EOL;
+
         $model = $this->_app->getBootstrap()->getResource('model');
 
         if ($resourceUri === null) {
@@ -558,7 +596,8 @@ class Xodx_ActivityController extends Xodx_ResourceController
         } else if ($type == $nsFoaf . 'Person') {
             $query = $personQuery;
         } else if ($type == $nsFoaf . 'Group') {
-            $query = $personQuery;
+            //$query = $personQuery;
+            $query = $groupQuery;
         } else {
             $query = $objectQuery;
         }
@@ -669,4 +708,171 @@ class Xodx_ActivityController extends Xodx_ResourceController
             return $date;
         }
     }
+
+    /**
+     * Deletes a specific Acivity of an actor it is the inverse
+     * of the addActivity function
+     * 
+     * @param Uristring $activity the acivity which is to be deleted
+     * @param Uristring $actorUri Actor of the given acivity
+     */
+    public function deleteActivity ($activity, $actorUri)
+    {
+        $bootstrap = $this->_app->getBootstrap();
+        $model = $bootstrap->getResource('model');
+        $config = $bootstrap->getResource('config');
+        $logger = $bootstrap->getResource('logger');
+
+        $nsXsd =      'http://www.w3.org/2001/XMLSchema#';
+        $nsRdf =      'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+        $nsSioc =     'http://rdfs.org/sioc/ns#';
+        $nsSioct =    'http://rdfs.org/sioc/types#';
+        $nsAtom =     'http://www.w3.org/2005/Atom/';
+        $nsAair =     'http://xmlns.notu.be/aair#';
+        $nsFoaf =     'http://xmlns.com/foaf/0.1/';
+        $nsOv =       'http://open.vocab.org/docs/';
+        $nsPingback = 'http://purl.org/net/pingback/';
+        $nsDssn =     'http://purl.org/net/dssn/';
+
+        $baseUri = $this->_app->getBaseUri();
+        $now = date('c');
+        $pingbackServer = $baseUri . '?c=pingback&a=ping';
+
+        //ActivityTriples
+        $activityUri = $activity['uri'];
+        $verbUri = $activity['verb'];
+        $objectUri = $activity['object'];
+       
+        $activityFeedUri = $baseUri . '?c=feed&a=getFeed&uri=' .  urlencode($activityUri);
+
+        //TODO check for deletion
+        //not deleted because of no direct addition in addActivity
+        $title = $activity['title'];
+        $author = $activity['author'];
+        $authorUri = $activity['authorUri'];
+        $pubDate = $activity['pubDate'];
+        $context = $activity['context']; 
+        $activityType = $activity['type'];
+
+        //ObjectTriples
+        $object['type'] = $activity['objectType']; 
+        $object['date'] = $activity['objectPubDate'];
+        $object['content'] = $activity['objectContent'];
+        $object['image'] = $activity['objectImage'];
+
+        //note Image sharing in a group is not yet implemented
+        if ($object['type'] == $nsFoaf . 'Image') {
+            $object['aairType'] = $nsAair . 'Photo';
+            $type = 'Photo';
+            // Take photo filename as objectname
+           $objectId =  $object['fileName'];
+           $imageUri =  $this->_app->getBaseUri() . '?c=media&a=img&id=' . $objectId;
+
+        } else if ($object['type'] == 'Uri') {
+            $type =      'Uri';
+            $objectUri = $object['content'];
+
+        } else if ($object['type'] == $nsSioc . 'Post') {
+            $object['aairType'] = $nsAair . 'Note';
+            $type               = 'Note';
+           
+        } else if ($object['type'] == $nsSioct . 'Comment') {
+            $object['aairType'] = $nsAair . 'Comment';
+            $type               = 'Comment';
+        }        
+
+        $activityTriples = array(
+            $activityUri => array(
+                $nsRdf . 'type' => array(
+                    array('type' => 'uri', 'value' => $nsAair . 'Activity')
+                ),
+                $nsAair . 'activityActor' => array(
+                    array('type' => 'uri', 'value' => $actorUri)
+                ),
+                $nsAair . 'activityVerb' => array(
+                    array('type' => 'uri', 'value' => $verbUri)
+                ),
+                $nsAair . 'activityObject' => array(
+                    array('type' => 'uri', 'value' => $objectUri)
+                ),
+                $nsAtom . 'published' => array(
+                    array(
+                        'type' =>     'literal',
+                        'value' =>    $now,
+                        'datatype' => $nsXsd . 'dateTime'
+                    )
+                ),
+                $nsPingback . 'to' => array(
+                    array('type' => 'uri', 'value' => $pingbackServer)
+                ),
+                $nsDssn . 'activityFeed' => array(
+                    array('type' => 'uri', 'value' => $activityFeedUri)
+                )
+            )
+        );
+
+        $model->deleteMultipleStatements($activityTriples);
+
+        if ($type != 'Uri') {
+            $objectFeedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($objectUri);
+            $feedUri[$objectUri] = $objectFeedUri;
+
+            $objectTriples = array(
+                $objectUri => array(
+                    $nsRdf . 'type' => array(
+                        array('type' => 'uri', 'value' => $object['type']),
+                        array('type' => 'uri', 'value' => $object['aairType'])
+                    ),
+                    $nsSioc . 'created_at' => array(
+                        array(
+                            'type' => 'literal',
+                            'value' => $now,
+                            'datatype' => $nsXsd . 'dateTime'
+                        ),
+                    ),
+                    $nsFoaf . 'maker' => array(
+                        array('type' => 'uri', 'value' => $actorUri)
+                    ),
+                    $nsPingback . 'to' => array(
+                        array('type' => 'uri', 'value' => $pingbackServer)
+                    ),
+                    $nsDssn . 'activityFeed' => array(
+                        array('type' => 'uri', 'value' => $objectFeedUri)
+                    )
+                )
+            );
+
+            // Triples of note resource
+            if ($type == 'Note' || $type == 'Comment') {
+                $objectTriples[$objectUri][$nsSioc . 'content'][] = array(
+                    'type' => 'literal', 'value' => $object['content']
+                );
+
+                $objectTriples[$objectUri][$nsAair . 'content'][] = array(
+                    'type' => 'literal', 'value' => $object['content']
+                );
+            }
+
+            // Triples of comment resource
+            if ($type == 'Comment') {
+                $objectTriples[$objectUri][$nsAair . 'commenter'][] = array(
+                    'type' => 'uri', 'value' => $actorUri
+                );
+            }
+
+            // Triples of photo resource
+            if ($type == 'Photo') {
+                $objectTriples[$objectUri][$nsOv .   'hasContentType'][] = array(
+                    'type' => 'literal', 'value' => $object['mime']
+                );
+
+                $objectTriples[$objectUri][$nsAair . 'largerImage'][] = array(
+                    'type' => 'uri', 'value' => $imageUri
+                );
+            }
+
+            $model->deleteMultipleStatements($objectTriples);            
+        }        
+    }
+
 }
