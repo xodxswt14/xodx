@@ -13,67 +13,6 @@
  */
 class Xodx_MemberController extends Xodx_ResourceController
 {
-
-    /**
-     * Creates a Uri to call an API specified by the parameters
-     * 
-     * @param Uri $memberUri Uri of the member who is to be notified
-     * @param String $callAction Action that is to be called by this Uri
-     * @return Uri Uri to call the specified API
-     */
-    private function _createAPIUri ($memberUri, $callAction) {
-        $uri = "";
-        if (($uriArray = parse_url($memberUri))) {
-            $uri = $uriArray['scheme'] . '://'
-                 . $uriArray['host'];
-            if (!empty($uriArray['port'])) {
-                $uri.= ':' . $uriArray['port'];
-            }
-            if (!empty($uriArray['path'])) {
-                $uri.= $uriArray['path'];
-            }
-            if(substr($uri, -1) != '/') {
-                $uri.= '/';
-            }
-            $uri.= '?c=user&a=' . $callAction;
-        }
-        return $uri;
-    }
-
-    /**
-     * Calls an API
-     * 
-     * @param string $uri URI of the API
-     * @param mixed[] $fields Fields to send with
-     * @return mixed content got from request
-     * @deprecated should be implemented with semantic pingback
-     */
-    private function _callApi ($uri, $fields) {
-        // uri-fy the date for the POST Request
-        $fields_string = '';
-        foreach ($fields as $field => $value) {
-            $fields_string .= $field . '=' . $value . '&';
-        }
-        rtrim($fields_string, '&');
-    
-        // Open Connection
-        $curlConnection = curl_init();
-
-        // Set the uri, number of POST vars and POST data
-        curl_setopt($curlConnection, CURLOPT_URL, $uri);
-        curl_setopt($curlConnection, CURLOPT_POST, count($fields));
-        curl_setopt($curlConnection, CURLOPT_POSTFIELDS, $fields_string);
-        curl_setopt($curlConnection, CURLOPT_RETURNTRANSFER, true);
-
-        // Execute
-        $result = curl_exec($curlConnection);
-
-        // Close Connection
-        curl_close($curlConnection);
-
-        return $result;
-    }
-
     /**
      * API Action for getting group subsribe to person
      * 
@@ -139,6 +78,7 @@ class Xodx_MemberController extends Xodx_ResourceController
 
         if (count($formError) <= 0) {
             $this->deleteMember($personUri, $groupUri);
+            $this->deleteMemberActiviies($personUri, $groupUri);
             $template->disableLayout();
             $template->setRawContent('success');
         } else {
@@ -171,35 +111,6 @@ class Xodx_MemberController extends Xodx_ResourceController
 
         // Update WebID
         $model->addStatement($groupUri, 'http://xmlns.com/foaf/0.1/member', array('type' => 'uri', 'value' => $personUri));
-
-        // fetch all members of the group
-        $memberQuery  = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
-        $memberQuery .= 'SELECT ?memberUri {' .PHP_EOL;
-        $memberQuery .= '   <' . $groupUri . '>' . ' foaf:member ?memberUri' .PHP_EOL;
-        $memberQuery .= '}';        
-        $members = $model->sparqlQuery($memberQuery);
-        // fields for post-requests
-        $fields = array (
-            'groupUri'  => urlencode ($groupUri),
-            'personUri' => urlencode ($personUri),
-            'userUri'   => ''
-        );
-        $fields2 = array (
-            'groupUri'  => urlencode ($groupUri),
-            'personUri' => '',
-            'userUri'   => urlencode ($personUri)
-        );
-        foreach ($members as $member) {
-            // inform each member about new member
-            $fields['userUri'] = urlencode($member['memberUri']);
-            $this->_callApi($this->_createAPIUri($member['memberUri'], 'addmember'), $fields);
-            // inform the new member about the other members            
-            $fields2['personUri'] = urlencode($member['memberUri']);
-            // Only call it if user and member are different (so the new member does not subscribe itself twice
-            if ($fields2['userUri'] != $fields2['personUri']) {
-                $this->_callApi($this->_createAPIUri($personUri, 'addmember'), $fields2);
-            }
-        }
 
         $nsAair = 'http://xmlns.notu.be/aair#';
         $activityController = $this->_app->getController('Xodx_ActivityController');
@@ -247,33 +158,6 @@ class Xodx_MemberController extends Xodx_ResourceController
         $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
         if (!$ldHelper->resourceDescriptionExists($personUri)) {
             throw new Exception('The WebID of your friend does not exist.');
-        }
-
-        // fetch all members of the group
-        $memberQuery  = 'PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' . PHP_EOL;
-        $memberQuery .= 'SELECT ?memberUri {' .PHP_EOL;
-        $memberQuery .= '   <' . $groupUri . '>' . ' foaf:member ?memberUri' .PHP_EOL;
-        $memberQuery .= '}';        
-        $members = $model->sparqlQuery($memberQuery);
-        
-        // fields for post-requests
-        $fields = array (
-            'groupUri'  => urlencode ($groupUri),
-            'personUri' => urlencode ($personUri),
-            'userUri'   => ''
-        );
-        $fields2 = array (
-            'groupUri'  => urlencode ($groupUri),
-            'personUri' => '',
-            'userUri'   => urlencode ($personUri)
-        );
-        foreach ($members as $member) {
-            // inform each member about leaving member
-            $fields['userUri'] = urlencode($member['memberUri']);
-            $this->_callApi($this->_createAPIUri($member['memberUri'], 'deletemember'), $fields);
-            // inform the leaving member which activitiyFeeds are to be unsubscribed
-            $fields2['personUri'] = urlencode($member['memberUri']);
-            $this->_callApi($this->_createAPIUri($personUri, 'deletemember'), $fields2);
         }
 
         // Update WebID
@@ -594,5 +478,22 @@ class Xodx_MemberController extends Xodx_ResourceController
         }
 
         return $subscribedResources;
+    }
+
+    /**
+     * Deletes all activities where the activityActor is the member-groupUri
+     * 
+     * @param Uristring $memberUri Member whose activites are to be deleted
+     * @param Uristring $groupUri The group where this activities were posted
+     */
+    public function deleteMemberActiviies($memberUri, $groupUri)
+    {
+        $activityController = $this->_app->getController('Xodx_ActivityController');
+        $actorUri = $memberUri. $groupUri;
+        $activities = $activityController->getActivities($groupUri, $memberUri);
+       
+         foreach ($activities as $activity) {
+            $activityController->deleteActivity($activity, $actorUri);
+         }
     }
 }
