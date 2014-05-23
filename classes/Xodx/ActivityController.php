@@ -745,15 +745,6 @@ $logger->debug('##### . nach addActivity');
        
         $activityFeedUri = $baseUri . '?c=feed&a=getFeed&uri=' .  urlencode($activityUri);
 
-        //TODO check for deletion
-        //not deleted because of no direct addition in addActivity
-        $title = $activity['title'];
-        $author = $activity['author'];
-        $authorUri = $activity['authorUri'];
-        $pubDate = $activity['pubDate'];
-        $context = $activity['context']; 
-        $activityType = $activity['type'];
-
         //ObjectTriples
         $object['type'] = $activity['objectType']; 
         $object['date'] = $activity['objectPubDate'];
@@ -874,5 +865,4 @@ $logger->debug('##### . nach addActivity');
             $model->deleteMultipleStatements($objectTriples);            
         }        
     }
-
 }
