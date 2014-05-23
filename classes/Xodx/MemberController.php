@@ -78,7 +78,7 @@ class Xodx_MemberController extends Xodx_ResourceController
 
         if (count($formError) <= 0) {
             $this->deleteMember($personUri, $groupUri);
-            $this->deleteMemberActiviies($personUri, $groupUri);
+            $this->deleteMemberActivities($personUri, $groupUri);
             $template->disableLayout();
             $template->setRawContent('success');
         } else {
@@ -486,7 +486,7 @@ class Xodx_MemberController extends Xodx_ResourceController
      * @param Uristring $memberUri Member whose activites are to be deleted
      * @param Uristring $groupUri The group where this activities were posted
      */
-    public function deleteMemberActiviies($memberUri, $groupUri)
+    public function deleteMemberActivities($memberUri, $groupUri)
     {
         $activityController = $this->_app->getController('Xodx_ActivityController');
         $actorUri = $memberUri. $groupUri;
