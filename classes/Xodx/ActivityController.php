@@ -157,8 +157,8 @@ class Xodx_ActivityController extends Xodx_ResourceController
 
         $logger->debug('######### addgroupActivity start');
         $actType = strtolower($request->getValue('actType', 'post'));
-        $actContent = $request->getValue('content', 'post');
-        $replyObject = $request->getValue('reply', 'post');
+        $actContent = $request->getValue('actContent', 'post');
+        $replyObject = $request->getValue('replyObject', 'post');
 
         $groupUri = urldecode ($request->getValue('groupUri', 'post'));
         $actorUri = urldecode ($request->getValue('actorUri', 'post'));
