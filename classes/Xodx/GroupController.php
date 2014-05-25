@@ -75,8 +75,8 @@ class Xodx_GroupController extends Xodx_ResourceController
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
 
-        $memberController = $this->_app->getController('Xodx_MemberController');
-        $activities = $memberController->getActivityStream($groupUri);
+        $activityController = $this->_app->getController('Xodx_ActivityController');
+        $activities = $activityController->getActivities($groupUri);
 
         $nameHelper = new Xodx_NameHelper($this->_app);
         $makerName = $nameHelper->getName($group[0]['maker']);
@@ -222,8 +222,8 @@ class Xodx_GroupController extends Xodx_ResourceController
         $user = $userController->getUser();
 
         // Get group activity stream
-        $memberController = $this->_app->getController('Xodx_MemberController');
-        $activities = $memberController->getActivityStream($groupUri);
+        $activityController = $this->_app->getController('Xodx_ActivityController');
+        $activities = $activityController->getActivities($groupUri);
 
         $nameHelper = new Xodx_NameHelper($this->_app);
         $makerName = $nameHelper->getName($group[0]['maker']);
