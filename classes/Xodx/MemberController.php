@@ -126,19 +126,6 @@ class Xodx_MemberController extends Xodx_ResourceController
         // Send Ping to new member
         $pingbackController = $this->_app->getController('Xodx_PingbackController');
         $pingbackController->sendPing($groupUri, $personUri, 'You joined this group.');
-
-        // Subscribe to new member
-        $baseUri = $nameHelper->getBaseUriByResourceUri($personUri);
-        $feedUri = $baseUri .  '?c=feed&a=getFeed&uri=' .
-                urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
-
-        //$personUri extended to identify an actor for every grouppost
-        if ($feedUri !== null) {
-            $logger->debug('MemberController/addMember: Found feed for newly added member ("' . $personUri . '"): "' . $feedUri . '"');
-            $this->subscribeToResource ($groupUri, $personUri . $groupUri, $feedUri);
-        } else {
-            $logger->error('MemberController/addMember: Couldn\'t find feed for newly added member ("' . $personUri . '").');
-        }
    }
 
     /**
@@ -167,18 +154,6 @@ class Xodx_MemberController extends Xodx_ResourceController
         // Send Ping to member
         $pingbackController = $this->_app->getController('Xodx_PingbackController');
         $pingbackController->sendPing($groupUri, $personUri, 'You left this group.');
-
-        // Unsubscribe from member
-        $baseUri = $nameHelper->getBaseUriByResourceUri($personUri);
-        $feedUri = $baseUri .  '?c=feed&a=getFeed&uri=' .
-                urlencode($personUri) . '&groupUri=' . urlencode($groupUri);
-
-        if ($feedUri !== null) {
-            $logger->debug('MemberController/deletemember: Found feed of member ("' . $personUri . '"): "' . $feedUri . '"');
-            $this->unsubscribeFromResource ($groupUri, $personUri. $groupUri, $feedUri);
-        } else {
-            $logger->error('MemberController/deleteMember: Couldn\'t find feed of member ("' . $personUri . '").');
-        }
     }
 
    /**
