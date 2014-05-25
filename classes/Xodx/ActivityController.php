@@ -134,8 +134,6 @@ class Xodx_ActivityController extends Xodx_ResourceController
                     'actorUri' => urlencode ($actorUri)
                     );
             $this->_callApi($apiUri, $fields);
-            //TODO remove this, its only for localhost testing
-//            $this->addActivity($actorUri, $verbUri, $object, $groupUri);
         } else {
             $this->addActivity($actorUri, $verbUri, $object);
         }    
@@ -155,7 +153,6 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $logger = $bootstrap->getResource('logger');
         $request = $bootstrap->getResource('request');
 
-        $logger->debug('######### addgroupActivity start');
         $actType = strtolower($request->getValue('actType', 'post'));
         $actContent = $request->getValue('actContent', 'post');
         $replyObject = $request->getValue('replyObject', 'post');
@@ -200,9 +197,7 @@ class Xodx_ActivityController extends Xodx_ResourceController
                 throw new Exception($message);
             break;
         }
-$logger->debug('##### . vor addActivity');
         $this->addActivity($actorUri, $verbUri, $object, $groupUri);
-$logger->debug('##### . nach addActivity');
         return $template;    
     }
 
@@ -252,12 +247,6 @@ $logger->debug('##### . nach addActivity');
         } else {
             $actorUri .= $groupUri;
             $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . urlencode($groupUri);
-//            $actorFeedUri = $baseUri .  '?c=feed&a=getFeed&uri=' . 
-//                                urlencode($actorUri) .'&groupUri=' . urlencode($groupUri);
-//            /* When posting in a group the user is not the actor itself. 
-//             * In that case the actor is made up of both the user and the group.
-//             */
-//            $actorUri .= $groupUri;
         }
 
         $publishFeeds = array(
