@@ -442,9 +442,9 @@ class Xodx_ActivityController extends Xodx_ResourceController
             $memberController = $this->_app->getController('Xodx_MemberController');
             foreach ($subscribeFeeds as $resourceUri => $feedUri) {
                 if ($feedUri == null) {
-                    $memberController->subscribeToResource($actorUri, $resourceUri);
+                    $memberController->subscribeToResource($groupUri, $resourceUri);
                 } else {
-                    $memberController->subscribeToResource($actorUri, $resourceUri, $feedUri, true);
+                    $memberController->subscribeToResource($groupUri, $resourceUri, $feedUri, true);
                 }
             }
         }
