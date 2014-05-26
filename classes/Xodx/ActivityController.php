@@ -559,16 +559,16 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $groupQuery = 'PREFIX atom: <http://www.w3.org/2005/Atom/> ' . PHP_EOL;
         $groupQuery.= 'PREFIX aair: <http://xmlns.notu.be/aair#> ' . PHP_EOL;
         $groupQuery.= 'PREFIX sioc: <http://rdfs.org/sioc/ns#> ' . PHP_EOL;
-        $groupQuery.= 'SELECT DISTINCT ?activity ?date ?verb ?object ?context ' . PHP_EOL;
+        $groupQuery.= 'SELECT DISTINCT ?activity ?date ?verb ?object ?person ?context ' . PHP_EOL;
         $groupQuery.= 'WHERE { ' . PHP_EOL;
         $groupQuery.= '     ?activity  a                    aair:Activity ; ' . PHP_EOL;
-        $groupQuery.= '                aair:activityActor   ?memgroup ; ' . PHP_EOL;
+        $groupQuery.= '                aair:activityActor   person ; ' . PHP_EOL;
         $groupQuery.= '                atom:published       ?date ; ' . PHP_EOL;
         $groupQuery.= '                aair:activityVerb    ?verb ; ' . PHP_EOL;
         $groupQuery.= '                aair:activityObject  ?object . ' . PHP_EOL;
         $groupQuery.= 'OPTIONAL { ' . PHP_EOL;
         $groupQuery.= '?memgroup aair:activityContext ?context . } ' . PHP_EOL;
-        $groupQuery.= 'FILTER (?memgroup like "%' . $resourceUri . '") ' . PHP_EOL;
+        $groupQuery.= 'FILTER (?person like "%' . $resourceUri . '") ' . PHP_EOL;
         $groupQuery.= '} ';
         $groupQuery.= 'ORDER BY DESC(?date)'; PHP_EOL;
 
