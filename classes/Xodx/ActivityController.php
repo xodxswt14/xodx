@@ -125,15 +125,23 @@ class Xodx_ActivityController extends Xodx_ResourceController
         }
 
         if ($groupUri !== null) {
-            $apiUri = $this->_createAPIUri ($groupUri, 'addgroupactivity', 'activity');
-            $fields = array (
-                    'actType' => $actType,
-                    'actContent' => $actContent,
-                    'replyObject' => $replyObject,
-                    'groupUri' => urlencode ($groupUri),
-                    'actorUri' => urlencode ($actorUri)
-                    );
-            $this->_callApi($apiUri, $fields);
+            $nameHelper = new Xodx_NameHelper($this->_app);
+            $actorBaseUri = $nameHelper->getBaseUriByResourceUri($actorUri);
+            $groupBaseUri = $nameHelper->getBaseUriByResourceUri($groupUri);
+
+            if (strcmp($actorBaseUri, $groupBaseUri) == 0) {
+                $this->addActivity($actorUri, $verbUri, $object, $groupUri);
+            } else {
+                $apiUri = $groupBaseUri . '?c=activity&a=addgroupactivity';
+                $fields = array (
+                        'actType' => $actType,
+                        'actContent' => $actContent,
+                        'replyObject' => $replyObject,
+                        'groupUri' => urlencode ($groupUri),
+                        'actorUri' => urlencode ($actorUri)
+                        );
+                $this->_callApi($apiUri, $fields);
+            }
         } else {
             $this->addActivity($actorUri, $verbUri, $object);
         }    
@@ -587,7 +595,6 @@ class Xodx_ActivityController extends Xodx_ResourceController
         } else if ($type == $nsFoaf . 'Person') {
             $query = $personQuery;
         } else if ($type == $nsFoaf . 'Group') {
-            //$query = $personQuery;
             $query = $groupQuery;
         } else {
             $query = $objectQuery;
@@ -599,25 +606,21 @@ class Xodx_ActivityController extends Xodx_ResourceController
 
         foreach ($activitiesResult as $act) {
             if (!isset($act['activity'])) {
-                if (!isset($act['memgroup'])) {
-                    $activityUri = $resourceUri;
-                } else {
-                    $activityUri = $act['memgroup'];
-                }
+                $activityUri = $resourceUri;
             } else {
                 $activityUri = $act['activity'];
             }
             if (!isset($act['person'])) {
-                if (!isset($act['memgroup'])) {
-                    $personUri = $resourceUri;
-                } else {
-                    $personUri = $act['memgroup'];
-                }
+                $personUri = $resourceUri;
             } else {
                 $personUri = $act['person'];
             }
 
-            //$verbUri = $act['verb'];
+            $authorUri = $personUri;
+            if (isset($act['memgroup'])) {
+                $authorUri = $act['memgroup'];
+            }
+
             $objectUri = $act['object'];
             $act['date'] = self::_issueE24fix($act['date']);
 
@@ -647,7 +650,7 @@ class Xodx_ActivityController extends Xodx_ResourceController
                 'title'     => $title,
                 'uri'       => $activityUri,
                 'author'    => $personName,
-                'authorUri' => $personUri,
+                'authorUri' => $authorUri,
                 'pubDate'   => $act['date'],
                 'verb'      => $act['verb'],
                 'object'    => $objectUri,
