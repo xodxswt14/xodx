@@ -562,7 +562,7 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $groupQuery.= 'SELECT DISTINCT ?activity ?date ?verb ?object ?person ?context ' . PHP_EOL;
         $groupQuery.= 'WHERE { ' . PHP_EOL;
         $groupQuery.= '     ?activity  a                    aair:Activity ; ' . PHP_EOL;
-        $groupQuery.= '                aair:activityActor   person ; ' . PHP_EOL;
+        $groupQuery.= '                aair:activityActor   ?person ; ' . PHP_EOL;
         $groupQuery.= '                atom:published       ?date ; ' . PHP_EOL;
         $groupQuery.= '                aair:activityVerb    ?verb ; ' . PHP_EOL;
         $groupQuery.= '                aair:activityObject  ?object . ' . PHP_EOL;
