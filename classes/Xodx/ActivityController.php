@@ -505,17 +505,19 @@ class Xodx_ActivityController extends Xodx_ResourceController
 
         // Get activity of an ActivityObject and all activities
         // containing objects replying to this ActivityObject
+        // memgroup is the combi of member and groupUri, which may be the author
         $objectQuery = 'PREFIX atom: <http://www.w3.org/2005/Atom/> ' . PHP_EOL;
         $objectQuery.= 'PREFIX aair: <http://xmlns.notu.be/aair#> ' . PHP_EOL;
         $objectQuery.= 'PREFIX sioc: <http://rdfs.org/sioc/ns#> ' . PHP_EOL;
         $objectQuery.= 'SELECT DISTINCT ?activity ?date ?verb ?object ?person ' . PHP_EOL;
         $objectQuery.= 'WHERE { ' . PHP_EOL;
         $objectQuery.= '   ?activity a                   aair:Activity ; ' . PHP_EOL;
-        $objectQuery.= '             ?p             <' . $resourceUri . '> ; ' . PHP_EOL;
+        $objectQuery.= '             ?p                  ?memgroup ; ' . PHP_EOL;
         $objectQuery.= '             aair:activityActor  ?person ; ' . PHP_EOL;
         $objectQuery.= '             atom:published      ?date ; ' . PHP_EOL;
         $objectQuery.= '             aair:activityVerb   ?verb ; ' . PHP_EOL;
         $objectQuery.= '             aair:activityObject ?object . ' . PHP_EOL;
+        $objectQuery.= 'FILTER (?memgroup like "%' . $resourceUri . '%") ' . PHP_EOL;
         $objectQuery.= '} ' . PHP_EOL;
         $objectQuery.= 'ORDER BY DESC(?date)'; PHP_EOL;
 
@@ -566,7 +568,7 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $groupQuery.= '                aair:activityObject  ?object . ' . PHP_EOL;
         $groupQuery.= 'OPTIONAL { ' . PHP_EOL;
         $groupQuery.= '?memgroup aair:activityContext ?context . } ' . PHP_EOL;
-        $groupQuery.= 'FILTER (?memgroup like "%' . $resourceUri . '") ';
+        $groupQuery.= 'FILTER (?memgroup like "%' . $resourceUri . '") ' . PHP_EOL;
         $groupQuery.= '} ';
         $groupQuery.= 'ORDER BY DESC(?date)'; PHP_EOL;
 
