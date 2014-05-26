@@ -49,37 +49,50 @@ class Xodx_GroupController extends Xodx_ResourceController
             $groupUri = $this->_app->getBaseUri() . '?c=' . $controller . '&id=' . $id;
         }
 
-        $nsFoaf = 'http://xmlns.com/foaf/0.1/';
-
-        //GroupQuery fetching group information
-        $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $groupQuery.= 'SELECT ?name ?maker ?description ' .  PHP_EOL;
-        $groupQuery.= 'WHERE { ' .  PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> foaf:name ?name . ' . PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> foaf:primaryTopic ?description . ' . PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
-        $groupQuery.= '}'; PHP_EOL;
-
-        //MemberQuery fetching all members of group
-        $memberQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $memberQuery.= 'SELECT ?member ' .  PHP_EOL;
-        $memberQuery.= 'WHERE { ' .  PHP_EOL;
-        $memberQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
-        $memberQuery.= '   <' . $groupUri . '> foaf:member ?member .' . PHP_EOL;
-        $memberQuery.= '}'; PHP_EOL;
-
-        $group = $model->sparqlQuery($groupQuery);
-        $members = $model->sparqlQuery($memberQuery);
-
         $userController = $this->_app->getController('Xodx_UserController');
         $user = $userController->getUser();
+        $nameHelper = new Xodx_NameHelper($this->_app);
+        $template->groupshowName = $nameHelper->getName($groupUri);
 
+        $nsFoaf = 'http://xmlns.com/foaf/0.1/';
+
+        if ($this->_testLocalInstance($groupUri)) {
+            $group = $this->_getGroupInformation($groupUri);
+            $members = $this->_getGroupMembers($groupUri);
+
+            $makerName = $nameHelper->getName($group[0]['maker']);
+
+            //Checks if user is maker and marks him as member
+            if ($user->getPerson() == $group[0]['maker']) {
+                $template->isMaker = true;
+                $isMember = true;
+            } else {
+                $template->isMaker = false;
+            }
+
+            // Refine array of group members
+            for ($i = 0; $i < count($members); $i++) {
+                $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
+            }
+
+            $template->groupshowName = $group[0]['name'];
+            $template->groupDescription = $group[0]['description'];
+            $template->groupMaker = $group[0]['maker'];
+            $template->groupMakerName = $makerName;
+            $template->groupMembers = $members;
+        }
+
+        // GroupMemberQuery fetching all groups one is subscribed to
+        $groupMemberQuery  = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $groupMemberQuery .= 'SELECT ?member ' .  PHP_EOL;
+        $groupMemberQuery .= 'WHERE { ' .  PHP_EOL;
+        $groupMemberQuery .= '  ?member foaf:member <' . $groupUri . '> .' . PHP_EOL;
+        $groupMemberQuery .= '}'; PHP_EOL;
+        $groupMember = $model->sparqlQuery($groupMemberQuery);
+
+        // Get group activity stream
         $activityController = $this->_app->getController('Xodx_ActivityController');
         $activities = $activityController->getActivities($groupUri);
-
-        $nameHelper = new Xodx_NameHelper($this->_app);
-        $makerName = $nameHelper->getName($group[0]['maker']);
 
         foreach ($activities as &$activity) {
             $activity['personUri'] = $this->getPersonByAuthorUri($activity['authorUri']);
@@ -87,26 +100,18 @@ class Xodx_GroupController extends Xodx_ResourceController
             $activity['personName'] = $nameHelper->getName($activity['personUri']);
         }
 
-        if ($user->getName() == 'guest') {
-            $template->isGuest = true;
-        } else {
-            $template->isGuest = false;
-        }
-
         //Checks if user is member of group
         $isMember = false;
-        foreach ($members as $member) {
+        foreach ($groupMember as $member) {
             if ($member['member'] === $user->getPerson()) {
                 $isMember = true;
             }
         }
 
-        //Checks if user is maker and marks him as member
-        if ($user->getPerson() == $group[0]['maker']) {
-            $template->isMaker = true;
-            $isMember = true;
+        if ($user->getName() == 'guest') {
+            $template->isGuest = true;
         } else {
-            $template->isMaker = false;
+            $template->isGuest = false;
         }
 
         // Redirect from show to home if user is member
@@ -119,17 +124,7 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->redirect($location);
         }
 
-        // Refine array of group members
-        for ($i = 0; $i < count($members); $i++) {
-            $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
-        }
-
-        $template->groupshowName = $group[0]['name'];
-        $template->groupDescription = $group[0]['description'];
         $template->groupUri = $groupUri;
-        $template->groupMaker = $group[0]['maker'];
-        $template->groupMakerName = $makerName;
-        $template->groupMembers = $members;
         $template->groupshowActivities = $activities;
 
         return $template;
@@ -181,31 +176,42 @@ class Xodx_GroupController extends Xodx_ResourceController
         $groupUri  = urldecode($request->getValue('uri', 'get'));
         $id         = $request->getValue('id', 'get');
         $controller = $request->getValue('c', 'get');
+        $nameHelper = new Xodx_NameHelper($this->_app);
 
         if ($id !== null) {
             $groupUri = $this->_app->getBaseUri() . '?c=' . $controller . '&id=' . $id;
         }
 
+        $userController = $this->_app->getController('Xodx_UserController');
+        $user = $userController->getUser();
+
+        $template->isMaker = false;
+        $template->groupshowName = $nameHelper->getName($groupUri);
         $nsFoaf = 'http://xmlns.com/foaf/0.1/';
-        //GroupQuery fetching group information
-        $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $groupQuery.= 'SELECT ?name ?maker ?description ' .  PHP_EOL;
-        $groupQuery.= 'WHERE { ' .  PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> foaf:name ?name . ' . PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> foaf:primaryTopic ?description . ' . PHP_EOL;
-        $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
-        $groupQuery.= '}'; PHP_EOL;
 
-        $group = $model->sparqlQuery($groupQuery);
+        if ($this->_testLocalInstance($groupUri)) {
+            $group = $this->_getGroupInformation($groupUri);
+            $members = $this->_getGroupMembers($groupUri);
 
-        //MemberQuery fetching all members of group
-        $memberQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
-        $memberQuery.= 'SELECT ?member ' .  PHP_EOL;
-        $memberQuery.= 'WHERE { ' .  PHP_EOL;
-        $memberQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
-        $memberQuery.= '   <' . $groupUri . '> foaf:member ?member .' . PHP_EOL;
-        $memberQuery.= '}'; PHP_EOL;
+            // Refine array of group members
+            for ($i = 0; $i < count($members); $i++) {
+                $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
+            }
+
+            $makerName = $nameHelper->getName($group[0]['maker']);
+
+            //Checks if user is maker and marks him as member
+            if ($user->getPerson() == $group[0]['maker']) {
+                $template->isMaker = true;
+                $isMember = true;
+            }
+
+            $template->groupshowName = $group[0]['name'];
+            $template->groupDescription = $group[0]['description'];
+            $template->groupMembers = $members;
+            $template->groupMaker = $group[0]['maker'];
+            $template->groupMakerName = $makerName;
+        }
 
         // GroupMemberQuery fetching all groups one is subscribed to
         $groupMemberQuery  = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
@@ -213,20 +219,14 @@ class Xodx_GroupController extends Xodx_ResourceController
         $groupMemberQuery .= 'WHERE { ' .  PHP_EOL;
         $groupMemberQuery .= '  ?member foaf:member <' . $groupUri . '> .' . PHP_EOL;
         $groupMemberQuery .= '}'; PHP_EOL;
-
-        
-        $members = $model->sparqlQuery($memberQuery);
         $groupMember = $model->sparqlQuery($groupMemberQuery);
 
-        $userController = $this->_app->getController('Xodx_UserController');
-        $user = $userController->getUser();
 
         // Get group activity stream
         $activityController = $this->_app->getController('Xodx_ActivityController');
         $activities = $activityController->getActivities($groupUri);
 
-        $nameHelper = new Xodx_NameHelper($this->_app);
-        $makerName = $nameHelper->getName($group[0]['maker']);
+
 
         foreach ($activities as &$activity) {
             $activity['personUri'] = $this->getPersonByAuthorUri($activity['authorUri']);
@@ -236,23 +236,10 @@ class Xodx_GroupController extends Xodx_ResourceController
 
         //Checks if user is member of group
         $isMember = false;
-        foreach ($members as $member) {
-            if ($member['member'] === $user->getPerson()) {
-                $isMember = true;
-            }
-        }
         foreach ($groupMember as $member) {
             if ($member['member'] === $user->getPerson()) {
                 $isMember = true;
             }
-        }
-
-        //Checks if user is maker and marks him as member
-        if ($user->getPerson() == $group[0]['maker']) {
-            $template->isMaker = true;
-            $isMember = true;
-        } else {
-            $template->isMaker = false;
         }
 
         // Redirect from home to login if user is guest
@@ -272,20 +259,75 @@ class Xodx_GroupController extends Xodx_ResourceController
             $template->redirect($location);
         }
 
-        // Refine array of group members
-        for ($i = 0; $i < count($members); $i++) {
-            $members[$i]['memberName'] = $nameHelper->getName($members[$i]['member']);
-        }
-
-        $template->groupshowName = $group[0]['name'];
-        $template->groupDescription = $group[0]['description'];
+        
         $template->groupUri = $groupUri;
-        $template->groupMaker = $group[0]['maker'];
-        $template->groupMakerName = $makerName;
-        $template->groupMembers = $members;
+
         $template->groupshowActivities = $activities;
 
         return $template;
+    }
+
+    /**
+     * Tests if a group is local
+     * 
+     * @param Uri GroupUri
+     */
+    private function _testLocalInstance ($groupUri)
+    {
+        $nameHelper = new Xodx_NameHelper($this->_app);
+        if($this->_app->getBaseUri() == $nameHelper->getBaseUriByResourceUri($groupUri)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Gathers information for the group
+     * 
+     * @param Uri GroupUri
+     * @return Array array with group information
+     */
+    private function _getGroupInformation ($groupUri)
+    {
+        $model = $this->_app->getBootstrap()->getResource('model');
+        $nsFoaf = 'http://xmlns.com/foaf/0.1/';
+
+        //GroupQuery fetching group information
+        $groupQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $groupQuery.= 'SELECT ?name ?maker ?description ' .  PHP_EOL;
+        $groupQuery.= 'WHERE { ' .  PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:name ?name . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:primaryTopic ?description . ' . PHP_EOL;
+        $groupQuery.= '   <' . $groupUri . '> foaf:maker ?maker .' . PHP_EOL;
+        $groupQuery.= '}'; PHP_EOL;
+
+        $group = $model->sparqlQuery($groupQuery);
+        return $group;
+    }
+
+    /**
+     * Gets all the members of a group
+     * 
+     * @param Uri GroupUri
+     * @return Array array with the members of the group
+     */
+    private function _getGroupMembers($groupUri)
+    {
+        $model = $this->_app->getBootstrap()->getResource('model');
+        $nsFoaf = 'http://xmlns.com/foaf/0.1/';
+
+        //MemberQuery fetching all members of group
+        $memberQuery = 'PREFIX foaf: <' . $nsFoaf . '> ' . PHP_EOL;
+        $memberQuery.= 'SELECT ?member ' .  PHP_EOL;
+        $memberQuery.= 'WHERE { ' .  PHP_EOL;
+        $memberQuery.= '   <' . $groupUri . '> a foaf:Group  . ' . PHP_EOL;
+        $memberQuery.= '   <' . $groupUri . '> foaf:member ?member .' . PHP_EOL;
+        $memberQuery.= '}'; PHP_EOL;
+
+        $members = $model->sparqlQuery($memberQuery);
+        return $members;
     }
 
     /**

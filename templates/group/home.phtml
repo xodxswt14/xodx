@@ -19,7 +19,6 @@
         <ul class="nav nav-pills">
             <li class="active"><a href="#status" data-toggle="tab">Status</a></li>
             <li><a href="#link" data-toggle="tab">Link</a></li>
-            <li><a href="#photo" data-toggle="tab">Photo</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane active" id="status">
@@ -38,15 +37,6 @@
                     <input type="hidden" name="reply" value="false" />
                     <input type="hidden" name="groupUri" value="<?= htmlentities($this->groupUri) ?>" />
                     <button class="btn btn-primary" type="submit">Share</button>
-                </form>
-            </div>
-            <div class="tab-pane" id="photo">
-                <form enctype="multipart/form-data" method="post" action="?c=activity&amp;a=addactivity">
-                    <input type="file" name="content"/>
-                    <input type="hidden" name="type" value="Photo" />
-                    <input type="hidden" name="reply" value=false />
-                    <input type="hidden" name="groupUri" value="<?= htmlentities($this->groupUri) ?>" />lo 
-                   <button class="btn btn-primary" type="submit">Share</button>
                 </form>
             </div>
         </div>
@@ -82,12 +72,12 @@
         endif;
         ?>
         <?php
-            $this->partial(
-                    'memberlist.phtml',
-                    array(
-                        'groupMembers' => $this->groupMembers
-                    )
-            )
+            if (!empty($this->groupMembers)) :
+                $this->partial(
+                        'memberlist.phtml', 
+                        array('groupMembers' => $this->groupMembers)
+                        );
+            endif;
         ?>
     </div>
 </div>

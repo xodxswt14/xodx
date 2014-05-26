@@ -30,12 +30,14 @@
             <?php endif; ?>
         </form>
         <?php
+        if (!empty($this->groupMembers)) :
             $this->partial(
                     'memberlist.phtml',
                     array(
                         'groupMembers' => $this->groupMembers
                     )
-            )
+            );
+        endif;
         ?>
     </div>
 </div>
