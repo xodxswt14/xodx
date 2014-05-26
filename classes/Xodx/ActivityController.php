@@ -559,7 +559,7 @@ class Xodx_ActivityController extends Xodx_ResourceController
         $groupQuery = 'PREFIX atom: <http://www.w3.org/2005/Atom/> ' . PHP_EOL;
         $groupQuery.= 'PREFIX aair: <http://xmlns.notu.be/aair#> ' . PHP_EOL;
         $groupQuery.= 'PREFIX sioc: <http://rdfs.org/sioc/ns#> ' . PHP_EOL;
-        $groupQuery.= 'SELECT DISTINCT ?activity ?date ?verb ?object ?context ' . PHP_EOL;
+        $groupQuery.= 'SELECT DISTINCT ?activity ?date ?verb ?object ?context ?memgroup ' . PHP_EOL;
         $groupQuery.= 'WHERE { ' . PHP_EOL;
         $groupQuery.= '     ?activity  a                    aair:Activity ; ' . PHP_EOL;
         $groupQuery.= '                aair:activityActor   ?memgroup ; ' . PHP_EOL;
@@ -599,12 +599,20 @@ class Xodx_ActivityController extends Xodx_ResourceController
 
         foreach ($activitiesResult as $act) {
             if (!isset($act['activity'])) {
-                $activityUri = $resourceUri;
+                if (!isset($act['memgroup'])) {
+                    $activityUri = $resourceUri;
+                } else {
+                    $activityUri = $act['memgroup'];
+                }
             } else {
                 $activityUri = $act['activity'];
             }
             if (!isset($act['person'])) {
-                $personUri = $resourceUri;
+                if (!isset($act['memgroup'])) {
+                    $personUri = $resourceUri;
+                } else {
+                    $personUri = $act['memgroup'];
+                }
             } else {
                 $personUri = $act['person'];
             }

@@ -229,10 +229,10 @@ class Xodx_GroupController extends Xodx_ResourceController
 
 
         foreach ($activities as &$activity) {
-            $activity['personUri'] = $this->getPersonByAuthorUri($activity['authorUri']);
+	    $activity['personUri'] = $this->getPersonByAuthorUri($activity['authorUri']);
             $activity['groupUri']  = $this->getGroupByAuthorUri($activity['authorUri']);
             $activity['personName'] = $nameHelper->getName($activity['personUri']);
-        }
+	}
 
         //Checks if user is member of group
         $isMember = false;

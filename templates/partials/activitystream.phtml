@@ -5,13 +5,19 @@
         <form method="post" action="?c=activity&amp;a=reply">
             <div class="span10">
                 <?php
-                if (isset($activity['personName'])) {
+                if (isset($activity['personName']) && $activity['personName'] !== false) {
                     ?>
                     <a href="<?= htmlentities($activity['personUri']) ?>">
                         <?= htmlentities($activity['personName']) ?>
                     </a>
                     <?php
-                } elseif ($this->home === true) {
+                } elseif (isset($activity['personUri'])) {
+	       	    ?>
+		    <a href="<?= htmlentities($activity['personUri']) ?>">
+                        <?= htmlentities($activity['personUri']) ?>
+                    </a>
+		<?php
+		} elseif ($this->home === true) {
                     ?>
                     <a href="<?= htmlentities($activity['authorUri']) ?>"><?= htmlentities($activity['author']) ?></a>
                     <?php
