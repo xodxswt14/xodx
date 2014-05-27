@@ -101,22 +101,6 @@ class Xodx_UserController extends Xodx_ResourceController
         return $template;
     }
 
-    /**
-     * Sorts the given array of activities in order of their publishing dates
-     * @param  Array $activities Array of activities
-     * @return Array $activities Sorted array of activities
-     */
-    public function sortActivities ($activities)
-    {
-        $tmp = Array();
-        foreach($activities as &$act) {
-            $tmp[] = &$act["pubDate"];
-        }
-        array_multisort($tmp, SORT_DESC, $activities);
-
-        return $activities;
-    }
-
 
     public function getPersonUriAction ($template)
     {
