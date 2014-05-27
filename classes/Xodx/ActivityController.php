@@ -153,6 +153,8 @@ class Xodx_ActivityController extends Xodx_ResourceController
      * Add a new activity after group action.
      * Activities are:  - Post a status note
      *                  - Reply to an activity
+     * @param Saft_Layout $template used template
+     * @return Saft_Layout modified template
      */
     public function addgroupactivityAction ($template)
     {
@@ -215,7 +217,7 @@ class Xodx_ActivityController extends Xodx_ResourceController
      * @param Uri $verbUri String Determines the type of activity (Note, Photo, ...)
      * @param Array $object Content of the activity
      * @param Uri $groupUri If the activity is posted in a group this is that group's Uri. Otherwise (default) this is null
-     * TODO should be replaced by a method which takes a DSSN_Activity object
+     * @todo should be replaced by a method which takes a DSSN_Activity object
      */
     public function addActivity ($actorUri, $verbUri, $object, $groupUri = null)
     {
@@ -437,7 +439,7 @@ class Xodx_ActivityController extends Xodx_ResourceController
                 $pushController->publish($feed);
             }
         }
-
+        // the actor (either a person or a group) subscribes its own activities to be informed about replies
         if ($groupUri === null) {
             foreach ($subscribeFeeds as $resourceUri => $feedUri) {
                 if ($feedUri == null) {
@@ -722,8 +724,6 @@ class Xodx_ActivityController extends Xodx_ResourceController
     {
         $bootstrap = $this->_app->getBootstrap();
         $model = $bootstrap->getResource('model');
-        $config = $bootstrap->getResource('config');
-        $logger = $bootstrap->getResource('logger');
 
         $nsXsd =      'http://www.w3.org/2001/XMLSchema#';
         $nsRdf =      'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -808,7 +808,6 @@ class Xodx_ActivityController extends Xodx_ResourceController
 
         if ($type != 'Uri') {
             $objectFeedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($objectUri);
-            $feedUri[$objectUri] = $objectFeedUri;
 
             $objectTriples = array(
                 $objectUri => array(

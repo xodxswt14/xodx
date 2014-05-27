@@ -271,6 +271,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      * Tests if a group is local
      * 
      * @param Uri GroupUri
+     * @return Boolean TRUE if group is local, otherwise FALSE
      */
     private function _testLocalInstance ($groupUri)
     {
@@ -335,6 +336,7 @@ class Xodx_GroupController extends Xodx_ResourceController
      *
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
+     * @todo should use semantic pingback instead of a curl request
      */
     public function creategroupAction ($template)
     {
@@ -496,8 +498,8 @@ class Xodx_GroupController extends Xodx_ResourceController
      * This creates a new group with the given name.
      * This function is usually called internally
      * 
-     * @param Uri $groupUri Uri of the new group
      * @param String $name Name of the new group
+     * @param String $description Description of the new group ('' by default)
      */
     public function createGroup ($name, $description = '')
     {
@@ -956,72 +958,6 @@ class Xodx_GroupController extends Xodx_ResourceController
         $baseUri = substr($resourceUri, 0, $pos);
         $feedUri = $baseUri . '?c=feed&a=getFeed&uri=' . urlencode($resourceUri);
         return $feedUri;
-    }
-
-    /**
-     * Subscribes a group to a user's group-specific activity feed and vice versa.
-     * Should be called while joining a group. Can be reverted using {@link _unsubscribeFromGroupFeed()}
-     *
-     * @param   string  $personUri  URI of the person joining the group
-     * @param   string  $groupUri   URI of the group being joined
-     * @see     _unsubscribeGroupFromFeed()
-     * @access  private
-     */
-    private function _subscribeGroupToFeed ($personUri, $groupUri)
-    {
-        $bootstrap = $this->_app->getBootstrap();
-        $logger = $bootstrap->getResource('logger');
-        $userController  = $this->_app->getController('Xodx_UserController');
-
-        // Subscribe to new member
-        $userUri = $userController->getUserUri($personUri);
-        $feedUri = $this->getActivityFeedUri($personUri);
-        if ($feedUri !== null) {
-            $logger->debug(
-                'GroupController/_subscribeToGroupFeed: Found feed for newly added member ("'
-                . $personUri . '"): "'
-                . $feedUri . '"'
-            );
-            $userController->subscribeToResource ($groupUri, $userUri, $feedUri);
-        } else {
-            $logger->error(
-                'GroupController/_subscribeToGroupFeed: Couldn\'t find feed for newly added member ("'
-                . $personUri . '").'
-            );
-        }
-    }
-
-    /**
-     * Unsubscribes a user from a group feed and vice versa. Should be called when leaving a group.
-     * Reverts the actions of {@link _subscribeToGroupFeed()}
-     *
-     * @param   string  $personUri  URI of the person leaving the group
-     * @param   string  $groupUri   URI of the group being left
-     * @see     _subscribeGroupToFeed()
-     * @access  private
-     */
-    private function _unsubscribeGroupFromFeed ($personUri, $groupUri)
-    {
-        $bootstrap = $this->_app->getBootstrap();
-        $logger = $bootstrap->getResource('logger');
-        $userController  = $this->_app->getController('Xodx_UserController');
-
-        // Unsubscribe from leaving member
-        $userUri = $userController->getUserUri($personUri);
-        $feedUri = $this->getActivityFeedUri($personUri);
-        if ($feedUri !== null) {
-            $logger->debug(
-                'GroupController/_unsubscribeGroupFromFeed: Found feed for leaving member ("'
-                . $personUri . '"): "'
-                . $feedUri . '"'
-            );
-            $userController->unsubscribeFromResource ($groupUri, $userUri, $feedUri);
-        } else {
-            $logger->error(
-                'GroupController/_unsubscribeGroupFromFeed: Couldn\'t find feed for leaving member ("'
-                . $personUri . '").'
-            );
-        }
     }
 
     /**

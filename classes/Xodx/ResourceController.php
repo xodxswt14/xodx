@@ -27,10 +27,11 @@ class Xodx_ResourceController extends Saft_Controller
      * 
      * @param Uri $instanceUri Uri of the instance which is to be notified
      * @param String $callAction Action that is to be called by this Uri
-     * @param string $controller Controller taht is to be called
+     * @param string $controller Controller that is to be called ('user' by default)
      * @return Uri Uri to call the specified API
      */
-    protected function _createAPIUri ($instanceUri, $callAction, $controller = 'user') {
+    protected function _createAPIUri ($instanceUri, $callAction, $controller = 'user') 
+    {
         $uri = "";
         if (($uriArray = parse_url($instanceUri))) {
             $uri = $uriArray['scheme'] . '://'
@@ -60,7 +61,8 @@ class Xodx_ResourceController extends Saft_Controller
      * @return mixed content got from request
      * @deprecated should be implemented with semantic pingback
      */
-    protected function _callApi ($uri, $fields) {
+    protected function _callApi ($uri, $fields) 
+    {
         // uri-fy the date for the POST Request
         $fields_string = '';
         foreach ($fields as $field => $value) {

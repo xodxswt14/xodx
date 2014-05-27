@@ -14,14 +14,15 @@
 class Xodx_MemberController extends Xodx_ResourceController
 {
     /**
-     * API Action for getting group subsribe to person
+     * API Action for getting a group to add a person as member
      * 
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      * @todo more security needed, change hardcoded 'success' and 'fail'
      * @deprecated should be implemented with semantic pingback
      */
-    public function addmemberAction ($template) {
+    public function addmemberAction ($template) 
+    {
         $bootstrap = $this->_app->getBootstrap();
         $request = $bootstrap->getResource('request');
 
@@ -52,14 +53,15 @@ class Xodx_MemberController extends Xodx_ResourceController
     }
 
     /**
-     * API Action for getting group unsubscribe from person
+     * API Action for getting group to remove a person from list of members
      * 
      * @param Saft_Layout $template used template
      * @return Saft_Layout modified template
      * @todo more security needed, change hardcoded 'success' and 'fail'
      * @deprecated should be implemented with semantic pingback
      */
-    public function deletememberAction ($template) {
+    public function deletememberAction ($template) 
+    {
         $bootstrap = $this->_app->getBootstrap();
         $request = $bootstrap->getResource('request');
 
@@ -100,9 +102,7 @@ class Xodx_MemberController extends Xodx_ResourceController
     public function addMember ($personUri, $groupUri)
     {
         $bootstrap = $this->_app->getBootstrap();
-        $logger = $bootstrap->getResource('logger');
         $model  = $bootstrap->getResource('model');
-        $nameHelper = new Xodx_NameHelper($this->_app);
 
         $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
         if (!$ldHelper->resourceDescriptionExists($personUri)) {
@@ -131,16 +131,14 @@ class Xodx_MemberController extends Xodx_ResourceController
     /**
      * This removes a member of a specified group.
      * 
-     * @param URI $personUri Uri of the existing member
+     * @param URI $personUri Uri of the leaving member
      * @param URI $groupUri Uri of the group
      * @throws Exception if personUri not found
      */
     public function deleteMember ($personUri, $groupUri)
     {
         $bootstrap = $this->_app->getBootstrap();
-        $logger = $bootstrap->getResource('logger');
         $model  = $bootstrap->getResource('model');
-        $nameHelper = new Xodx_NameHelper($this->_app);
 
         $ldHelper = $this->_app->getHelper('Saft_Helper_LinkeddataHelper');
         if (!$ldHelper->resourceDescriptionExists($personUri)) {
@@ -159,7 +157,7 @@ class Xodx_MemberController extends Xodx_ResourceController
    /**
     * Subscribes a user to a resource
     * 
-    * @param URI $unsubscriberUri Uri of the group which wants to subscribe from a resource
+    * @param URI $subscriberUri Uri of the group which wants to subscribe to a resource
     * @param URI $resourceUri Uri of the resource that ist to be subscribed
     * @param URI $feedUri Feed of the given resource
     * @param boolean $local Indicates whether the resource is stored locally
@@ -275,7 +273,7 @@ class Xodx_MemberController extends Xodx_ResourceController
      /**
      * This method unsubscribes a group from a feed
       * 
-     * @param URI $subsciberUri the uri of the subscriber who wants to unsubscribe
+     * @param URI $unsubscriberUri the uri of the subscriber who wants to unsubscribe
      * @param URI $feedUri the uri of the feed where the group wants to unsubscribe
      * @param boolean $local Indicates whether the feed is stored locally
      */
@@ -394,10 +392,9 @@ class Xodx_MemberController extends Xodx_ResourceController
         return count($subscribedResult);
     }
 
-    
-    
      /**
-     * Method returns all activities the group is subscribed to
+     * Method returns all activities of a group
+     * Currently unused
      * 
      * @param Uri $groupUri Uri of the group
      * @return array of activities
@@ -424,6 +421,8 @@ class Xodx_MemberController extends Xodx_ResourceController
 
     /**
      * Find all resources a user is subscribed to via Activity Feed
+     * Currently unused
+     * 
      * @param $groupUri the uri of the group in question
      * @return array $subscribedResources all resource a group is subscribed to
      */
